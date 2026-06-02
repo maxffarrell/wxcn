@@ -77,29 +77,24 @@
 
 <main class="wxcn-home">
 	<section class="wxcn-home-hero border-b">
-		<div class="container max-w-7xl py-7 md:py-12">
-			<div class="mx-auto max-w-3xl text-center">
-				<a
-					href="/docs/components"
-					class="inline-flex items-center gap-2 rounded-lg border bg-background/80 px-3 py-1 text-sm text-muted-foreground shadow-sm transition-colors hover:bg-muted/50"
-				>
-					<span class="size-1.5 rounded-full bg-primary"></span>
-					shadcn-svelte registry for forecasts
-				</a>
-				<h1 class="mt-4 text-balance text-4xl font-semibold leading-[0.96] tracking-normal md:text-6xl">
-					wxcn-svelte
-				</h1>
-				<p class="mx-auto mt-4 max-w-2xl text-pretty text-base leading-7 text-muted-foreground">
-					Weather, tide, and moon forecast cards that copy into your
-					SvelteKit app and keep the shadcn-svelte aesthetic.
-				</p>
-				<div class="mt-5 flex flex-wrap justify-center gap-3">
+		<div class="container max-w-7xl py-5 md:py-8">
+			<div class="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+				<div class="max-w-2xl">
+					<h1 class="text-balance text-4xl font-semibold leading-none tracking-normal md:text-5xl">
+						wxcn-svelte
+					</h1>
+					<p class="mt-2 max-w-xl text-pretty text-base leading-7 text-muted-foreground">
+						Weather, tide, and moon forecast cards that copy into your
+						SvelteKit app and keep the shadcn-svelte aesthetic.
+					</p>
+				</div>
+				<div class="flex flex-wrap gap-3 md:justify-end">
 					<a href="/docs/components"><Button>Browse components</Button></a>
 					<a href="/registry"><Button variant="outline">View registry</Button></a>
 				</div>
 			</div>
 
-			<div class="wxcn-home-preview mt-7 md:mt-9">
+			<div class="wxcn-home-preview mt-6 md:mt-7">
 				<div class="wxcn-home-preview-stage">
 					<div class="grid gap-4 lg:grid-cols-3">
 						<TideForecast type="summary" iconType="lucide" />

@@ -78,50 +78,48 @@
 
 <main class="wxcn-home">
 	<section class="wxcn-home-hero border-b">
-		<div class="container max-w-7xl py-12 md:py-20">
-			<div class="grid gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:items-center">
-				<div class="max-w-2xl">
-					<a
-						href="/docs/components"
-						class="inline-flex items-center gap-2 rounded-lg border bg-background/80 px-3 py-1 text-sm text-muted-foreground shadow-sm transition-colors hover:bg-muted/50"
-					>
-						<span class="size-1.5 rounded-full bg-primary"></span>
-						shadcn-svelte registry for forecasts
-					</a>
-					<h1 class="mt-7 text-balance text-5xl font-semibold leading-[0.96] tracking-normal md:text-7xl">
-						wxcn-svelte
-					</h1>
-					<p class="mt-6 max-w-xl text-pretty text-lg leading-8 text-muted-foreground">
-						Weather, tide, and moon forecast cards that copy into your
-						SvelteKit app and keep the shadcn-svelte aesthetic.
+		<div class="container max-w-7xl py-10 md:py-16">
+			<div class="mx-auto max-w-3xl text-center">
+				<a
+					href="/docs/components"
+					class="inline-flex items-center gap-2 rounded-lg border bg-background/80 px-3 py-1 text-sm text-muted-foreground shadow-sm transition-colors hover:bg-muted/50"
+				>
+					<span class="size-1.5 rounded-full bg-primary"></span>
+					shadcn-svelte registry for forecasts
+				</a>
+				<h1 class="mt-6 text-balance text-5xl font-semibold leading-[0.96] tracking-normal md:text-7xl">
+					wxcn-svelte
+				</h1>
+				<p class="mx-auto mt-5 max-w-2xl text-pretty text-lg leading-8 text-muted-foreground">
+					Weather, tide, and moon forecast cards that copy into your
+					SvelteKit app and keep the shadcn-svelte aesthetic.
+				</p>
+				<div class="mt-7 flex flex-wrap justify-center gap-3">
+					<a href="/docs/components"><Button>Browse components</Button></a>
+					<a href="/registry"><Button variant="outline">View registry</Button></a>
+				</div>
+			</div>
+
+			<div class="wxcn-home-preview mt-10 md:mt-12">
+				<div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+					<p class="text-sm font-medium text-muted-foreground">
+						Live forecast cards
 					</p>
-					<div class="mt-8 flex flex-wrap gap-3">
-						<a href="/docs/components"><Button>Browse components</Button></a>
-						<a href="/registry"><Button variant="outline">View registry</Button></a>
+					<div class="flex flex-wrap gap-2">
+						<Badge variant="secondary">tides</Badge>
+						<Badge variant="secondary">moon</Badge>
+						<Badge variant="secondary">weather</Badge>
 					</div>
 				</div>
-
-				<div class="wxcn-home-preview">
-					<div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-						<p class="text-sm font-medium text-muted-foreground">
-							Live forecast cards
-						</p>
-						<div class="flex flex-wrap gap-2">
-							<Badge variant="secondary">weather</Badge>
-							<Badge variant="secondary">tides</Badge>
-							<Badge variant="secondary">moon</Badge>
-						</div>
-					</div>
-					<div class="wxcn-home-preview-stage">
-						<div class="grid gap-4 lg:grid-cols-3">
-							<TideForecast type="summary" iconType="lucide" />
-							<MoonForecast type="summary" iconType="lucide" />
-							<WeatherForecast
-								type="summary"
-								iconType="lucide"
-								animatedBackground
-							/>
-						</div>
+				<div class="wxcn-home-preview-stage">
+					<div class="grid gap-4 lg:grid-cols-3">
+						<TideForecast type="summary" iconType="lucide" />
+						<MoonForecast type="summary" iconType="lucide" />
+						<WeatherForecast
+							type="summary"
+							iconType="lucide"
+							animatedBackground
+						/>
 					</div>
 				</div>
 			</div>

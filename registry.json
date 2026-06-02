@@ -1,0 +1,43 @@
+{
+	"$schema": "https://shadcn-svelte.com/schema/registry.json",
+	"name": "wxcn-svelte",
+	"homepage": "https://wxcn-svelte.dev",
+	"items": [
+		{
+			"name": "weather-forecast",
+			"type": "registry:component",
+			"description": "NWS weather forecast card with simple, summary, and detailed display modes.",
+			"dependencies": ["@lucide/svelte", "@hugeicons/svelte", "@hugeicons/core-free-icons", "phosphor-svelte", "@tabler/icons-svelte", "remixicon-svelte"],
+			"files": [
+				{ "path": "src/lib/components/wxcn/WeatherForecast.svelte", "type": "registry:component" },
+				{ "path": "src/lib/data/weather.ts", "type": "registry:lib" },
+				{ "path": "src/lib/data/types.ts", "type": "registry:lib" },
+				{ "path": "src/lib/icons/forecast-icons.svelte", "type": "registry:component" }
+			]
+		},
+		{
+			"name": "tide-forecast",
+			"type": "registry:component",
+			"description": "NOAA CO-OPS tide prediction card for station-based high and low tides.",
+			"dependencies": ["@lucide/svelte", "@hugeicons/svelte", "@hugeicons/core-free-icons", "phosphor-svelte", "@tabler/icons-svelte", "remixicon-svelte"],
+			"files": [
+				{ "path": "src/lib/components/wxcn/TideForecast.svelte", "type": "registry:component" },
+				{ "path": "src/lib/data/tides.ts", "type": "registry:lib" },
+				{ "path": "src/lib/data/types.ts", "type": "registry:lib" },
+				{ "path": "src/lib/icons/forecast-icons.svelte", "type": "registry:component" }
+			]
+		},
+		{
+			"name": "moon-forecast",
+			"type": "registry:component",
+			"description": "Commercial-safe moon phase card with local lunar cycle calculations.",
+			"dependencies": ["@lucide/svelte", "@hugeicons/svelte", "@hugeicons/core-free-icons", "phosphor-svelte", "@tabler/icons-svelte", "remixicon-svelte"],
+			"files": [
+				{ "path": "src/lib/components/wxcn/MoonForecast.svelte", "type": "registry:component" },
+				{ "path": "src/lib/data/moon.ts", "type": "registry:lib" },
+				{ "path": "src/lib/data/types.ts", "type": "registry:lib" },
+				{ "path": "src/lib/icons/forecast-icons.svelte", "type": "registry:component" }
+			]
+		}
+	]
+}

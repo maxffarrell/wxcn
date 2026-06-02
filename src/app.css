@@ -316,12 +316,9 @@
 	}
 
 	.wxcn-home-preview-stage {
-		@apply rounded-xl border bg-background/45 p-2;
+		@apply rounded-xl;
 		overflow: hidden;
-		box-shadow:
-			0 1px 1px hsl(222 47% 11% / 0.03),
-			0 28px 80px hsl(212 88% 22% / 0.1);
-		backdrop-filter: blur(12px);
+		filter: drop-shadow(0 28px 80px hsl(212 88% 22% / 0.1));
 	}
 
 	.wxcn-home-preview-stage > .grid {

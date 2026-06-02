@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import MoonForecast from '$lib/components/wxcn/MoonForecast.svelte';
@@ -101,16 +100,6 @@
 			</div>
 
 			<div class="wxcn-home-preview mt-7 md:mt-9">
-				<div class="mb-3 flex flex-wrap items-center justify-between gap-3">
-					<p class="text-sm font-medium text-muted-foreground">
-						Live forecast cards
-					</p>
-					<div class="flex flex-wrap gap-2">
-						<Badge variant="secondary">tides</Badge>
-						<Badge variant="secondary">moon</Badge>
-						<Badge variant="secondary">weather</Badge>
-					</div>
-				</div>
 				<div class="wxcn-home-preview-stage">
 					<div class="grid gap-4 lg:grid-cols-3">
 						<TideForecast type="summary" iconType="lucide" />

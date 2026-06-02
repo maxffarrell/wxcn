@@ -99,30 +99,25 @@
 					</div>
 				</div>
 
-				<Card.Root class="wxcn-home-preview overflow-hidden">
-					<Card.Header class="border-b bg-muted/30">
-						<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-							<div>
-								<Card.Title class="text-base tracking-normal">Live card set</Card.Title>
-								<Card.Description>Santa Monica, CA</Card.Description>
-							</div>
-							<div class="flex flex-wrap gap-2">
-								<Badge variant="secondary">weather</Badge>
-								<Badge variant="secondary">tides</Badge>
-								<Badge variant="secondary">moon</Badge>
-							</div>
+				<div class="wxcn-home-preview">
+					<div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+						<p class="text-sm font-medium text-muted-foreground">
+							Live forecast cards
+						</p>
+						<div class="flex flex-wrap gap-2">
+							<Badge variant="secondary">weather</Badge>
+							<Badge variant="secondary">tides</Badge>
+							<Badge variant="secondary">moon</Badge>
 						</div>
-					</Card.Header>
-					<Card.Content class="p-3 sm:p-4">
-						<div class="wxcn-home-preview-stage">
-							<ForecastDashboard
-								type="summary"
-								iconType="lucide"
-								animatedWeatherBackground
-							/>
-						</div>
-					</Card.Content>
-				</Card.Root>
+					</div>
+					<div class="wxcn-home-preview-stage">
+						<ForecastDashboard
+							type="summary"
+							iconType="lucide"
+							animatedWeatherBackground
+						/>
+					</div>
+				</div>
 			</div>
 		</div>
 	</section>

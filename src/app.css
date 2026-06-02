@@ -310,17 +310,15 @@
 	}
 
 	.wxcn-home-preview {
-		background:
-			linear-gradient(180deg, hsl(var(--background) / 0.92), hsl(var(--background) / 0.72)),
-			hsl(var(--card));
-		box-shadow:
-			0 1px 0 hsl(var(--background) / 0.72) inset,
-			0 28px 80px hsl(212 88% 22% / 0.12);
+		position: relative;
+		min-width: 0;
+		overflow: hidden;
 	}
 
 	.wxcn-home-preview-stage {
-		@apply rounded-lg border bg-muted/25 p-3;
+		@apply rounded-lg bg-muted/25 p-3;
 		overflow: hidden;
+		box-shadow: 0 28px 80px hsl(212 88% 22% / 0.12);
 	}
 
 	.wxcn-home-preview-stage > .grid {

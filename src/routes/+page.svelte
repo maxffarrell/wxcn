@@ -78,7 +78,7 @@
 
 <main class="wxcn-home">
 	<section class="wxcn-home-hero border-b">
-		<div class="container max-w-7xl py-10 md:py-16">
+		<div class="container max-w-7xl py-7 md:py-12">
 			<div class="mx-auto max-w-3xl text-center">
 				<a
 					href="/docs/components"
@@ -87,20 +87,20 @@
 					<span class="size-1.5 rounded-full bg-primary"></span>
 					shadcn-svelte registry for forecasts
 				</a>
-				<h1 class="mt-6 text-balance text-5xl font-semibold leading-[0.96] tracking-normal md:text-7xl">
+				<h1 class="mt-4 text-balance text-4xl font-semibold leading-[0.96] tracking-normal md:text-6xl">
 					wxcn-svelte
 				</h1>
-				<p class="mx-auto mt-5 max-w-2xl text-pretty text-lg leading-8 text-muted-foreground">
+				<p class="mx-auto mt-4 max-w-2xl text-pretty text-base leading-7 text-muted-foreground">
 					Weather, tide, and moon forecast cards that copy into your
 					SvelteKit app and keep the shadcn-svelte aesthetic.
 				</p>
-				<div class="mt-7 flex flex-wrap justify-center gap-3">
+				<div class="mt-5 flex flex-wrap justify-center gap-3">
 					<a href="/docs/components"><Button>Browse components</Button></a>
 					<a href="/registry"><Button variant="outline">View registry</Button></a>
 				</div>
 			</div>
 
-			<div class="wxcn-home-preview mt-10 md:mt-12">
+			<div class="wxcn-home-preview mt-7 md:mt-9">
 				<div class="mb-3 flex flex-wrap items-center justify-between gap-3">
 					<p class="text-sm font-medium text-muted-foreground">
 						Live forecast cards

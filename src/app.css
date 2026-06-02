@@ -74,7 +74,9 @@
 		--wxcn-gap: 0.625rem;
 		--wxcn-title-transform: none;
 		--wxcn-title-tracking: 0;
-		--wxcn-card-shadow: 0 1px 2px hsl(222 47% 11% / 0.05);
+		--wxcn-card-shadow:
+			0 1px 2px hsl(222 47% 11% / 0.04),
+			0 18px 44px hsl(222 47% 11% / 0.06);
 	}
 
 	[data-style='new-york'],
@@ -125,12 +127,12 @@
 
 @layer components {
 	.wxcn-shell {
-		@apply relative overflow-hidden rounded-lg border bg-card;
+		@apply relative overflow-hidden rounded-xl border bg-card;
 		box-shadow: var(--wxcn-card-shadow);
 	}
 
 	.wxcn-widget-card {
-		@apply bg-card/95 shadow-sm;
+		@apply bg-card/95;
 		height: 100%;
 		min-height: 34rem;
 	}
@@ -282,8 +284,8 @@
 
 	.wxcn-home {
 		background:
-			radial-gradient(circle at 18% 0%, hsl(var(--primary) / 0.11), transparent 34rem),
-			radial-gradient(circle at 86% 8%, hsl(var(--primary) / 0.07), transparent 30rem),
+			radial-gradient(circle at 24% 0%, hsl(var(--primary) / 0.09), transparent 30rem),
+			radial-gradient(circle at 86% 12%, hsl(var(--primary) / 0.05), transparent 26rem),
 			linear-gradient(180deg, hsl(var(--muted) / 0.28), transparent 28rem);
 	}
 
@@ -297,12 +299,10 @@
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
-		background-image:
-			linear-gradient(hsl(var(--border) / 0.38) 1px, transparent 1px),
-			linear-gradient(90deg, hsl(var(--border) / 0.38) 1px, transparent 1px);
-		background-size: 44px 44px;
-		mask-image: linear-gradient(180deg, black, transparent 72%);
-		opacity: 0.42;
+		background-image: radial-gradient(hsl(var(--border) / 0.5) 1px, transparent 1px);
+		background-size: 28px 28px;
+		mask-image: linear-gradient(180deg, black, transparent 58%);
+		opacity: 0.34;
 	}
 
 	.wxcn-home-hero > .container {
@@ -316,9 +316,12 @@
 	}
 
 	.wxcn-home-preview-stage {
-		@apply rounded-lg bg-muted/25 p-3;
+		@apply rounded-xl border bg-background/45 p-2;
 		overflow: hidden;
-		box-shadow: 0 28px 80px hsl(212 88% 22% / 0.12);
+		box-shadow:
+			0 1px 1px hsl(222 47% 11% / 0.03),
+			0 28px 80px hsl(212 88% 22% / 0.1);
+		backdrop-filter: blur(12px);
 	}
 
 	.wxcn-home-preview-stage > .grid {
@@ -336,7 +339,10 @@
 
 	.wxcn-home-preview-stage .wxcn-widget-card {
 		min-height: 0;
-		box-shadow: 0 12px 42px hsl(222 47% 11% / 0.08);
+		border-color: hsl(var(--border) / 0.78);
+		box-shadow:
+			0 1px 1px hsl(222 47% 11% / 0.03),
+			0 16px 48px hsl(222 47% 11% / 0.08);
 	}
 
 	.wxcn-home-preview-stage .wxcn-widget-header {

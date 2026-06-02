@@ -13,7 +13,7 @@
 
 <div class="min-h-screen bg-background" data-style={style}>
 	<header class="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-		<div class="container flex h-14 items-center justify-between gap-4">
+		<div class="container flex min-h-14 items-center justify-between gap-4 py-2">
 			<a href="/" class="flex shrink-0 items-center gap-2 whitespace-nowrap font-semibold tracking-normal">
 				<span class="size-2 rounded-full bg-primary"></span>
 				wxcn-svelte
@@ -23,15 +23,13 @@
 				<a class="transition-colors hover:text-foreground" href="/docs/endpoints">Endpoints</a>
 				<a class="transition-colors hover:text-foreground" href="/registry">Registry</a>
 			</nav>
+			<div class="hidden min-w-0 flex-1 sm:block lg:max-w-xl">
+				<StyleSelector value={style} onStyleChange={(next) => (style = next)} />
+			</div>
 			<a class="hidden md:block" href="/docs/components">
 				<Button class="h-8">Docs</Button>
 			</a>
 		</div>
 	</header>
-	<div class="border-b bg-muted/20">
-		<div class="container py-1.5">
-			<StyleSelector value={style} onStyleChange={(next) => (style = next)} />
-		</div>
-	</div>
 	{@render children()}
 </div>

@@ -1,11 +1,7 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import { Badge } from '$lib/components/ui/badge/index.js';
 	import ForecastDashboard from '$lib/components/wxcn/ForecastDashboard.svelte';
-	import WeatherForecast from '$lib/components/wxcn/WeatherForecast.svelte';
-	import TideForecast from '$lib/components/wxcn/TideForecast.svelte';
-	import MoonForecast from '$lib/components/wxcn/MoonForecast.svelte';
 	import WeatherShaderBackground, {
 		type WeatherShaderMode
 	} from '$lib/components/wxcn/WeatherShaderBackground.svelte';
@@ -16,34 +12,37 @@
 		description: string;
 	}[] = [
 		{
-			mode: 'partly-cloudy',
-			label: 'Partly Cloudy',
-			description: 'Layered sun glow and moving cloud fields'
-		},
-		{
 			mode: 'rain',
 			label: 'Rain',
-			description: 'Animated precipitation over a dense sky gradient'
+			description: 'Layered WebGL precipitation'
 		},
 		{
 			mode: 'thunderstorm',
 			label: 'Thunderstorm',
-			description: 'Rain bands with intermittent lightning pulses'
+			description: 'Lightning, rain, and glass runoff'
 		},
 		{
 			mode: 'snow',
 			label: 'Snow',
-			description: 'Wind-drifted flakes with cold atmospheric haze'
+			description: 'Parallax flakes and atmospheric haze'
+		}
+	];
+
+	const links = [
+		{
+			title: 'Components',
+			description: 'Weather, tide, and moon registry cards.',
+			href: '/docs/components'
 		},
 		{
-			mode: 'fog',
-			label: 'Fog',
-			description: 'Low-contrast mist using layered procedural noise'
+			title: 'Endpoints',
+			description: 'Commercial-safe data sources and loading notes.',
+			href: '/docs/endpoints'
 		},
 		{
-			mode: 'clear-night',
-			label: 'Clear Night',
-			description: 'Moonlit vignette with a deep night sky'
+			title: 'Registry',
+			description: 'Browse the generated shadcn-svelte registry output.',
+			href: '/registry'
 		}
 	];
 </script>
@@ -57,118 +56,86 @@
 </svelte:head>
 
 <main>
-	<section class="border-b wxcn-page-grid">
-		<div class="container grid min-h-[calc(100vh-4rem)] gap-10 py-10 lg:grid-cols-[0.78fr_1.22fr] lg:items-center">
-			<div class="space-y-7">
-				<div class="flex flex-wrap gap-2">
-					<Badge>shadcn-svelte registry</Badge>
-					<Badge variant="outline">NWS + NOAA</Badge>
-					<Badge variant="secondary">MDSX docs</Badge>
-				</div>
-				<div class="space-y-4">
-					<h1 class="max-w-3xl text-4xl font-semibold leading-[1.02] tracking-normal sm:text-5xl lg:text-6xl">
-						Forecast cards that respect your shadcn-svelte style.
+	<section class="border-b">
+		<div class="container max-w-6xl py-14 md:py-20">
+			<div class="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+				<div class="max-w-2xl">
+					<p class="mb-3 text-sm font-medium text-muted-foreground">
+						shadcn-svelte registry
+					</p>
+					<h1
+						class="text-4xl font-semibold leading-tight tracking-normal text-balance md:text-5xl"
+					>
+						Weather, tide, and moon forecast cards.
 					</h1>
-					<p class="max-w-2xl text-lg leading-8 text-muted-foreground">
-						Drop in forecast components with typed props for display density, icon family, location,
-						station ids, and source data.
+					<p class="mt-4 text-base leading-7 text-muted-foreground">
+						Copy forecast components into your SvelteKit app with typed props
+						for density, icon family, units, location, and animated weather
+						backgrounds.
+					</p>
+					<div class="mt-6 flex flex-wrap gap-3">
+						<a href="/docs/components"><Button>Get started</Button></a>
+						<a href="/registry"><Button variant="outline">View registry</Button></a>
+					</div>
+					<div class="mt-8 rounded-lg border bg-muted/40 p-3 font-mono text-sm">
+						pnpm dlx shadcn-svelte@latest add
+						<span class="text-muted-foreground"> https://wxcn.dev/registry.json</span>
+					</div>
+				</div>
+
+				<div class="rounded-lg border bg-muted/20 p-3">
+					<ForecastDashboard
+						type="summary"
+						iconType="lucide"
+						animatedWeatherBackground
+					/>
+				</div>
+			</div>
+		</div>
+	</section>
+
+	<section class="border-b">
+		<div class="container max-w-6xl py-12">
+			<div class="grid gap-8 lg:grid-cols-[18rem_1fr]">
+				<div>
+					<h2 class="text-2xl font-semibold tracking-normal">
+						Animated weather backgrounds
+					</h2>
+					<p class="mt-2 text-sm leading-6 text-muted-foreground">
+						The weather card can render live WebGL shaders for current
+						conditions without adding a separate canvas API.
 					</p>
 				</div>
-				<div class="grid max-w-xl grid-cols-3 gap-3">
-					<div class="wxcn-metric">
-						<p class="text-2xl font-semibold">3</p>
-						<p class="wxcn-title text-xs text-muted-foreground">forecast domains</p>
-					</div>
-					<div class="wxcn-metric">
-						<p class="text-2xl font-semibold">5</p>
-						<p class="wxcn-title text-xs text-muted-foreground">icon families</p>
-					</div>
-					<div class="wxcn-metric">
-						<p class="text-2xl font-semibold">0</p>
-						<p class="wxcn-title text-xs text-muted-foreground">API keys</p>
-					</div>
-				</div>
-				<div class="flex flex-wrap gap-3">
-					<a href="/docs/components"><Button>Install components</Button></a>
-					<a href="/registry"><Button variant="outline">Open registry</Button></a>
+				<div class="grid gap-3 md:grid-cols-3">
+					{#each shaderScenes as scene (scene.mode)}
+						<Card.Root class="wxcn-shader-showcase-card">
+							<WeatherShaderBackground mode={scene.mode} />
+							<div class="wxcn-shader-showcase-content">
+								<p class="font-medium tracking-normal">{scene.label}</p>
+								<p class="mt-1 text-xs text-white/70">{scene.description}</p>
+							</div>
+						</Card.Root>
+					{/each}
 				</div>
 			</div>
-			<div class="relative grid gap-4">
-				<WeatherForecast type="summary" iconType="hugeicons" animatedBackground />
+		</div>
+	</section>
+
+	<section>
+		<div class="container max-w-6xl py-12">
+			<div class="grid gap-4 md:grid-cols-3">
+				{#each links as link (link.href)}
+					<a
+						href={link.href}
+						class="rounded-lg border bg-card p-5 transition-colors hover:bg-muted/40"
+					>
+						<h3 class="font-semibold tracking-normal">{link.title}</h3>
+						<p class="mt-2 text-sm leading-6 text-muted-foreground">
+							{link.description}
+						</p>
+					</a>
+				{/each}
 			</div>
 		</div>
-	</section>
-
-	<section class="container py-10">
-		<div class="mb-6 flex items-end justify-between gap-4">
-			<div>
-				<h2 class="text-2xl font-semibold tracking-normal">Registry showcase</h2>
-				<p class="mt-2 text-sm text-muted-foreground">
-					Every preview is rendered with the same shadcn-svelte card primitives shipped in the registry.
-				</p>
-			</div>
-		</div>
-		<ForecastDashboard
-			type="summary"
-			iconType="lucide"
-			animatedWeatherBackground
-		/>
-	</section>
-
-	<section class="container py-10">
-		<div class="mb-6 max-w-2xl">
-			<h2 class="text-2xl font-semibold tracking-normal">
-				Animated WebGL weather backgrounds
-			</h2>
-			<p class="mt-2 text-sm text-muted-foreground">
-				These are live shader canvases rendered by the same WeatherForecast
-				animatedBackground prop.
-			</p>
-		</div>
-		<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-			{#each shaderScenes as scene (scene.mode)}
-				<Card.Root class="wxcn-shader-showcase-card">
-					<WeatherShaderBackground mode={scene.mode} />
-					<div class="wxcn-shader-showcase-content">
-						<p class="text-lg font-semibold tracking-normal">{scene.label}</p>
-						<p class="mt-1 text-sm text-white/72">{scene.description}</p>
-					</div>
-				</Card.Root>
-			{/each}
-		</div>
-	</section>
-
-	<section class="container grid gap-4 pb-14 lg:grid-cols-3">
-		<Card.Root class="wxcn-shell">
-			<Card.Header>
-				<Card.Title>Weather</Card.Title>
-				<Card.Description>NWS forecasts from api.weather.gov for United States points.</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<WeatherForecast
-					type="simple"
-					iconType="phosphor-svelte"
-					animatedBackground
-				/>
-			</Card.Content>
-		</Card.Root>
-		<Card.Root class="wxcn-shell">
-			<Card.Header>
-				<Card.Title>Tides</Card.Title>
-				<Card.Description>NOAA CO-OPS tide predictions by station id.</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<TideForecast type="simple" iconType="tabler" />
-			</Card.Content>
-		</Card.Root>
-		<Card.Root class="wxcn-shell">
-			<Card.Header>
-				<Card.Title>Moon</Card.Title>
-				<Card.Description>Local lunar cycle calculations without API keys.</Card.Description>
-			</Card.Header>
-			<Card.Content>
-				<MoonForecast type="simple" iconType="remix" />
-			</Card.Content>
-		</Card.Root>
 	</section>
 </main>

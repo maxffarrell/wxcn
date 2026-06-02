@@ -64,6 +64,10 @@
 			sans-serif;
 	}
 
+	html {
+		scroll-behavior: smooth;
+	}
+
 	[data-style] {
 		--wxcn-card-padding: 1rem;
 		--wxcn-item-padding: 0.75rem;
@@ -126,7 +130,7 @@
 	}
 
 	.wxcn-widget-card {
-		@apply bg-card/95 shadow-[0_14px_40px_hsl(222_47%_11%/0.08)];
+		@apply bg-card/95 shadow-sm;
 		height: 100%;
 		min-height: 34rem;
 	}
@@ -162,7 +166,7 @@
 	}
 
 	.wxcn-shader-showcase-card {
-		@apply relative min-h-48 overflow-hidden rounded-lg border shadow-sm;
+		@apply relative min-h-40 overflow-hidden rounded-lg border shadow-sm;
 	}
 
 	.wxcn-shader-showcase-card canvas {
@@ -225,7 +229,7 @@
 	}
 
 	.wxcn-metric {
-		@apply rounded-lg border bg-card shadow-sm;
+		@apply rounded-lg border bg-card;
 		padding: var(--wxcn-item-padding);
 	}
 
@@ -273,11 +277,7 @@
 	}
 
 	.wxcn-page-grid {
-		background-image: radial-gradient(
-			hsl(var(--muted-foreground) / 0.18) 1px,
-			transparent 1px
-		);
-		background-size: 18px 18px;
+		background-image: none;
 	}
 
 	.wxcn-hero-panel {

@@ -36,12 +36,12 @@
 
 </script>
 
-<div class="flex flex-wrap items-center gap-1 rounded-lg border bg-card p-1 shadow-sm">
-	<span class="px-2 text-xs font-medium text-muted-foreground">Style</span>
+<div class="flex flex-wrap items-center gap-1">
+	<span class="mr-1 text-xs text-muted-foreground">Style</span>
 	{#each styles as style (style.value)}
 		<Button
 			variant={value === style.value ? 'default' : 'ghost'}
-			class="h-8 px-3 text-xs"
+			class="h-7 px-2.5 text-xs"
 			onclick={() => onStyleChange(style.value)}
 		>
 			{style.label}

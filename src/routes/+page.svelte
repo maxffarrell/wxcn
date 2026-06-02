@@ -2,7 +2,9 @@
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
-	import ForecastDashboard from '$lib/components/wxcn/ForecastDashboard.svelte';
+	import MoonForecast from '$lib/components/wxcn/MoonForecast.svelte';
+	import TideForecast from '$lib/components/wxcn/TideForecast.svelte';
+	import WeatherForecast from '$lib/components/wxcn/WeatherForecast.svelte';
 	import WeatherShaderBackground, {
 		type WeatherShaderMode
 	} from '$lib/components/wxcn/WeatherShaderBackground.svelte';
@@ -111,11 +113,15 @@
 						</div>
 					</div>
 					<div class="wxcn-home-preview-stage">
-						<ForecastDashboard
-							type="summary"
-							iconType="lucide"
-							animatedWeatherBackground
-						/>
+						<div class="grid gap-4 lg:grid-cols-3">
+							<TideForecast type="summary" iconType="lucide" />
+							<MoonForecast type="summary" iconType="lucide" />
+							<WeatherForecast
+								type="summary"
+								iconType="lucide"
+								animatedBackground
+							/>
+						</div>
 					</div>
 				</div>
 			</div>

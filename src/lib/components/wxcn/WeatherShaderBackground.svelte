@@ -114,7 +114,7 @@ float rainStreak(vec2 uv, float speed, float scale, float density, float width, 
 	float y = fract(rnd * 13.91);
 	float core = smoothstep(width, 0.0, abs(f.x - x));
 	float trail = smoothstep(length, 0.0, abs(f.y - y));
-	float taper = smoothstep(0.0, 0.12, f.y) * smoothstep(1.0, 0.72, f.y);
+	float taper = smoothstep(0.0, 0.18, f.y) * smoothstep(1.0, 0.78, f.y);
 	return core * trail * taper * active;
 }
 
@@ -138,28 +138,13 @@ float rainCurtain(vec2 uv, float speed, float scale, float slant, float strength
 }
 
 float glassRunoff(vec2 uv, float amount) {
-	vec2 p = vec2(uv.x * 22.0, uv.y * 1.8 + u_time * 0.48);
+	vec2 p = vec2(uv.x * 18.0, uv.y * 1.2 + u_time * 0.18);
 	float id = floor(p.x);
-	float rnd = hash(vec2(id, floor(u_time * 0.22)));
+	float rnd = hash(vec2(id, floor(u_time * 0.08)));
 	float x = fract(p.x);
-	float line = smoothstep(0.018, 0.0, abs(x - rnd));
+	float line = smoothstep(0.028, 0.0, abs(x - rnd));
 	float waviness = 0.55 + 0.45 * sin(uv.y * 24.0 + rnd * 12.0);
 	return line * waviness * smoothstep(0.15, 0.95, uv.y) * amount;
-}
-
-float lightningBolt(vec2 uv, float offset, float lean, float branch) {
-	float y = clamp(uv.y, 0.0, 1.0);
-	float steps = floor(y * 11.0);
-	float jitter = hash(vec2(steps, offset)) - 0.5;
-	float nextJitter = hash(vec2(steps + 1.0, offset)) - 0.5;
-	float segment = mix(jitter, nextJitter, smoothstep(0.0, 1.0, fract(y * 11.0)));
-	float x = offset + lean * (0.86 - y) + segment * 0.12;
-	float body = smoothstep(0.018, 0.0, abs(uv.x - x)) * smoothstep(0.96, 0.18, y);
-	float forkY = smoothstep(0.6, 0.32, abs(y - 0.58));
-	float forkX = x + (0.16 + branch * 0.1) * (0.62 - y);
-	float fork = smoothstep(0.012, 0.0, abs(uv.x - forkX)) * forkY;
-	float glow = smoothstep(0.09, 0.0, abs(uv.x - x)) * smoothstep(0.94, 0.24, y);
-	return body * 1.2 + fork * branch + glow * 0.18;
 }
 
 float windLayer(vec2 uv) {
@@ -228,35 +213,33 @@ void main() {
 	} else if (u_mode < 8.5) {
 		col = mix(col, vec3(0.006, 0.010, 0.022), 0.64);
 		col = mix(col, vec3(0.045, 0.055, 0.075), cloud * 0.72);
-		float farRain = rainStreak(uv, 7.8, 48.0, 0.72, 0.012, 0.48, 0.28);
-		float midRain = rainStreak(uv + vec2(0.13, 0.07), 10.4, 58.0, 0.66, 0.014, 0.62, 0.26);
-		float nearRain = rainStreak(uv + vec2(0.31, 0.18), 13.8, 24.0, 0.48, 0.024, 0.78, 0.24);
+		float farRain = rainStreak(uv, 4.4, 34.0, 0.72, 0.018, 0.42, 0.22);
+		float midRain = rainStreak(uv + vec2(0.13, 0.07), 6.2, 48.0, 0.64, 0.022, 0.54, 0.2);
+		float nearRain = rainStreak(uv + vec2(0.31, 0.18), 8.5, 18.0, 0.52, 0.034, 0.68, 0.18);
 		float rain = farRain * 0.35 + midRain * 0.62 + nearRain * 0.95;
-		float wetGlass = glassRunoff(uv, 0.18);
+		float wetGlass = glassRunoff(uv, 0.34);
 		float atmosphere = rainMist(uv, 0.58);
-		float strikeWindow = smoothstep(0.993, 1.0, sin(u_time * 3.7 + noise(vec2(floor(u_time * 2.9), 0.0)) * 10.0));
-		float flashSeed = pow(strikeWindow, 9.0);
-		float bolt = lightningBolt(uv, 0.62 + hash(vec2(floor(u_time * 2.9), 3.0)) * 0.16, -0.08, 0.72);
-		float horizonFlash = smoothstep(0.9, 0.12, uv.y) * smoothstep(0.25, 0.85, cloud);
+		float flashSeed = smoothstep(0.985, 1.0, sin(u_time * 2.7 + noise(vec2(floor(u_time * 1.8), 0.0)) * 8.0));
+		float bolt = smoothstep(0.018, 0.0, abs(uv.x - (0.62 + sin(uv.y * 24.0 + u_time) * 0.035))) * smoothstep(0.92, 0.25, uv.y);
 		col = mix(col, vec3(0.12, 0.16, 0.21), atmosphere * 0.38);
 		col += vec3(0.58, 0.70, 0.86) * rain * 0.92;
 		col += vec3(0.74, 0.88, 1.0) * wetGlass * 0.38;
-		col += vec3(0.72, 0.86, 1.0) * flashSeed * (horizonFlash * 0.34 + bolt * 1.35);
+		col += vec3(0.78, 0.90, 1.0) * flashSeed * (0.26 + bolt * 1.05);
 	} else if (u_mode < 11.5) {
 		float heavy = step(9.5, u_mode) * (1.0 - step(10.5, u_mode));
 		float drizzle = step(10.5, u_mode);
 		float intensity = mix(0.72, 1.35, heavy) * mix(1.0, 0.3, drizzle);
 		col = mix(col, vec3(0.012, 0.021, 0.035), 0.38 + heavy * 0.25);
 		col = mix(col, vec3(0.075, 0.092, 0.12), cloud * (0.56 + heavy * 0.18));
-		float farRain = rainStreak(uv, mix(6.2, 9.0, heavy), mix(48.0, 68.0, heavy), mix(0.72, 0.8, heavy), mix(0.011, 0.012, heavy), mix(0.42, 0.62, heavy), 0.27);
-		float midRain = rainStreak(uv + vec2(0.23, 0.11), mix(8.4, 12.5, heavy), mix(42.0, 52.0, heavy), mix(0.62, 0.7, heavy), mix(0.016, 0.02, heavy), mix(0.56, 0.78, heavy), 0.25);
-		float nearRain = rainStreak(uv + vec2(0.41, 0.29), mix(11.0, 15.0, heavy), mix(22.0, 28.0, heavy), mix(0.44, 0.58, heavy), mix(0.026, 0.034, heavy), mix(0.74, 0.96, heavy), 0.22);
-		float drizzleNoise = smoothstep(0.5, 0.92, fbm(uv * 28.0 + vec2(u_time * 1.2, -u_time * 3.4)));
-		float curtain = rainCurtain(uv, mix(7.2, 10.5, heavy), mix(92.0, 136.0, heavy), 0.3, mix(0.42, 0.74, heavy));
+		float farRain = rainStreak(uv, mix(2.7, 5.2, heavy), mix(38.0, 58.0, heavy), mix(0.72, 0.78, heavy), mix(0.017, 0.018, heavy), mix(0.34, 0.5, heavy), 0.2);
+		float midRain = rainStreak(uv + vec2(0.23, 0.11), mix(3.9, 7.0, heavy), mix(30.0, 40.0, heavy), mix(0.62, 0.68, heavy), mix(0.026, 0.03, heavy), mix(0.46, 0.64, heavy), 0.18);
+		float nearRain = rainStreak(uv + vec2(0.41, 0.29), mix(5.1, 9.0, heavy), mix(18.0, 22.0, heavy), mix(0.46, 0.58, heavy), mix(0.044, 0.05, heavy), mix(0.62, 0.82, heavy), 0.16);
+		float drizzleNoise = smoothstep(0.48, 0.95, fbm(uv * 18.0 + vec2(u_time * 0.28, -u_time * 0.55)));
+		float curtain = rainCurtain(uv, mix(2.8, 5.8, heavy), mix(82.0, 120.0, heavy), 0.24, mix(0.46, 0.72, heavy));
 		float rain = curtain + farRain * 0.42 + midRain * 0.72 + nearRain * mix(0.68, 1.1, heavy);
-		rain = mix(drizzleNoise * rainStreak(uv, 5.8, 58.0, 0.38, 0.007, 0.26, 0.26), rain, 1.0 - drizzle);
+		rain = mix(drizzleNoise * rainStreak(uv, 1.4, 44.0, 0.3, 0.01, 0.12, 0.12), rain, 1.0 - drizzle);
 		float spray = rainMist(uv, mix(0.48, 0.9, heavy));
-		float runoff = glassRunoff(uv, mix(0.12, 0.28, heavy));
+		float runoff = glassRunoff(uv, mix(0.38, 0.58, heavy));
 		col = mix(col, vec3(0.13, 0.16, 0.19), spray * 0.48);
 		col += vec3(0.58, 0.70, 0.86) * rain * intensity;
 		col += vec3(0.72, 0.84, 0.96) * runoff * mix(0.16, 0.42, heavy);
@@ -269,7 +252,7 @@ void main() {
 		float midSnow = snowLayer(uv + vec2(0.31, 0.2), mix(16.0, 26.0, heavySnow), mix(3.0, 4.1, heavySnow), 0.04, 0.058, 0.55);
 		float nearSnow = snowLayer(uv + vec2(0.56, 0.33), mix(8.0, 13.0, heavySnow), mix(3.8, 5.2, heavySnow), 0.06, 0.092, 0.95);
 		float snow = backSnow * 0.45 + midSnow * 0.72 + nearSnow * mix(0.68, 1.2, heavySnow);
-		float sleet = rainStreak(uv, 8.4, 36.0, 0.5, 0.016, 0.44, 0.24) * wintry;
+		float sleet = rainStreak(uv, 3.4, 28.0, 0.5, 0.024, 0.36, 0.14) * wintry;
 		col += vec3(0.9, 0.95, 1.0) * snow * mix(0.72, 1.12, heavySnow);
 		col += vec3(0.54, 0.72, 0.92) * sleet * 0.68;
 		col += vec3(0.16, 0.28, 0.42) * 0.18;
@@ -280,8 +263,8 @@ void main() {
 		col = mix(col, vec3(0.012, 0.018, 0.035), 0.42);
 		col += vec3(0.36, 0.48, 0.72) * moon * 0.55;
 		col = mix(col, vec3(0.12, 0.14, 0.19), cloud * 0.55 * partlyNight);
-		float rain = rainStreak(uv, 5.2, 48.0, 0.32, 0.008, 0.24, 0.22) * drizzleNight;
-		float glass = glassRunoff(uv, 0.08) * drizzleNight;
+		float rain = rainStreak(uv, 1.8, 34.0, 0.28, 0.012, 0.16, 0.12) * drizzleNight;
+		float glass = glassRunoff(uv, 0.24) * drizzleNight;
 		col += vec3(0.45, 0.58, 0.78) * rain * 0.42;
 		col += vec3(0.62, 0.74, 0.92) * glass * 0.18;
 	}

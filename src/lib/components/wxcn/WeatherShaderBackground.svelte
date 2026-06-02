@@ -171,8 +171,8 @@ float windLayer(vec2 uv) {
 
 float snowLayer(vec2 uv, float scale, float speed, float size, float softness, float depth) {
 	vec2 p = uv * scale;
-	p.x += u_time * (0.22 + depth * 0.32);
-	p.x += sin(u_time * (0.72 + depth * 0.48) + p.y * 0.65) * (0.18 + depth * 0.5);
+	p.x += u_time * (0.48 + depth * 0.72);
+	p.x += sin(u_time * (1.2 + depth * 0.74) + p.y * 0.65) * (0.2 + depth * 0.58);
 	p.y += u_time * speed;
 	vec2 id = floor(p);
 	vec2 f = fract(p);
@@ -265,9 +265,9 @@ void main() {
 		float wintry = step(13.5, u_mode);
 		col = mix(col, vec3(0.16, 0.20, 0.27), cloud * 0.54);
 		col = mix(col, vec3(0.24, 0.30, 0.38), rainMist(uv, 0.32 + heavySnow * 0.26));
-		float backSnow = snowLayer(uv + vec2(0.12, 0.05), mix(22.0, 34.0, heavySnow), mix(1.05, 1.55, heavySnow), 0.028, 0.045, 0.25);
-		float midSnow = snowLayer(uv + vec2(0.31, 0.2), mix(14.0, 24.0, heavySnow), mix(1.25, 1.9, heavySnow), 0.044, 0.062, 0.55);
-		float nearSnow = snowLayer(uv + vec2(0.56, 0.33), mix(7.0, 12.0, heavySnow), mix(1.55, 2.35, heavySnow), 0.066, 0.1, 0.95);
+		float backSnow = snowLayer(uv + vec2(0.12, 0.05), mix(24.0, 36.0, heavySnow), mix(2.4, 3.2, heavySnow), 0.026, 0.042, 0.25);
+		float midSnow = snowLayer(uv + vec2(0.31, 0.2), mix(16.0, 26.0, heavySnow), mix(3.0, 4.1, heavySnow), 0.04, 0.058, 0.55);
+		float nearSnow = snowLayer(uv + vec2(0.56, 0.33), mix(8.0, 13.0, heavySnow), mix(3.8, 5.2, heavySnow), 0.06, 0.092, 0.95);
 		float snow = backSnow * 0.45 + midSnow * 0.72 + nearSnow * mix(0.68, 1.2, heavySnow);
 		float sleet = rainStreak(uv, 8.4, 36.0, 0.5, 0.016, 0.44, 0.24) * wintry;
 		col += vec3(0.9, 0.95, 1.0) * snow * mix(0.72, 1.12, heavySnow);

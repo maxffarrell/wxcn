@@ -323,6 +323,19 @@
 		overflow: hidden;
 	}
 
+	.wxcn-home-preview-stage > .grid {
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(18rem, 1fr);
+		grid-template-columns: none;
+		overflow-x: auto;
+		padding-bottom: 0.25rem;
+		scroll-snap-type: x proximity;
+	}
+
+	.wxcn-home-preview-stage > .grid > .wxcn-widget-card {
+		scroll-snap-align: start;
+	}
+
 	.wxcn-home-preview-stage .wxcn-widget-card {
 		min-height: 0;
 		box-shadow: 0 12px 42px hsl(222 47% 11% / 0.08);
@@ -344,6 +357,14 @@
 	.wxcn-home-preview-stage .wxcn-tabular.text-5xl {
 		font-size: 2.25rem;
 		line-height: 2.5rem;
+	}
+
+	@media (min-width: 1024px) {
+		.wxcn-home-preview-stage > .grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			overflow-x: visible;
+			padding-bottom: 0;
+		}
 	}
 
 	.wxcn-hero-panel {

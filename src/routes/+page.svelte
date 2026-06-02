@@ -97,20 +97,6 @@
 						<a href="/docs/components"><Button>Browse components</Button></a>
 						<a href="/registry"><Button variant="outline">View registry</Button></a>
 					</div>
-					<Card.Root class="mt-8 overflow-hidden border bg-background/75 shadow-sm">
-						<Card.Content class="p-0">
-							<div class="flex items-center gap-2 border-b bg-muted/35 px-4 py-2">
-								<span class="size-2 rounded-full bg-destructive/80"></span>
-								<span class="size-2 rounded-full bg-yellow-500/80"></span>
-								<span class="size-2 rounded-full bg-green-500/80"></span>
-								<span class="ml-2 text-xs text-muted-foreground">install</span>
-							</div>
-							<div class="overflow-x-auto p-4 font-mono text-sm">
-								<span class="text-muted-foreground">$</span>
-								{installCommand}
-							</div>
-						</Card.Content>
-					</Card.Root>
 				</div>
 
 				<Card.Root class="wxcn-home-preview overflow-hidden">
@@ -143,6 +129,21 @@
 
 	<section class="border-b">
 		<div class="container max-w-7xl py-10 md:py-14">
+			<Card.Root class="mb-4 overflow-hidden border bg-background/75 shadow-sm">
+				<Card.Content class="p-0">
+					<div class="flex items-center gap-2 border-b bg-muted/35 px-4 py-2">
+						<span class="size-2 rounded-full bg-destructive/80"></span>
+						<span class="size-2 rounded-full bg-yellow-500/80"></span>
+						<span class="size-2 rounded-full bg-green-500/80"></span>
+						<span class="ml-2 text-xs text-muted-foreground">install</span>
+					</div>
+					<div class="overflow-x-auto p-4 font-mono text-sm">
+						<span class="text-muted-foreground">$</span>
+						{installCommand}
+					</div>
+				</Card.Content>
+			</Card.Root>
+
 			<div class="grid gap-4 md:grid-cols-3">
 				{#each capabilities as item (item.title)}
 					<Card.Root class="bg-background/70 shadow-sm transition-colors hover:bg-muted/30">

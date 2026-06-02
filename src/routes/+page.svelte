@@ -6,6 +6,46 @@
 	import WeatherForecast from '$lib/components/wxcn/WeatherForecast.svelte';
 	import TideForecast from '$lib/components/wxcn/TideForecast.svelte';
 	import MoonForecast from '$lib/components/wxcn/MoonForecast.svelte';
+	import WeatherShaderBackground, {
+		type WeatherShaderMode
+	} from '$lib/components/wxcn/WeatherShaderBackground.svelte';
+
+	const shaderScenes: {
+		mode: WeatherShaderMode;
+		label: string;
+		description: string;
+	}[] = [
+		{
+			mode: 'partly-cloudy',
+			label: 'Partly Cloudy',
+			description: 'Layered sun glow and moving cloud fields'
+		},
+		{
+			mode: 'rain',
+			label: 'Rain',
+			description: 'Animated precipitation over a dense sky gradient'
+		},
+		{
+			mode: 'thunderstorm',
+			label: 'Thunderstorm',
+			description: 'Rain bands with intermittent lightning pulses'
+		},
+		{
+			mode: 'snow',
+			label: 'Snow',
+			description: 'Wind-drifted flakes with cold atmospheric haze'
+		},
+		{
+			mode: 'fog',
+			label: 'Fog',
+			description: 'Low-contrast mist using layered procedural noise'
+		},
+		{
+			mode: 'clear-night',
+			label: 'Clear Night',
+			description: 'Moonlit vignette with a deep night sky'
+		}
+	];
 </script>
 
 <svelte:head>
@@ -73,6 +113,29 @@
 			iconType="lucide"
 			animatedWeatherBackground
 		/>
+	</section>
+
+	<section class="container py-10">
+		<div class="mb-6 max-w-2xl">
+			<h2 class="text-2xl font-semibold tracking-normal">
+				Animated WebGL weather backgrounds
+			</h2>
+			<p class="mt-2 text-sm text-muted-foreground">
+				These are live shader canvases rendered by the same WeatherForecast
+				animatedBackground prop.
+			</p>
+		</div>
+		<div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+			{#each shaderScenes as scene (scene.mode)}
+				<Card.Root class="wxcn-shader-showcase-card">
+					<WeatherShaderBackground mode={scene.mode} />
+					<div class="wxcn-shader-showcase-content">
+						<p class="text-lg font-semibold tracking-normal">{scene.label}</p>
+						<p class="mt-1 text-sm text-white/72">{scene.description}</p>
+					</div>
+				</Card.Root>
+			{/each}
+		</div>
 	</section>
 
 	<section class="container grid gap-4 pb-14 lg:grid-cols-3">

@@ -150,7 +150,9 @@
 	});
 </script>
 
-<Card.Root class="wxcn-shell wxcn-widget-card">
+<Card.Root
+	class={`wxcn-shell wxcn-widget-card ${animatedBackground ? 'wxcn-weather-animated' : ''}`}
+>
 	{#if animatedBackground}
 		<div class="wxcn-widget-shader" aria-hidden="true">
 			<WeatherShaderBackground mode={shaderMode} />

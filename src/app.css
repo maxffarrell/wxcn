@@ -140,12 +140,45 @@
 	}
 
 	.wxcn-widget-shader {
-		@apply pointer-events-none absolute inset-0 opacity-35;
+		@apply pointer-events-none absolute inset-0 opacity-80;
 	}
 
 	.wxcn-widget-shader::after {
 		content: '';
-		@apply absolute inset-0 bg-card/70 backdrop-blur-[1px];
+		@apply absolute inset-0;
+		background:
+			linear-gradient(
+				90deg,
+				hsl(var(--card) / 0.82),
+				hsl(var(--card) / 0.5) 48%,
+				hsl(var(--card) / 0.74)
+			),
+			linear-gradient(180deg, hsl(var(--card) / 0.65), transparent 42%);
+		backdrop-filter: blur(0.5px);
+	}
+
+	.wxcn-weather-animated {
+		@apply bg-card/80;
+	}
+
+	.wxcn-shader-showcase-card {
+		@apply relative min-h-48 overflow-hidden rounded-lg border shadow-sm;
+	}
+
+	.wxcn-shader-showcase-card canvas {
+		@apply absolute inset-0 h-full w-full;
+	}
+
+	.wxcn-shader-showcase-card::after {
+		content: '';
+		@apply absolute inset-0;
+		background:
+			linear-gradient(180deg, transparent 10%, hsl(222 47% 5% / 0.58)),
+			radial-gradient(circle at 72% 18%, hsl(0 0% 100% / 0.16), transparent 42%);
+	}
+
+	.wxcn-shader-showcase-content {
+		@apply absolute inset-x-0 bottom-0 z-10 p-4 text-white;
 	}
 
 	.wxcn-photo-moon {

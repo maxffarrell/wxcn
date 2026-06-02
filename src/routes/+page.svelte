@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import ForecastDashboard from '$lib/components/wxcn/ForecastDashboard.svelte';
@@ -28,23 +29,41 @@
 		}
 	];
 
-	const links = [
+	const quickLinks = [
 		{
-			title: 'Components',
-			description: 'Weather, tide, and moon registry cards.',
+			title: 'Registry components',
+			description: 'Weather, tide, moon, and dashboard cards built for shadcn-svelte.',
 			href: '/docs/components'
 		},
 		{
-			title: 'Endpoints',
-			description: 'Commercial-safe data sources and loading notes.',
+			title: 'Open endpoints',
+			description: 'NWS, NOAA CO-OPS, and local lunar calculations with no API keys.',
 			href: '/docs/endpoints'
 		},
 		{
-			title: 'Registry',
-			description: 'Browse the generated shadcn-svelte registry output.',
+			title: 'Registry JSON',
+			description: 'Inspect the generated registry before adding components to your app.',
 			href: '/registry'
 		}
 	];
+
+	const capabilities = [
+		{
+			title: 'Style-aware',
+			description: 'Reads the same radius, color, shadow, and spacing tokens as shadcn-svelte.'
+		},
+		{
+			title: 'Typed props',
+			description: 'Switch density, icon set, location, weather units, tide units, and animated weather.'
+		},
+		{
+			title: 'Card-first',
+			description: 'Compact forecast cards for dashboards, docs pages, sidebars, and landing pages.'
+		}
+	];
+
+	const installCommand =
+		'pnpm dlx shadcn-svelte@latest add https://wxcn.dev/registry.json';
 </script>
 
 <svelte:head>
@@ -55,84 +74,127 @@
 	/>
 </svelte:head>
 
-<main>
-	<section class="border-b">
-		<div class="container max-w-6xl py-14 md:py-20">
-			<div class="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-start">
+<main class="wxcn-home">
+	<section class="wxcn-home-hero border-b">
+		<div class="container max-w-7xl py-12 md:py-20">
+			<div class="grid gap-10 lg:grid-cols-[0.86fr_1.14fr] lg:items-center">
 				<div class="max-w-2xl">
-					<p class="mb-3 text-sm font-medium text-muted-foreground">
-						shadcn-svelte registry
-					</p>
-					<h1
-						class="text-4xl font-semibold leading-tight tracking-normal text-balance md:text-5xl"
+					<a
+						href="/docs/components"
+						class="inline-flex items-center gap-2 rounded-lg border bg-background/80 px-3 py-1 text-sm text-muted-foreground shadow-sm transition-colors hover:bg-muted/50"
 					>
-						Weather, tide, and moon forecast cards.
+						<span class="size-1.5 rounded-full bg-primary"></span>
+						shadcn-svelte registry for forecasts
+					</a>
+					<h1 class="mt-7 text-balance text-5xl font-semibold leading-[0.96] tracking-normal md:text-7xl">
+						wxcn-svelte
 					</h1>
-					<p class="mt-4 text-base leading-7 text-muted-foreground">
-						Copy forecast components into your SvelteKit app with typed props
-						for density, icon family, units, location, and animated weather
-						backgrounds.
+					<p class="mt-6 max-w-xl text-pretty text-lg leading-8 text-muted-foreground">
+						Weather, tide, and moon forecast cards that copy into your
+						SvelteKit app and keep the shadcn-svelte aesthetic.
 					</p>
-					<div class="mt-6 flex flex-wrap gap-3">
-						<a href="/docs/components"><Button>Get started</Button></a>
+					<div class="mt-8 flex flex-wrap gap-3">
+						<a href="/docs/components"><Button>Browse components</Button></a>
 						<a href="/registry"><Button variant="outline">View registry</Button></a>
 					</div>
-					<div class="mt-8 rounded-lg border bg-muted/40 p-3 font-mono text-sm">
-						pnpm dlx shadcn-svelte@latest add
-						<span class="text-muted-foreground"> https://wxcn.dev/registry.json</span>
-					</div>
+					<Card.Root class="mt-8 overflow-hidden border bg-background/75 shadow-sm">
+						<Card.Content class="p-0">
+							<div class="flex items-center gap-2 border-b bg-muted/35 px-4 py-2">
+								<span class="size-2 rounded-full bg-destructive/80"></span>
+								<span class="size-2 rounded-full bg-yellow-500/80"></span>
+								<span class="size-2 rounded-full bg-green-500/80"></span>
+								<span class="ml-2 text-xs text-muted-foreground">install</span>
+							</div>
+							<div class="overflow-x-auto p-4 font-mono text-sm">
+								<span class="text-muted-foreground">$</span>
+								{installCommand}
+							</div>
+						</Card.Content>
+					</Card.Root>
 				</div>
 
-				<div class="rounded-lg border bg-muted/20 p-3">
-					<ForecastDashboard
-						type="summary"
-						iconType="lucide"
-						animatedWeatherBackground
-					/>
-				</div>
+				<Card.Root class="wxcn-home-preview overflow-hidden">
+					<Card.Header class="border-b bg-muted/30">
+						<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+							<div>
+								<Card.Title class="text-base tracking-normal">Live card set</Card.Title>
+								<Card.Description>Santa Monica, CA</Card.Description>
+							</div>
+							<div class="flex flex-wrap gap-2">
+								<Badge variant="secondary">weather</Badge>
+								<Badge variant="secondary">tides</Badge>
+								<Badge variant="secondary">moon</Badge>
+							</div>
+						</div>
+					</Card.Header>
+					<Card.Content class="p-3 sm:p-4">
+						<div class="wxcn-home-preview-stage">
+							<ForecastDashboard
+								type="summary"
+								iconType="lucide"
+								animatedWeatherBackground
+							/>
+						</div>
+					</Card.Content>
+				</Card.Root>
 			</div>
 		</div>
 	</section>
 
 	<section class="border-b">
-		<div class="container max-w-6xl py-12">
-			<div class="grid gap-8 lg:grid-cols-[18rem_1fr]">
+		<div class="container max-w-7xl py-10 md:py-14">
+			<div class="grid gap-4 md:grid-cols-3">
+				{#each capabilities as item (item.title)}
+					<Card.Root class="bg-background/70 shadow-sm transition-colors hover:bg-muted/30">
+						<Card.Header class="space-y-2">
+							<Card.Title class="text-base tracking-normal">{item.title}</Card.Title>
+							<Card.Description class="leading-6">{item.description}</Card.Description>
+						</Card.Header>
+					</Card.Root>
+				{/each}
+			</div>
+		</div>
+	</section>
+
+	<section class="border-b bg-muted/20">
+		<div class="container max-w-7xl py-14 md:py-16">
+			<div class="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
 				<div>
-					<h2 class="text-2xl font-semibold tracking-normal">
-						Animated weather backgrounds
+					<h2 class="text-3xl font-semibold tracking-normal">
+						WebGL weather backgrounds
 					</h2>
-					<p class="mt-2 text-sm leading-6 text-muted-foreground">
-						The weather card can render live WebGL shaders for current
-						conditions without adding a separate canvas API.
+					<p class="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+						Use the weather card's animated background prop to render condition-aware
+						shaders inside the card surface.
 					</p>
 				</div>
-				<div class="grid gap-3 md:grid-cols-3">
-					{#each shaderScenes as scene (scene.mode)}
-						<Card.Root class="wxcn-shader-showcase-card">
-							<WeatherShaderBackground mode={scene.mode} />
-							<div class="wxcn-shader-showcase-content">
-								<p class="font-medium tracking-normal">{scene.label}</p>
-								<p class="mt-1 text-xs text-white/70">{scene.description}</p>
-							</div>
-						</Card.Root>
-					{/each}
-				</div>
+				<a href="/docs/components"><Button variant="outline">Read docs</Button></a>
+			</div>
+			<div class="grid gap-3 md:grid-cols-3">
+				{#each shaderScenes as scene (scene.mode)}
+					<Card.Root class="wxcn-shader-showcase-card">
+						<WeatherShaderBackground mode={scene.mode} />
+						<div class="wxcn-shader-showcase-content">
+							<p class="font-medium tracking-normal">{scene.label}</p>
+							<p class="mt-1 text-xs text-white/70">{scene.description}</p>
+						</div>
+					</Card.Root>
+				{/each}
 			</div>
 		</div>
 	</section>
 
 	<section>
-		<div class="container max-w-6xl py-12">
+		<div class="container max-w-7xl py-14 md:py-16">
 			<div class="grid gap-4 md:grid-cols-3">
-				{#each links as link (link.href)}
-					<a
-						href={link.href}
-						class="rounded-lg border bg-card p-5 transition-colors hover:bg-muted/40"
-					>
-						<h3 class="font-semibold tracking-normal">{link.title}</h3>
-						<p class="mt-2 text-sm leading-6 text-muted-foreground">
-							{link.description}
-						</p>
+				{#each quickLinks as link (link.href)}
+					<a href={link.href} class="group block">
+						<Card.Root class="h-full transition-colors group-hover:bg-muted/40">
+							<Card.Header>
+								<Card.Title class="text-base tracking-normal">{link.title}</Card.Title>
+								<Card.Description class="leading-6">{link.description}</Card.Description>
+							</Card.Header>
+						</Card.Root>
 					</a>
 				{/each}
 			</div>

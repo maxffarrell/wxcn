@@ -280,6 +280,72 @@
 		background-image: none;
 	}
 
+	.wxcn-home {
+		background:
+			radial-gradient(circle at 18% 0%, hsl(var(--primary) / 0.11), transparent 34rem),
+			radial-gradient(circle at 86% 8%, hsl(var(--primary) / 0.07), transparent 30rem),
+			linear-gradient(180deg, hsl(var(--muted) / 0.28), transparent 28rem);
+	}
+
+	.wxcn-home-hero {
+		position: relative;
+		overflow: hidden;
+	}
+
+	.wxcn-home-hero::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		background-image:
+			linear-gradient(hsl(var(--border) / 0.38) 1px, transparent 1px),
+			linear-gradient(90deg, hsl(var(--border) / 0.38) 1px, transparent 1px);
+		background-size: 44px 44px;
+		mask-image: linear-gradient(180deg, black, transparent 72%);
+		opacity: 0.42;
+	}
+
+	.wxcn-home-hero > .container {
+		position: relative;
+	}
+
+	.wxcn-home-preview {
+		background:
+			linear-gradient(180deg, hsl(var(--background) / 0.92), hsl(var(--background) / 0.72)),
+			hsl(var(--card));
+		box-shadow:
+			0 1px 0 hsl(var(--background) / 0.72) inset,
+			0 28px 80px hsl(212 88% 22% / 0.12);
+	}
+
+	.wxcn-home-preview-stage {
+		@apply rounded-lg border bg-muted/25 p-3;
+		overflow: hidden;
+	}
+
+	.wxcn-home-preview-stage .wxcn-widget-card {
+		min-height: 0;
+		box-shadow: 0 12px 42px hsl(222 47% 11% / 0.08);
+	}
+
+	.wxcn-home-preview-stage .wxcn-widget-header {
+		@apply px-4 pb-2 pt-4;
+	}
+
+	.wxcn-home-preview-stage .wxcn-photo-moon {
+		@apply size-44;
+	}
+
+	.wxcn-home-preview-stage .wxcn-tabular.text-6xl {
+		font-size: 3rem;
+		line-height: 1;
+	}
+
+	.wxcn-home-preview-stage .wxcn-tabular.text-5xl {
+		font-size: 2.25rem;
+		line-height: 2.5rem;
+	}
+
 	.wxcn-hero-panel {
 		@apply rounded-lg border bg-card shadow-sm;
 	}

@@ -54,7 +54,7 @@
 				</div>
 			</div>
 			<div class="relative grid gap-4">
-				<WeatherForecast type="detailed" iconType="hugeicons" />
+				<WeatherForecast type="summary" iconType="hugeicons" animatedBackground />
 			</div>
 		</div>
 	</section>
@@ -68,7 +68,11 @@
 				</p>
 			</div>
 		</div>
-		<ForecastDashboard type="summary" iconType="lucide" />
+		<ForecastDashboard
+			type="summary"
+			iconType="lucide"
+			animatedWeatherBackground
+		/>
 	</section>
 
 	<section class="container grid gap-4 pb-14 lg:grid-cols-3">
@@ -78,7 +82,11 @@
 				<Card.Description>NWS forecasts from api.weather.gov for United States points.</Card.Description>
 			</Card.Header>
 			<Card.Content>
-				<WeatherForecast type="simple" iconType="phosphor-svelte" />
+				<WeatherForecast
+					type="simple"
+					iconType="phosphor-svelte"
+					animatedBackground
+				/>
 			</Card.Content>
 		</Card.Root>
 		<Card.Root class="wxcn-shell">

@@ -44,8 +44,8 @@ export async function fetchTidePredictions(location: LocationInput, date = new D
 }
 
 export const sampleTides: TidePrediction[] = [
-	{ time: '2026-06-01 02:42', height: '4.81', type: 'H' },
-	{ time: '2026-06-01 09:08', height: '0.42', type: 'L' },
-	{ time: '2026-06-01 15:28', height: '5.16', type: 'H' },
-	{ time: '2026-06-01 21:44', height: '0.31', type: 'L' }
+	{ time: '2026-06-01 02:12', height: '5.60', type: 'H' },
+	{ time: '2026-06-01 08:28', height: '-0.30', type: 'L' },
+	{ time: '2026-06-01 14:49', height: '4.90', type: 'H' },
+	{ time: '2026-06-01 21:07', height: '-0.40', type: 'L' }
 ];

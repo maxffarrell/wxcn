@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import ForecastIcon from '$lib/icons/forecast-icons.svelte';
 	import WeatherShaderBackground from './WeatherShaderBackground.svelte';
 	import type {
@@ -16,7 +17,11 @@
 		type = 'summary',
 		unit = 'fahrenheit',
 		iconType = 'lucide',
-		location = { label: 'Austin, TX', latitude: 30.2672, longitude: -97.7431 },
+		location = {
+			label: 'Santa Monica, CA',
+			latitude: 34.0195,
+			longitude: -118.4912
+		},
 		forecast = sampleWeather,
 		sourceLabel = 'NWS api.weather.gov',
 		animatedBackground = false
@@ -74,6 +79,35 @@
 				: '68%'
 	);
 	const uvIndex = $derived(current.isDaytime ? 6 : 0);
+	const hourlyForecast = $derived([
+		current,
+		...forecast.slice(1, 3),
+		{
+			...current,
+			name: '1 PM',
+			temperature: current.temperature + 4,
+			shortForecast: 'Sunny'
+		},
+		{
+			...current,
+			name: '2 PM',
+			temperature: current.temperature + 4,
+			shortForecast: 'Sunny'
+		},
+		{
+			...current,
+			name: '3 PM',
+			temperature: current.temperature + 3,
+			shortForecast: 'Mostly Sunny'
+		}
+	].slice(0, type === 'simple' ? 4 : 6));
+	const dailyForecast = $derived([
+		{ day: 'Saturday', icon: 'clear', high: 72, low: 58 },
+		{ day: 'Sunday', icon: 'cloudy', high: 69, low: 57 },
+		{ day: 'Monday', icon: 'partly-cloudy', high: 70, low: 59 },
+		{ day: 'Tuesday', icon: 'clear', high: 73, low: 60 },
+		{ day: 'Wednesday', icon: 'clear', high: 74, low: 61 }
+	]);
 	const shaderMode = $derived.by(() => {
 		const forecastText = current.shortForecast.toLowerCase();
 		const isNight = !current.isDaytime || forecastText.includes('night');
@@ -116,84 +150,114 @@
 	});
 </script>
 
-<Card.Root class="wxcn-shell">
-	<Card.Content class="space-y-[var(--wxcn-gap)] p-[var(--wxcn-card-padding)]">
-		<div class="wxcn-forecast-surface">
-			{#if animatedBackground}
-				<WeatherShaderBackground mode={shaderMode} />
-			{/if}
-			<div class="flex items-start justify-between gap-3">
-				<div class="space-y-1">
-					<p class="wxcn-title text-xs font-semibold text-background/60">
-						Weather Forecast
-					</p>
-					<h3
-						class="flex items-center gap-2 text-base font-semibold tracking-normal"
-					>
-						<span
-							class="flex size-8 items-center justify-center rounded-md border border-background/15 bg-background/10 text-primary shadow-sm"
-						>
-							<ForecastIcon name="weather" iconSet={iconType} class="size-4" />
-						</span>
-						{location.label ?? 'Forecast location'}
-					</h3>
-				</div>
-				<div class="flex flex-wrap justify-end gap-2">
-					<span class="wxcn-chip wxcn-inverted-chip">
-						<span class={`size-1.5 rounded-full ${aqiTone}`}></span>
-						AQI {aqi}
-					</span>
-					<span class="wxcn-chip wxcn-inverted-chip">{sourceLabel}</span>
-				</div>
-			</div>
-
-			<div class="mt-4 grid gap-3 sm:grid-cols-[1fr_auto] sm:items-end">
+<Card.Root class="wxcn-shell wxcn-widget-card">
+	{#if animatedBackground}
+		<div class="wxcn-widget-shader" aria-hidden="true">
+			<WeatherShaderBackground mode={shaderMode} />
+		</div>
+	{/if}
+	<Card.Content class="relative p-0">
+		<div class="wxcn-widget-header">
+			<div class="flex items-start gap-3">
+				<span class="wxcn-widget-icon text-primary">
+					<ForecastIcon name="weather" iconSet={iconType} class="size-5" />
+				</span>
 				<div>
-					<p
-						class="wxcn-tabular text-4xl font-semibold leading-none tracking-normal"
-					>
-						{currentTemperature}<span class="text-2xl text-background/55"
-							>°{displayUnitLabel}</span
-						>
-					</p>
-					<p class="mt-2 text-sm font-medium">{current.shortForecast}</p>
-					<p class="mt-1 text-sm text-background/55">
-						Feels like {apparentTemperature}° · {current.name}
+					<h3 class="text-lg font-semibold leading-none tracking-normal">
+						Weather
+					</h3>
+					<p class="mt-1.5 text-sm text-muted-foreground">
+						{location.label ?? 'Santa Monica, CA'}
 					</p>
 				</div>
-				<div class="grid min-w-40 grid-cols-2 gap-1.5 sm:grid-cols-1">
-					<div class="wxcn-chip wxcn-inverted-chip justify-between">
-						<ForecastIcon
-							name="wind"
-							iconSet={iconType}
-							class="size-4 text-primary"
-						/>
-						<span>{current.windSpeed} {current.windDirection}</span>
+			</div>
+			<span class="text-2xl leading-none text-foreground/80">›</span>
+		</div>
+
+		<div class="grid gap-6 px-5 pb-5 pt-3 sm:grid-cols-[1fr_auto] sm:items-center">
+			<div class="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-end">
+				<div class="flex justify-center sm:justify-start">
+					<ForecastIcon
+						name="weather"
+						iconSet={iconType}
+						class="size-20 text-primary drop-shadow-sm"
+					/>
+				</div>
+				<div>
+					<div class="flex items-start gap-2">
+						<p class="wxcn-tabular text-6xl font-semibold leading-none tracking-normal">
+							{currentTemperature}
+						</p>
+						<span class="mt-2 text-2xl font-semibold">°{displayUnitLabel}</span>
 					</div>
-					<div class="wxcn-chip wxcn-inverted-chip justify-between">
-						<span>humidity</span>
-						<span>{humidity}</span>
-					</div>
-					<div class="wxcn-chip wxcn-inverted-chip justify-between">
-						<span>visibility</span>
-						<span>{visibility}</span>
-					</div>
-					<div class="wxcn-chip wxcn-inverted-chip justify-between">
-						<span>UV</span>
-						<span>{uvIndex}</span>
-					</div>
+					<p class="mt-2 text-base text-muted-foreground">
+						{current.shortForecast}
+					</p>
+					<p class="mt-1 text-sm text-muted-foreground">
+						Feels like {apparentTemperature}°
+					</p>
 				</div>
 			</div>
 
-			<div class="mt-3 h-1.5 overflow-hidden rounded-full bg-background/10">
-				<div
-					class="h-full w-2/3 rounded-full bg-primary shadow-[0_0_18px_hsl(var(--primary)/0.65)]"
-				></div>
+			<div class="grid min-w-48 gap-3 border-border/80 sm:border-l sm:pl-8">
+				<div class="grid grid-cols-[1.5rem_1fr_auto] items-center gap-3 text-sm">
+					<ForecastIcon name="wind" iconSet={iconType} class="size-4 text-muted-foreground" />
+					<span class="font-medium">{current.windSpeed}</span>
+					<span class="text-muted-foreground">{current.windDirection}</span>
+				</div>
+				<div class="grid grid-cols-[1.5rem_1fr_auto] items-center gap-3 text-sm">
+					<span class="text-muted-foreground">◌</span>
+					<span class="font-medium">{humidity}</span>
+					<span class="text-muted-foreground">Humidity</span>
+				</div>
+				<div class="grid grid-cols-[1.5rem_1fr_auto] items-center gap-3 text-sm">
+					<span class="text-muted-foreground">◒</span>
+					<span class="font-medium">30.12 in</span>
+					<span class="text-muted-foreground">Pressure</span>
+				</div>
+				<div class="grid grid-cols-[1.5rem_1fr_auto] items-center gap-3 text-sm">
+					<span class="text-muted-foreground">◉</span>
+					<span class="font-medium">{visibility}</span>
+					<span class="text-muted-foreground">Visibility</span>
+				</div>
+				<Badge variant="outline" class="mt-1 w-fit gap-1.5">
+					<span class={`size-1.5 rounded-full ${aqiTone}`}></span>
+					AQI {aqi}
+				</Badge>
 			</div>
 		</div>
 
+		<div class="grid grid-cols-6 border-y bg-muted/20">
+			{#each hourlyForecast as period (period.name)}
+				<div class="grid justify-items-center gap-2 px-2 py-4 text-center">
+					<p class="text-sm font-medium">{period.name}</p>
+					<ForecastIcon name="weather" iconSet={iconType} class="size-6 text-primary" />
+					<p class="wxcn-tabular text-sm font-semibold">
+						{displayTemperature(period.temperature, period.temperatureUnit)}°
+					</p>
+				</div>
+			{/each}
+		</div>
+
+		{#if type !== 'simple'}
+			<div class="grid gap-3 px-5 py-4">
+				{#each dailyForecast as day (day.day)}
+					<div class="grid grid-cols-[1fr_auto_3rem_3rem] items-center gap-4 text-sm">
+						<span>{day.day}</span>
+						<ForecastIcon name="weather" iconSet={iconType} class="size-5 text-primary" />
+						<span class="wxcn-tabular text-right font-medium">{day.high}°</span>
+						<span class="wxcn-tabular text-right text-muted-foreground">{day.low}°</span>
+					</div>
+				{/each}
+				<Button variant="outline" class="mt-1 h-9 w-full">
+					View 7-Day Forecast
+					<span class="ml-2 text-xs">↗</span>
+				</Button>
+			</div>
+		{/if}
+
 		{#if type === 'detailed'}
-			<div class="grid gap-[var(--wxcn-gap)]">
+			<div class="grid gap-[var(--wxcn-gap)] border-t p-[var(--wxcn-card-padding)]">
 				{#each periods as period, index (period.name)}
 					<div
 						class="group grid gap-3 rounded-lg border bg-card p-[var(--wxcn-item-padding)] transition duration-200 hover:-translate-y-0.5 hover:shadow-md sm:grid-cols-[1fr_auto] sm:items-center"

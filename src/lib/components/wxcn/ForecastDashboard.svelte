@@ -15,23 +15,31 @@
 		weatherUnit = 'fahrenheit',
 		tideUnit = 'ft',
 		iconType = 'lucide',
+		animatedWeatherBackground = false,
 		location = {
-			label: 'Austin, TX',
-			latitude: 30.2672,
-			longitude: -97.7431,
-			station: '8665530'
+			label: 'Santa Monica, CA',
+			latitude: 34.0195,
+			longitude: -118.4912,
+			station: '9410840'
 		}
 	}: {
 		type?: ForecastType;
 		weatherUnit?: WeatherUnit;
 		tideUnit?: TideUnit;
 		iconType?: IconSet;
+		animatedWeatherBackground?: boolean;
 		location?: LocationInput;
 	} = $props();
 </script>
 
 <div class="grid gap-4 lg:grid-cols-3">
-	<WeatherForecast {type} unit={weatherUnit} {iconType} {location} />
+	<WeatherForecast
+		{type}
+		unit={weatherUnit}
+		{iconType}
+		{location}
+		animatedBackground={animatedWeatherBackground}
+	/>
 	<TideForecast {type} unit={tideUnit} {iconType} {location} />
-	<MoonForecast {type} {iconType} {location} />
+	<MoonForecast {type} {iconType} />
 </div>

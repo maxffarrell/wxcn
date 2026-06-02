@@ -46,38 +46,38 @@ export async function fetchWeatherForecast(location: LocationInput): Promise<Wea
 
 export const sampleWeather: WeatherPeriod[] = [
 	{
-		name: 'Tonight',
+		name: 'Now',
 		startTime: '2026-06-01T18:00:00-05:00',
 		temperature: 68,
 		temperatureUnit: 'F',
 		windSpeed: '8 mph',
-		windDirection: 'SE',
+		windDirection: 'NW',
 		shortForecast: 'Partly Cloudy',
 		detailedForecast:
 			'Partly cloudy with a steady southeast breeze. Humidity builds after midnight with calm visibility.',
-		isDaytime: false
+		isDaytime: true
 	},
 	{
-		name: 'Tuesday',
+		name: '11 AM',
 		startTime: '2026-06-02T06:00:00-05:00',
-		temperature: 84,
+		temperature: 70,
 		temperatureUnit: 'F',
-		windSpeed: '12 mph',
-		windDirection: 'S',
-		shortForecast: 'Warm and Breezy',
+		windSpeed: '8 mph',
+		windDirection: 'NW',
+		shortForecast: 'Partly Cloudy',
 		detailedForecast:
 			'Warm with scattered afternoon clouds and a steady south wind. A brief shower is possible late.',
 		isDaytime: true
 	},
 	{
-		name: 'Tuesday Night',
+		name: '12 PM',
 		startTime: '2026-06-02T18:00:00-05:00',
-		temperature: 70,
+		temperature: 71,
 		temperatureUnit: 'F',
-		windSpeed: '10 mph',
-		windDirection: 'S',
-		shortForecast: 'Chance Showers',
+		windSpeed: '8 mph',
+		windDirection: 'NW',
+		shortForecast: 'Partly Cloudy',
 		detailedForecast: 'Cloud cover increases with a chance of light showers before daybreak.',
-		isDaytime: false
+		isDaytime: true
 	}
 ];

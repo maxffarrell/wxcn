@@ -6,7 +6,8 @@
 </script>
 
 <TabsPrimitive.Content
-	class={cn('mt-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring', className)}
+	data-slot="tabs-content"
+	class={cn('mt-2 outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50', className)}
 	{...rest}
 >
 	{@render rest.children?.()}

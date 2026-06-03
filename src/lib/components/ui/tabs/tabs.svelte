@@ -5,6 +5,6 @@
 	let { class: className, ...rest }: TabsPrimitive.RootProps = $props();
 </script>
 
-<TabsPrimitive.Root class={cn('w-full', className)} {...rest}>
+<TabsPrimitive.Root data-slot="tabs" class={cn('w-full', className)} {...rest}>
 	{@render rest.children?.()}
 </TabsPrimitive.Root>

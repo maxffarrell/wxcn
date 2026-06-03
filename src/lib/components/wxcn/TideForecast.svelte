@@ -95,24 +95,27 @@
 	});
 </script>
 
-<Card.Root class="wxcn-shell wxcn-widget-card">
-	<Card.Content class="p-0">
-		<div class="wxcn-widget-header">
-			<div class="flex items-start gap-3">
-				<span class="wxcn-widget-icon text-primary">
-					<ForecastIcon name="tide" iconSet={iconType} class="size-5" />
-				</span>
-				<div>
-					<h3 class="text-lg font-semibold leading-none tracking-normal">Tides</h3>
-					<p class="mt-1.5 text-sm text-muted-foreground">
-						{location.label}
-					</p>
-				</div>
+<Card.Root class="wxcn-widget-card">
+	<Card.Header class="wxcn-widget-header">
+		<div class="flex items-start gap-3">
+			<span class="wxcn-widget-icon text-primary">
+				<ForecastIcon name="tide" iconSet={iconType} class="size-5" />
+			</span>
+			<div>
+				<Card.Title class="text-lg tracking-normal">Tides</Card.Title>
+				<Card.Description class="mt-1.5">
+					{location.label}
+				</Card.Description>
 			</div>
-			<span class="text-2xl leading-none text-foreground/80">›</span>
 		</div>
+		<Card.Action>
+			<Button variant="ghost" size="icon-sm" aria-label="Open tide forecast">
+				<span class="text-xl leading-none">›</span>
+			</Button>
+		</Card.Action>
+	</Card.Header>
 
-		<div class="px-5 pb-5">
+	<Card.Content class="px-[var(--wxcn-card-padding)] pb-5 pt-0">
 			<div class="mt-4">
 				<p class="flex items-center gap-2 text-sm font-medium text-primary">
 					<span>{currentTrend === 'Rising' ? '↑' : '↓'}</span>
@@ -217,7 +220,7 @@
 
 			<div class="mt-5 flex items-center justify-between gap-4">
 				<p class="text-sm text-muted-foreground">All times PDT</p>
-				<Button variant="outline" class="h-9">
+				<Button variant="outline">
 					View 7-Day Tide Chart
 					<span class="ml-2 text-xs">↗</span>
 				</Button>
@@ -229,6 +232,5 @@
 					Next low tide is {displayTideHeight(nextLow.height)} {displayUnitLabel}.
 				</p>
 			{/if}
-		</div>
 	</Card.Content>
 </Card.Root>

@@ -14,6 +14,16 @@
 		description: string;
 	}[] = [
 		{
+			mode: 'clear',
+			label: 'Clear',
+			description: 'Sun bloom, cirrus, and atmospheric depth'
+		},
+		{
+			mode: 'fog',
+			label: 'Fog',
+			description: 'Layered veil bands and low horizon haze'
+		},
+		{
 			mode: 'rain',
 			label: 'Rain',
 			description: 'Layered WebGL precipitation'
@@ -27,7 +37,36 @@
 			mode: 'snow',
 			label: 'Snow',
 			description: 'Parallax flakes and atmospheric haze'
+		},
+		{
+			mode: 'clear-night',
+			label: 'Night',
+			description: 'Moon glow, stars, and cool film grading'
 		}
+	];
+
+	const allShaderScenes: {
+		mode: WeatherShaderMode;
+		label: string;
+	}[] = [
+		{ mode: 'sunrise', label: 'Sunrise' },
+		{ mode: 'sunset', label: 'Sunset' },
+		{ mode: 'clear', label: 'Clear' },
+		{ mode: 'partly-cloudy', label: 'Partly cloudy' },
+		{ mode: 'haze', label: 'Haze' },
+		{ mode: 'fog', label: 'Fog' },
+		{ mode: 'wind', label: 'Wind' },
+		{ mode: 'cloudy', label: 'Cloudy' },
+		{ mode: 'thunderstorm', label: 'Thunderstorm' },
+		{ mode: 'rain', label: 'Rain' },
+		{ mode: 'heavy-rain', label: 'Heavy rain' },
+		{ mode: 'drizzle', label: 'Drizzle' },
+		{ mode: 'snow', label: 'Snow' },
+		{ mode: 'heavy-snow', label: 'Heavy snow' },
+		{ mode: 'wintry-mix', label: 'Wintry mix' },
+		{ mode: 'clear-night', label: 'Clear night' },
+		{ mode: 'partly-cloudy-night', label: 'Partly night' },
+		{ mode: 'drizzle-night', label: 'Drizzle night' }
 	];
 
 	const quickLinks = [
@@ -154,13 +193,23 @@
 				</div>
 				<a href="/docs/components"><Button variant="outline">Read docs</Button></a>
 			</div>
-			<div class="grid gap-3 md:grid-cols-3">
+			<div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
 				{#each shaderScenes as scene (scene.mode)}
 					<Card.Root class="wxcn-shader-showcase-card">
 						<WeatherShaderBackground mode={scene.mode} />
 						<div class="wxcn-shader-showcase-content">
 							<p class="font-medium tracking-normal">{scene.label}</p>
 							<p class="mt-1 text-xs text-white/70">{scene.description}</p>
+						</div>
+					</Card.Root>
+				{/each}
+			</div>
+			<div class="mt-4 grid gap-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6">
+				{#each allShaderScenes as scene (scene.mode)}
+					<Card.Root class="wxcn-shader-swatch-card">
+						<WeatherShaderBackground mode={scene.mode} />
+						<div class="wxcn-shader-swatch-content">
+							<p>{scene.label}</p>
 						</div>
 					</Card.Root>
 				{/each}

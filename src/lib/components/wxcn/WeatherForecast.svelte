@@ -151,32 +151,38 @@
 </script>
 
 <Card.Root
-	class={`wxcn-shell wxcn-widget-card ${animatedBackground ? 'wxcn-weather-animated' : ''}`}
+	class={`wxcn-widget-card ${animatedBackground ? 'wxcn-weather-animated' : ''}`}
 >
 	{#if animatedBackground}
 		<div class="wxcn-widget-shader" aria-hidden="true">
 			<WeatherShaderBackground mode={shaderMode} />
 		</div>
 	{/if}
-	<Card.Content class="relative p-0">
-		<div class="wxcn-widget-header">
-			<div class="flex items-start gap-3">
-				<span class="wxcn-widget-icon text-primary">
-					<ForecastIcon name="weather" iconSet={iconType} class="size-5" />
-				</span>
-				<div>
-					<h3 class="text-lg font-semibold leading-none tracking-normal">
-						Weather
-					</h3>
-					<p class="mt-1.5 text-sm text-muted-foreground">
-						{location.label ?? 'Santa Monica, CA'}
-					</p>
-				</div>
+	<Card.Header class="wxcn-widget-header">
+		<div class="flex items-start gap-3">
+			<span class="wxcn-widget-icon text-primary">
+				<ForecastIcon name="weather" iconSet={iconType} class="size-5" />
+			</span>
+			<div>
+				<Card.Title class="text-lg tracking-normal">
+					Weather
+				</Card.Title>
+				<Card.Description class="mt-1.5">
+					{location.label ?? 'Santa Monica, CA'}
+				</Card.Description>
 			</div>
-			<span class="text-2xl leading-none text-foreground/80">›</span>
 		</div>
+		<Card.Action>
+			<Button variant="ghost" size="icon-sm" aria-label="Open weather forecast">
+				<span class="text-xl leading-none">›</span>
+			</Button>
+		</Card.Action>
+	</Card.Header>
 
-		<div class="grid gap-6 px-5 pb-5 pt-3 sm:grid-cols-[1fr_auto] sm:items-center">
+	<Card.Content class="relative px-0">
+		<div
+			class="grid gap-5 px-[var(--wxcn-card-padding)] py-[var(--wxcn-card-padding)] sm:grid-cols-[minmax(0,1fr)_minmax(8.75rem,auto)] sm:items-center"
+		>
 			<div class="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-end">
 				<div class="flex justify-center sm:justify-start">
 					<ForecastIcon
@@ -201,26 +207,34 @@
 				</div>
 			</div>
 
-			<div class="grid min-w-48 gap-3 border-border/80 sm:border-l sm:pl-8">
-				<div class="grid grid-cols-[1.5rem_1fr_auto] items-center gap-3 text-sm">
+			<div class="grid min-w-0 gap-3 border-border/80 sm:border-l sm:pl-6">
+				<div
+					class="grid grid-cols-[1.25rem_auto_minmax(3.75rem,1fr)] items-center gap-2 text-sm"
+				>
 					<ForecastIcon name="wind" iconSet={iconType} class="size-4 text-muted-foreground" />
 					<span class="font-medium">{current.windSpeed}</span>
-					<span class="text-muted-foreground">{current.windDirection}</span>
+					<span class="truncate text-right text-muted-foreground">{current.windDirection}</span>
 				</div>
-				<div class="grid grid-cols-[1.5rem_1fr_auto] items-center gap-3 text-sm">
+				<div
+					class="grid grid-cols-[1.25rem_auto_minmax(3.75rem,1fr)] items-center gap-2 text-sm"
+				>
 					<span class="text-muted-foreground">◌</span>
 					<span class="font-medium">{humidity}</span>
-					<span class="text-muted-foreground">Humidity</span>
+					<span class="truncate text-right text-muted-foreground">Humidity</span>
 				</div>
-				<div class="grid grid-cols-[1.5rem_1fr_auto] items-center gap-3 text-sm">
+				<div
+					class="grid grid-cols-[1.25rem_auto_minmax(3.75rem,1fr)] items-center gap-2 text-sm"
+				>
 					<span class="text-muted-foreground">◒</span>
 					<span class="font-medium">30.12 in</span>
-					<span class="text-muted-foreground">Pressure</span>
+					<span class="truncate text-right text-muted-foreground">Pressure</span>
 				</div>
-				<div class="grid grid-cols-[1.5rem_1fr_auto] items-center gap-3 text-sm">
+				<div
+					class="grid grid-cols-[1.25rem_auto_minmax(3.75rem,1fr)] items-center gap-2 text-sm"
+				>
 					<span class="text-muted-foreground">◉</span>
 					<span class="font-medium">{visibility}</span>
-					<span class="text-muted-foreground">Visibility</span>
+					<span class="truncate text-right text-muted-foreground">Visibility</span>
 				</div>
 				<Badge variant="outline" class="mt-1 w-fit gap-1.5">
 					<span class={`size-1.5 rounded-full ${aqiTone}`}></span>
@@ -242,7 +256,7 @@
 		</div>
 
 		{#if type !== 'simple'}
-			<div class="grid gap-3 px-5 py-4">
+			<div class="grid gap-3 px-[var(--wxcn-card-padding)] py-4">
 				{#each dailyForecast as day (day.day)}
 					<div class="grid grid-cols-[1fr_auto_3rem_3rem] items-center gap-4 text-sm">
 						<span>{day.day}</span>
@@ -251,7 +265,7 @@
 						<span class="wxcn-tabular text-right text-muted-foreground">{day.low}°</span>
 					</div>
 				{/each}
-				<Button variant="outline" class="mt-1 h-9 w-full">
+				<Button variant="outline" class="mt-1 w-full">
 					View 7-Day Forecast
 					<span class="ml-2 text-xs">↗</span>
 				</Button>
@@ -259,15 +273,11 @@
 		{/if}
 
 		{#if type === 'detailed'}
-			<div class="grid gap-[var(--wxcn-gap)] border-t p-[var(--wxcn-card-padding)]">
+			<div class="grid gap-[var(--wxcn-gap)] border-t px-[var(--wxcn-card-padding)] py-4">
 				{#each periods as period, index (period.name)}
-					<div
-						class="group grid gap-3 rounded-lg border bg-card p-[var(--wxcn-item-padding)] transition duration-200 hover:-translate-y-0.5 hover:shadow-md sm:grid-cols-[1fr_auto] sm:items-center"
-					>
+					<div class="wxcn-detail-period">
 						<div class="flex gap-2.5">
-							<div
-								class="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md border bg-muted text-xs font-semibold text-primary"
-							>
+							<div class="wxcn-index-badge">
 								{index + 1}
 							</div>
 							<div>

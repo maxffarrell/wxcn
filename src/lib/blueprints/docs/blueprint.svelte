@@ -8,6 +8,9 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
+	import type { Snippet } from 'svelte';
+
+	let { children }: { children: Snippet } = $props();
 </script>
 
 <div class="container grid gap-6 py-10 lg:grid-cols-[260px_1fr]">
@@ -31,11 +34,11 @@
 					<Card.Title class="wxcn-title">Documentation</Card.Title>
 					<Card.Description>MDSX-authored examples with live Svelte previews.</Card.Description>
 				</div>
-				<Badge variant="accent">live cards</Badge>
+				<Badge>live cards</Badge>
 			</div>
 		</Card.Header>
 		<Card.Content class="wxcn-docs p-6 sm:p-8">
-			<slot />
+			{@render children()}
 		</Card.Content>
 	</Card.Root>
 </div>

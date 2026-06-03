@@ -5,7 +5,7 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import type { Snippet } from 'svelte';
 
-	let style: ShadcnStyle = $state('default');
+	let style: ShadcnStyle = $state('new-york');
 	let { children }: { children: Snippet } = $props();
 </script>
 
@@ -23,7 +23,7 @@
 				<a class="transition-colors hover:text-foreground" href="/docs/endpoints">Endpoints</a>
 				<a class="transition-colors hover:text-foreground" href="/registry">Registry</a>
 			</nav>
-			<div class="hidden min-w-0 flex-1 sm:block lg:max-w-xl">
+			<div class="hidden min-w-0 flex-1 sm:block lg:max-w-2xl">
 				<StyleSelector value={style} onStyleChange={(next) => (style = next)} />
 			</div>
 			<a class="hidden md:block" href="/docs/components">

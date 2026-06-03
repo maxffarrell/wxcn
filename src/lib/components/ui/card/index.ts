@@ -4,3 +4,4 @@ export { default as Title } from './card-title.svelte';
 export { default as Description } from './card-description.svelte';
 export { default as Content } from './card-content.svelte';
 export { default as Footer } from './card-footer.svelte';
+export { default as Action } from './card-action.svelte';

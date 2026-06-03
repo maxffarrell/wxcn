@@ -5,6 +5,9 @@
 	"license": "MIT",
 	"type": "module",
 	"packageManager": "pnpm@9.15.4",
+	"engines": {
+		"node": "20.x"
+	},
 	"files": [
 		"dist",
 		"registry.json",

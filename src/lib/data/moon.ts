@@ -41,11 +41,4 @@ export function getMoonForecast(date = new Date()): MoonForecast {
 	};
 }
 
-export const sampleMoon: MoonForecast = {
-	date: '2026-06-01T12:00:00.000Z',
-	phaseName: 'First Quarter',
-	illumination: 50,
-	age: 7.4,
-	nextFullMoon: '2026-06-15T12:00:00.000Z',
-	nextNewMoon: '2026-06-29T12:00:00.000Z'
-};
+export const sampleMoon = getMoonForecast(new Date('2026-09-06T12:00:00-05:00'));

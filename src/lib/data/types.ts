@@ -1,10 +1,5 @@
 export type ForecastType = 'summary' | 'detailed' | 'simple';
-export type IconSet =
-	| 'hugeicons'
-	| 'phosphor-svelte'
-	| 'lucide'
-	| 'tabler'
-	| 'remix';
+export type IconSet = 'hugeicons' | 'phosphor-svelte' | 'lucide' | 'tabler' | 'remix';
 export type WeatherUnit = 'fahrenheit' | 'celsius';
 export type TideUnit = 'ft' | 'meter';
 

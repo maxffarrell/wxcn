@@ -9,7 +9,7 @@ const config = {
 		mdsx({
 			blueprints: {
 				default: {
-					path: 'src/lib/blueprints/docs/blueprint.svelte'
+					path: 'src/blueprints/docs/blueprint.svelte'
 				}
 			}
 		})

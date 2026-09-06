@@ -24,10 +24,10 @@ NOAA CO-OPS predictions are fetched by station id.
 import { fetchTidePredictions } from 'wxcn-svelte';
 
 const predictions = await fetchTidePredictions({
-	label: 'Charleston Harbor',
-	latitude: 32.781,
-	longitude: -79.923,
-	station: '8665530'
+	label: 'Galveston Pier 21, TX',
+	latitude: 29.31,
+	longitude: -94.7933,
+	station: '8771450'
 });
 ```
 

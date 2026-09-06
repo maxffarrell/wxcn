@@ -1,0 +1,19 @@
+{
+  "$schema": "https://shadcn-svelte.com/schema/registry-item.json",
+  "name": "forecast-dashboard",
+  "type": "registry:block",
+  "description": "Weather and moon for Austin, with a separate coastal tide card.",
+  "registryDependencies": [
+    "./weather-forecast.json",
+    "./moon-forecast.json",
+    "./tide-forecast.json"
+  ],
+  "files": [
+    {
+      "path": "src/lib/components/wxcn/ForecastDashboard.svelte",
+      "type": "registry:component",
+      "target": "wxcn/ForecastDashboard.svelte",
+      "content": "<script lang=\"ts\">\n\timport WeatherForecast from './WeatherForecast.svelte';\n\timport TideForecast from './TideForecast.svelte';\n\timport MoonForecast from './MoonForecast.svelte';\n\timport type {\n\t\tForecastType,\n\t\tIconSet,\n\t\tLocationInput,\n\t\tTideUnit,\n\t\tWeatherUnit\n\t} from '$LIB$/data/types.js';\n\n\tlet {\n\t\ttype = 'summary',\n\t\tweatherUnit = 'fahrenheit',\n\t\ttideUnit = 'ft',\n\t\ticonType,\n\t\tanimatedWeatherBackground = false,\n\t\ttideLocation,\n\t\tlocation = {\n\t\t\tlabel: 'Austin, TX',\n\t\t\tlatitude: 30.2672,\n\t\t\tlongitude: -97.7431\n\t\t}\n\t}: {\n\t\ttype?: ForecastType;\n\t\tweatherUnit?: WeatherUnit;\n\t\ttideUnit?: TideUnit;\n\t\ticonType?: IconSet;\n\t\tanimatedWeatherBackground?: boolean;\n\t\tlocation?: LocationInput;\n\t\ttideLocation?: LocationInput;\n\t} = $props();\n</script>\n\n<div class=\"grid gap-4 lg:grid-cols-3\">\n\t<WeatherForecast\n\t\t{type}\n\t\tunit={weatherUnit}\n\t\t{iconType}\n\t\t{location}\n\t\tanimatedBackground={animatedWeatherBackground}\n\t/>\n\t<TideForecast {type} unit={tideUnit} {iconType} location={tideLocation} />\n\t<MoonForecast {type} {iconType} {location} />\n</div>\n"
+    }
+  ]
+}

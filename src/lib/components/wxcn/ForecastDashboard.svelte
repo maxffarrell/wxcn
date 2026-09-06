@@ -14,13 +14,13 @@
 		type = 'summary',
 		weatherUnit = 'fahrenheit',
 		tideUnit = 'ft',
-		iconType = 'lucide',
+		iconType,
 		animatedWeatherBackground = false,
+		tideLocation,
 		location = {
-			label: 'Santa Monica, CA',
-			latitude: 34.0195,
-			longitude: -118.4912,
-			station: '9410840'
+			label: 'Austin, TX',
+			latitude: 30.2672,
+			longitude: -97.7431
 		}
 	}: {
 		type?: ForecastType;
@@ -29,6 +29,7 @@
 		iconType?: IconSet;
 		animatedWeatherBackground?: boolean;
 		location?: LocationInput;
+		tideLocation?: LocationInput;
 	} = $props();
 </script>
 
@@ -40,6 +41,6 @@
 		{location}
 		animatedBackground={animatedWeatherBackground}
 	/>
-	<TideForecast {type} unit={tideUnit} {iconType} {location} />
-	<MoonForecast {type} {iconType} />
+	<TideForecast {type} unit={tideUnit} {iconType} location={tideLocation} />
+	<MoonForecast {type} {iconType} {location} />
 </div>

@@ -17,7 +17,7 @@
 				Installable shadcn-svelte registry entries for forecast cards and shared helpers.
 			</p>
 		</div>
-		<a href="/registry.json"><Button variant="outline">View JSON</Button></a>
+		<Button href="/registry.json" variant="outline">View JSON</Button>
 	</div>
 	<div class="grid gap-4 lg:grid-cols-2">
 		{#each registry.items as item (item.name)}
@@ -33,8 +33,11 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="rounded-lg border bg-muted p-3 font-mono text-xs text-muted-foreground">
-						{item.files.length} files · {item.dependencies.join(', ')}
+						{item.files.length} files · {item.registryDependencies.join(', ')}
 					</div>
+					<Button class="mt-4" href={`/r/${item.name}.json`} variant="outline"
+						>View installable JSON</Button
+					>
 				</Card.Content>
 			</Card.Root>
 		{/each}

@@ -5,15 +5,16 @@
 	let {
 		ref = $bindable(null),
 		class: className,
-		...rest
-	}: WithElementRef<HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement> = $props();
+		children,
+		...restProps
+	}: WithElementRef<HTMLAttributes<HTMLParagraphElement>> = $props();
 </script>
 
 <p
 	bind:this={ref}
 	data-slot="card-description"
 	class={cn('text-sm text-muted-foreground', className)}
-	{...rest}
+	{...restProps}
 >
-	{@render rest.children?.()}
+	{@render children?.()}
 </p>

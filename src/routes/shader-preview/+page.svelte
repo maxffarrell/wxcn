@@ -55,9 +55,14 @@
 			{/each}
 		</aside>
 
-		<section class="relative overflow-hidden rounded-xl border bg-card shadow-sm" style="height: 720px;">
+		<section
+			class="relative overflow-hidden rounded-xl border bg-card shadow-sm"
+			style="height: 720px;"
+		>
 			<WeatherShaderBackground {mode} />
-			<div class="absolute left-5 top-5 rounded-md bg-black/35 px-3 py-2 text-sm font-medium text-white backdrop-blur">
+			<div
+				class="absolute top-5 left-5 rounded-md bg-black/35 px-3 py-2 text-sm font-medium text-white backdrop-blur"
+			>
 				{mode}
 			</div>
 		</section>

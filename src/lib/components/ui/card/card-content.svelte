@@ -5,10 +5,16 @@
 	let {
 		ref = $bindable(null),
 		class: className,
-		...rest
-	}: WithElementRef<HTMLAttributes<HTMLDivElement>, HTMLDivElement> = $props();
+		children,
+		...restProps
+	}: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
 </script>
 
-<div bind:this={ref} data-slot="card-content" class={cn('px-6', className)} {...rest}>
-	{@render rest.children?.()}
+<div
+	bind:this={ref}
+	data-slot="card-content"
+	class={cn('px-(--card-spacing)', className)}
+	{...restProps}
+>
+	{@render children?.()}
 </div>

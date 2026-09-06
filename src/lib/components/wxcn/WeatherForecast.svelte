@@ -1,9 +1,10 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
 	import ForecastIcon from '$lib/icons/forecast-icons.svelte';
-	import WeatherShaderBackground from './WeatherShaderBackground.svelte';
+	import WeatherShaderBackground, {
+		type WeatherShaderMode
+	} from './WeatherShaderBackground.svelte';
 	import type {
 		ForecastType,
 		IconSet,
@@ -12,21 +13,18 @@
 		WeatherUnit
 	} from '$lib/data/types.js';
 	import { sampleWeather } from '$lib/data/weather.js';
-
 	let {
 		type = 'summary',
+		class: className = '',
 		unit = 'fahrenheit',
-		iconType = 'lucide',
-		location = {
-			label: 'Santa Monica, CA',
-			latitude: 34.0195,
-			longitude: -118.4912
-		},
+		iconType,
+		location = { label: 'Austin, TX', latitude: 30.2672, longitude: -97.7431 },
 		forecast = sampleWeather,
-		sourceLabel = 'NWS api.weather.gov',
+		sourceLabel = 'Sample forecast · Austin, TX',
 		animatedBackground = false
 	}: {
 		type?: ForecastType;
+		class?: string;
 		unit?: WeatherUnit;
 		iconType?: IconSet;
 		location?: LocationInput;
@@ -34,288 +32,115 @@
 		sourceLabel?: string;
 		animatedBackground?: boolean;
 	} = $props();
-
-	function displayTemperature(value: number, sourceUnit: string) {
-		const normalizedSource = sourceUnit.toUpperCase();
-		if (unit === 'celsius' && normalizedSource === 'F')
-			return Math.round(((value - 32) * 5) / 9);
-		if (unit === 'fahrenheit' && normalizedSource === 'C')
-			return Math.round((value * 9) / 5 + 32);
-		return Math.round(value);
+	const current = $derived(forecast[0]);
+	const periods = $derived(forecast.slice(1, type === 'detailed' ? 8 : 5));
+	function temperature(p: WeatherPeriod) {
+		return Math.round(
+			unit === 'celsius' && p.temperatureUnit === 'F'
+				? ((p.temperature - 32) * 5) / 9
+				: unit === 'fahrenheit' && p.temperatureUnit === 'C'
+					? (p.temperature * 9) / 5 + 32
+					: p.temperature
+		);
 	}
-
-	const periods = $derived(
-		type === 'simple' ? forecast.slice(0, 1) : forecast.slice(0, 3)
-	);
-	const current = $derived(periods[0]);
-	const displayUnitLabel = $derived(unit === 'celsius' ? 'C' : 'F');
-	const currentTemperature = $derived(
-		displayTemperature(current.temperature, current.temperatureUnit)
-	);
-	const apparentTemperature = $derived(
-		displayTemperature(
-			current.temperature + (current.windSpeed.includes('12') ? -2 : 1),
-			current.temperatureUnit
-		)
-	);
-	const aqi = $derived(
-		current.shortForecast.toLowerCase().includes('smoke')
-			? 78
-			: current.isDaytime
-				? 42
-				: 31
-	);
-	const aqiTone = $derived(
-		aqi <= 50 ? 'bg-emerald-400' : aqi <= 100 ? 'bg-amber-400' : 'bg-red-400'
-	);
-	const visibility = $derived(
-		current.shortForecast.toLowerCase().includes('fog') ? '2.4 mi' : '10 mi'
-	);
-	const humidity = $derived(
-		current.shortForecast.toLowerCase().includes('rain')
-			? '82%'
-			: current.isDaytime
-				? '54%'
-				: '68%'
-	);
-	const uvIndex = $derived(current.isDaytime ? 6 : 0);
-	const hourlyForecast = $derived([
-		current,
-		...forecast.slice(1, 3),
-		{
-			...current,
-			name: '1 PM',
-			temperature: current.temperature + 4,
-			shortForecast: 'Sunny'
-		},
-		{
-			...current,
-			name: '2 PM',
-			temperature: current.temperature + 4,
-			shortForecast: 'Sunny'
-		},
-		{
-			...current,
-			name: '3 PM',
-			temperature: current.temperature + 3,
-			shortForecast: 'Mostly Sunny'
-		}
-	].slice(0, type === 'simple' ? 4 : 6));
-	const dailyForecast = $derived([
-		{ day: 'Saturday', icon: 'clear', high: 72, low: 58 },
-		{ day: 'Sunday', icon: 'cloudy', high: 69, low: 57 },
-		{ day: 'Monday', icon: 'partly-cloudy', high: 70, low: 59 },
-		{ day: 'Tuesday', icon: 'clear', high: 73, low: 60 },
-		{ day: 'Wednesday', icon: 'clear', high: 74, low: 61 }
-	]);
-	const shaderMode = $derived.by(() => {
-		const forecastText = current.shortForecast.toLowerCase();
-		const isNight = !current.isDaytime || forecastText.includes('night');
-
-		if (forecastText.includes('sunrise')) return 'sunrise';
-		if (forecastText.includes('sunset')) return 'sunset';
-		if (forecastText.includes('thunder') || forecastText.includes('storm'))
-			return 'thunderstorm';
-		if (forecastText.includes('heavy rain')) return 'heavy-rain';
-		if (
-			forecastText.includes('drizzle') ||
-			forecastText.includes('freezing drizzle')
-		)
-			return isNight ? 'drizzle-night' : 'drizzle';
-		if (forecastText.includes('rain') || forecastText.includes('shower'))
-			return 'rain';
-		if (
-			forecastText.includes('heavy snow') ||
-			forecastText.includes('blizzard')
-		)
-			return 'heavy-snow';
-		if (
-			forecastText.includes('freezing rain') ||
-			forecastText.includes('sleet') ||
-			forecastText.includes('wintry mix')
-		)
-			return 'wintry-mix';
-		if (forecastText.includes('snow')) return 'snow';
-		if (forecastText.includes('wind') || forecastText.includes('breezy'))
-			return 'wind';
-		if (forecastText.includes('fog')) return 'fog';
-		if (forecastText.includes('haze') || forecastText.includes('smoke'))
-			return 'haze';
-		if (forecastText.includes('partly') && forecastText.includes('cloud')) {
-			return isNight ? 'partly-cloudy-night' : 'partly-cloudy';
-		}
-		if (forecastText.includes('cloud') || forecastText.includes('overcast'))
-			return 'cloudy';
-		return isNight ? 'clear-night' : 'clear';
-	});
+	function condition(p: WeatherPeriod): WeatherShaderMode {
+		const s = p.shortForecast.toLowerCase();
+		if (/thunder|storm/.test(s)) return 'thunderstorm';
+		if (/sleet|freezing|wintry/.test(s)) return 'wintry-mix';
+		if (/snow/.test(s)) return s.includes('heavy') ? 'heavy-snow' : 'snow';
+		if (/drizzle/.test(s)) return p.isDaytime ? 'drizzle' : 'drizzle-night';
+		if (/rain|shower/.test(s)) return s.includes('heavy') ? 'heavy-rain' : 'rain';
+		if (/fog/.test(s)) return 'fog';
+		if (/haze|smoke/.test(s)) return 'haze';
+		if (/partly|mostly sunny/.test(s)) return p.isDaytime ? 'partly-cloudy' : 'partly-cloudy-night';
+		if (/cloud|overcast/.test(s)) return 'cloudy';
+		if (/wind|breezy/.test(s)) return 'wind';
+		return p.isDaytime ? 'clear' : 'clear-night';
+	}
+	function icon(p: WeatherPeriod) {
+		const c = condition(p);
+		return c.includes('rain') || c.includes('drizzle') || c === 'thunderstorm'
+			? 'rain'
+			: c.includes('snow') || c === 'wintry-mix'
+				? 'snow'
+				: c.includes('night')
+					? 'moon'
+					: c === 'clear'
+						? 'sun'
+						: 'weather';
+	}
 </script>
 
-<Card.Root
-	class={`wxcn-widget-card ${animatedBackground ? 'wxcn-weather-animated' : ''}`}
->
-	{#if animatedBackground}
-		<div class="wxcn-widget-shader" aria-hidden="true">
-			<WeatherShaderBackground mode={shaderMode} />
-		</div>
-	{/if}
-	<Card.Header class="wxcn-widget-header">
-		<div class="flex items-start gap-3">
-			<span class="wxcn-widget-icon text-primary">
-				<ForecastIcon name="weather" iconSet={iconType} class="size-5" />
-			</span>
-			<div>
-				<Card.Title class="text-lg tracking-normal">
-					Weather
-				</Card.Title>
-				<Card.Description class="mt-1.5">
-					{location.label ?? 'Santa Monica, CA'}
-				</Card.Description>
-			</div>
-		</div>
-		<Card.Action>
-			<Button variant="ghost" size="icon-sm" aria-label="Open weather forecast">
-				<span class="text-xl leading-none">›</span>
-			</Button>
-		</Card.Action>
-	</Card.Header>
-
-	<Card.Content class="relative px-0">
-		<div
-			class="grid gap-5 px-[var(--wxcn-card-padding)] py-[var(--wxcn-card-padding)] sm:grid-cols-[minmax(0,1fr)_minmax(8.75rem,auto)] sm:items-center"
+<Card.Root class={`relative isolate min-w-0 overflow-hidden ${className}`}>
+	<Card.Header>
+		<Card.Title>Weather</Card.Title>
+		<Card.Description>{location.label ?? 'Local forecast'}</Card.Description>
+		<Card.Action
+			><ForecastIcon
+				name="weather"
+				iconSet={iconType}
+				class="size-5 text-muted-foreground"
+			/></Card.Action
 		>
-			<div class="grid gap-4 sm:grid-cols-[auto_1fr] sm:items-end">
-				<div class="flex justify-center sm:justify-start">
-					<ForecastIcon
-						name="weather"
-						iconSet={iconType}
-						class="size-20 text-primary drop-shadow-sm"
-					/>
-				</div>
-				<div>
-					<div class="flex items-start gap-2">
-						<p class="wxcn-tabular text-6xl font-semibold leading-none tracking-normal">
-							{currentTemperature}
-						</p>
-						<span class="mt-2 text-2xl font-semibold">°{displayUnitLabel}</span>
-					</div>
-					<p class="mt-2 text-base text-muted-foreground">
-						{current.shortForecast}
+	</Card.Header>
+	{#if current}
+		<Card.Content class="grid gap-6">
+			<div class="relative isolate overflow-hidden rounded-lg border bg-muted/20 p-5">
+				{#if animatedBackground}<div
+						class="pointer-events-none absolute inset-0 -z-10"
+						aria-hidden="true"
+					>
+						<WeatherShaderBackground mode={condition(current)} />
+					</div>{/if}
+				<div
+					class="relative z-10 w-fit rounded-lg bg-card/90 p-3 text-card-foreground backdrop-blur-sm"
+				>
+					<p class="mb-2 text-xs text-muted-foreground">{current.name}</p>
+					<p class="text-6xl font-medium tracking-tighter tabular-nums">
+						{temperature(current)}<span class="align-top text-3xl"
+							>°{unit === 'celsius' ? 'C' : 'F'}</span
+						>
 					</p>
-					<p class="mt-1 text-sm text-muted-foreground">
-						Feels like {apparentTemperature}°
-					</p>
+					<p class="mt-2 text-sm">{current.shortForecast}</p>
 				</div>
 			</div>
-
-			<div class="grid min-w-0 gap-3 border-border/80 sm:border-l sm:pl-6">
-				<div
-					class="grid grid-cols-[1.25rem_auto_minmax(3.75rem,1fr)] items-center gap-2 text-sm"
-				>
-					<ForecastIcon name="wind" iconSet={iconType} class="size-4 text-muted-foreground" />
-					<span class="font-medium">{current.windSpeed}</span>
-					<span class="truncate text-right text-muted-foreground">{current.windDirection}</span>
-				</div>
-				<div
-					class="grid grid-cols-[1.25rem_auto_minmax(3.75rem,1fr)] items-center gap-2 text-sm"
-				>
-					<span class="text-muted-foreground">◌</span>
-					<span class="font-medium">{humidity}</span>
-					<span class="truncate text-right text-muted-foreground">Humidity</span>
-				</div>
-				<div
-					class="grid grid-cols-[1.25rem_auto_minmax(3.75rem,1fr)] items-center gap-2 text-sm"
-				>
-					<span class="text-muted-foreground">◒</span>
-					<span class="font-medium">30.12 in</span>
-					<span class="truncate text-right text-muted-foreground">Pressure</span>
-				</div>
-				<div
-					class="grid grid-cols-[1.25rem_auto_minmax(3.75rem,1fr)] items-center gap-2 text-sm"
-				>
-					<span class="text-muted-foreground">◉</span>
-					<span class="font-medium">{visibility}</span>
-					<span class="truncate text-right text-muted-foreground">Visibility</span>
-				</div>
-				<Badge variant="outline" class="mt-1 w-fit gap-1.5">
-					<span class={`size-1.5 rounded-full ${aqiTone}`}></span>
-					AQI {aqi}
-				</Badge>
+			<div class="flex items-center justify-between gap-3 text-sm">
+				<span class="flex items-center gap-2 text-muted-foreground"
+					><ForecastIcon name="wind" iconSet={iconType} class="size-4" />Wind</span
+				><span class="tabular-nums">{current.windDirection} {current.windSpeed}</span>
 			</div>
-		</div>
-
-		<div class="grid grid-cols-6 border-y bg-muted/20">
-			{#each hourlyForecast as period (period.name)}
-				<div class="grid justify-items-center gap-2 px-2 py-4 text-center">
-					<p class="text-sm font-medium">{period.name}</p>
-					<ForecastIcon name="weather" iconSet={iconType} class="size-6 text-primary" />
-					<p class="wxcn-tabular text-sm font-semibold">
-						{displayTemperature(period.temperature, period.temperatureUnit)}°
-					</p>
-				</div>
-			{/each}
-		</div>
-
-		{#if type !== 'simple'}
-			<div class="grid gap-3 px-[var(--wxcn-card-padding)] py-4">
-				{#each dailyForecast as day (day.day)}
-					<div class="grid grid-cols-[1fr_auto_3rem_3rem] items-center gap-4 text-sm">
-						<span>{day.day}</span>
-						<ForecastIcon name="weather" iconSet={iconType} class="size-5 text-primary" />
-						<span class="wxcn-tabular text-right font-medium">{day.high}°</span>
-						<span class="wxcn-tabular text-right text-muted-foreground">{day.low}°</span>
-					</div>
-				{/each}
-				<Button variant="outline" class="mt-1 w-full">
-					View 7-Day Forecast
-					<span class="ml-2 text-xs">↗</span>
-				</Button>
-			</div>
-		{/if}
-
-		{#if type === 'detailed'}
-			<div class="grid gap-[var(--wxcn-gap)] border-t px-[var(--wxcn-card-padding)] py-4">
-				{#each periods as period, index (period.name)}
-					<div class="wxcn-detail-period">
-						<div class="flex gap-2.5">
-							<div class="wxcn-index-badge">
-								{index + 1}
-							</div>
+			{#if type !== 'simple'}
+				<div class="divide-y border-t">
+					{#each periods as period, index (`${period.startTime}-${index}`)}
+						<div class="grid grid-cols-[1fr_auto_auto] items-center gap-4 py-3 text-sm">
 							<div>
-								<div class="flex flex-wrap items-center gap-2">
-									<p class="text-sm font-semibold">{period.name}</p>
-									<Badge variant={period.isDaytime ? 'default' : 'outline'}>
-										{displayTemperature(
-											period.temperature,
-											period.temperatureUnit
-										)}°{displayUnitLabel}
-									</Badge>
-								</div>
-								<p class="mt-0.5 text-xs text-muted-foreground">
-									{period.shortForecast}
-								</p>
-								{#if type === 'detailed'}
-									<p
-										class="mt-2 max-w-[58ch] text-xs leading-5 text-muted-foreground"
+								<p>{period.name}</p>
+								{#if type === 'detailed'}<p
+										class="mt-1 max-w-72 text-xs leading-5 text-muted-foreground"
 									>
 										{period.detailedForecast}
-									</p>
-								{/if}
+									</p>{/if}
 							</div>
+							<ForecastIcon
+								name={icon(period)}
+								iconSet={iconType}
+								class="size-4 text-muted-foreground"
+							/>
+							<span class="min-w-9 text-right tabular-nums">{temperature(period)}°</span>
 						</div>
-						<div class="min-w-24">
-							<div class="h-1.5 overflow-hidden rounded-full bg-muted">
-								<div
-									class="h-full rounded-full bg-primary transition-all duration-500"
-									style={`width: ${Math.min(100, 35 + index * 24)}%`}
-								></div>
-							</div>
-							<p class="mt-1 text-right text-[11px] text-muted-foreground">
-								confidence
-							</p>
-						</div>
-					</div>
-				{/each}
-			</div>
-		{/if}
-	</Card.Content>
+					{/each}
+				</div>
+			{/if}
+		</Card.Content>
+	{:else}
+		<Card.Content
+			><p role="status" class="py-8 text-center text-sm text-muted-foreground">
+				No forecast available. Try again later.
+			</p></Card.Content
+		>
+	{/if}
+	<Card.Footer class="justify-between gap-3 border-t text-xs text-muted-foreground"
+		><span>{sourceLabel}</span><Badge variant="outline">{unit === 'celsius' ? '°C' : '°F'}</Badge
+		></Card.Footer
+	>
 </Card.Root>

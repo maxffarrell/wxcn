@@ -5,15 +5,19 @@
 	let {
 		ref = $bindable(null),
 		class: className,
-		...rest
-	}: WithElementRef<HTMLAttributes<HTMLHeadingElement>, HTMLHeadingElement> = $props();
+		children,
+		...restProps
+	}: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
 </script>
 
-<h3
+<div
 	bind:this={ref}
 	data-slot="card-title"
-	class={cn('font-semibold leading-none', className)}
-	{...rest}
+	class={cn(
+		'cn-font-heading text-base leading-snug font-medium group-data-[size=sm]/card:text-sm',
+		className
+	)}
+	{...restProps}
 >
-	{@render rest.children?.()}
-</h3>
+	{@render children?.()}
+</div>

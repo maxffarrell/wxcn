@@ -44,40 +44,23 @@ export async function fetchWeatherForecast(location: LocationInput): Promise<Wea
 	return forecastData.properties.periods;
 }
 
+/** Deterministic Austin fixtures for previews; not live observations. */
 export const sampleWeather: WeatherPeriod[] = [
-	{
-		name: 'Now',
-		startTime: '2026-06-01T18:00:00-05:00',
-		temperature: 68,
-		temperatureUnit: 'F',
-		windSpeed: '8 mph',
-		windDirection: 'NW',
-		shortForecast: 'Partly Cloudy',
-		detailedForecast:
-			'Partly cloudy with a steady southeast breeze. Humidity builds after midnight with calm visibility.',
-		isDaytime: true
-	},
-	{
-		name: '11 AM',
-		startTime: '2026-06-02T06:00:00-05:00',
-		temperature: 70,
-		temperatureUnit: 'F',
-		windSpeed: '8 mph',
-		windDirection: 'NW',
-		shortForecast: 'Partly Cloudy',
-		detailedForecast:
-			'Warm with scattered afternoon clouds and a steady south wind. A brief shower is possible late.',
-		isDaytime: true
-	},
-	{
-		name: '12 PM',
-		startTime: '2026-06-02T18:00:00-05:00',
-		temperature: 71,
-		temperatureUnit: 'F',
-		windSpeed: '8 mph',
-		windDirection: 'NW',
-		shortForecast: 'Partly Cloudy',
-		detailedForecast: 'Cloud cover increases with a chance of light showers before daybreak.',
-		isDaytime: true
-	}
-];
+	['Today', 92, 'Mostly Sunny', true],
+	['Tonight', 74, 'Partly Cloudy', false],
+	['Monday', 94, 'Sunny', true],
+	['Monday night', 75, 'Mostly Clear', false],
+	['Tuesday', 89, 'Chance of Rain', true],
+	['Tuesday night', 72, 'Partly Cloudy', false],
+	['Wednesday', 90, 'Sunny', true]
+].map(([name, temperature, shortForecast, isDaytime], index) => ({
+	name: name as string,
+	temperature: temperature as number,
+	shortForecast: shortForecast as string,
+	isDaytime: isDaytime as boolean,
+	startTime: `2026-09-${String(6 + Math.floor(index / 2)).padStart(2, '0')}T${index % 2 ? '19' : '07'}:00:00-05:00`,
+	temperatureUnit: 'F',
+	windSpeed: '5 to 10 mph',
+	windDirection: 'S',
+	detailedForecast: `${shortForecast}. South wind 5 to 10 mph.`
+}));

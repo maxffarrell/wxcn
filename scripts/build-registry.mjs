@@ -53,7 +53,7 @@ const definitions = [
 		'TideForecast',
 		'tides',
 		'Coastal tide predictions with a theme-aware chart.',
-		['card']
+		['card', 'chart']
 	]
 ];
 const items = [];

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import * as ChartUI from '$lib/components/ui/chart/index.js';
 	import { Chart, Svg, Area } from 'layerchart';
 	import { curveMonotoneX } from 'd3-shape';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -143,8 +144,9 @@
 				</div>
 			</div>
 			{#if chartData.length > 1}
-				<div
-					class={size === 'sm' ? 'h-20' : size === 'lg' ? 'h-36' : 'h-28'}
+				<ChartUI.Container
+					config={{ height: { label: 'Tide level', color: 'var(--chart-1)' } }}
+					class={`aspect-auto w-full ${size === 'sm' ? 'h-20' : size === 'lg' ? 'h-36' : 'h-28'}`}
 					role="img"
 					aria-label="Tide prediction curve with current water level marker"
 				>
@@ -153,14 +155,15 @@
 						x="time"
 						y="height"
 						yDomain={domain}
+						series={[{ key: 'height', label: 'Tide level', color: 'var(--chart-1)' }]}
+						tooltipContext={{ mode: 'bisect-x' }}
 						padding={{ top: 8, right: 8, bottom: 4, left: 8 }}
 					>
 						{#snippet children({ context })}
 							<Svg>
 								<Area
 									curve={curveMonotoneX}
-									fill="var(--chart-1, var(--primary))"
-									opacity={0.12}
+									fill="color-mix(in oklab, var(--chart-1) 12%, transparent)"
 									line={{
 										stroke: 'var(--chart-1, var(--primary))',
 										strokeWidth: 2,
@@ -189,9 +192,23 @@
 									/>
 								{/if}
 							</Svg>
+							<ChartUI.Tooltip
+								labelFormatter={(v: number) =>
+									new Intl.DateTimeFormat('en-US', {
+										month: 'short',
+										day: 'numeric',
+										hour: 'numeric',
+										minute: '2-digit',
+										timeZone: location.timeZone ?? 'UTC'
+									}).format(v)}
+							>
+								{#snippet formatter({ value })}<span>Tide level</span><span
+										class="ml-auto font-mono tabular-nums">{height(Number(value))} {symbol}</span
+									>{/snippet}
+							</ChartUI.Tooltip>
 						{/snippet}
 					</Chart>
-				</div>
+				</ChartUI.Container>
 				<div class="-mt-2 flex justify-between text-[10px] text-muted-foreground">
 					<span>{time(chartData[0].time)}</span><span
 						>MLLW · {tide.points.length ? 'predicted curve' : 'extrema only'}</span

@@ -9,7 +9,7 @@ export const GET: RequestHandler = async ({ url, fetch }) => {
 		return json({ message: 'A valid latitude and longitude are required.' }, { status: 400 });
 	}
 	try {
-		return json(await loadTides(location, fetch, url.searchParams.get('nearest') === 'true'), {
+		return json(await loadTides(location, fetch, true), {
 			headers: { 'Cache-Control': 'private, max-age=300' }
 		});
 	} catch (error) {

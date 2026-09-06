@@ -7,3 +7,15 @@ output
 pnpm-lock.yaml
 registry.json
 static/r
+
+# Unmodified shadcn-svelte documentation components
+src/lib/components/component-preview.svelte
+src/lib/components/component-preview-tabs.svelte
+src/lib/components/install-tabs.svelte
+src/lib/components/code-tabs.svelte
+src/lib/components/step.svelte
+src/lib/components/steps.svelte
+src/lib/components/doc-tabs
+src/lib/components/ui/chart
+
+src/lib/components/ui/card/*.svelte

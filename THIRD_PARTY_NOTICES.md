@@ -2,6 +2,8 @@
 
 The UI primitives in `src/lib/components/ui/` and the site components (mobile navigation, mode switcher, GitHub link, PMBlock, clipboard and package-manager utilities) are derived from https://github.com/huntabyte/shadcn-svelte, retrieved September 6, 2026. The create-layout reference is PR #2755 at commit 07d9093edfd3bf8d599fb874c5e37645b9e41127.
 
+The component preview, installation tabs, documentation tabs and steps, and chart components are copied unchanged from that reference. The theme palettes, font definitions, theme builder, and card style rules also come from the same reference. Preset encoding is provided directly by `shadcn-svelte/preset`.
+
 MIT License
 
 Copyright (c) 2023 Hunter Johnston <https://github.com/huntabyte>

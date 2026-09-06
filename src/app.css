@@ -1,6 +1,7 @@
 @import '@fontsource-variable/geist';
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import './lib/upstream/cards.css';
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -22,7 +23,12 @@
 	--border: oklch(0.922 0 0);
 	--input: oklch(0.922 0 0);
 	--ring: oklch(0.708 0 0);
-	--radius: 0.75rem;
+	--radius: 0.625rem;
+	--chart-1: oklch(0.87 0 0);
+	--chart-2: oklch(0.556 0 0);
+	--chart-3: oklch(0.439 0 0);
+	--chart-4: oklch(0.371 0 0);
+	--chart-5: oklch(0.269 0 0);
 }
 .dark {
 	--background: oklch(0.145 0 0);
@@ -69,6 +75,8 @@
 	--radius-lg: var(--radius);
 	--radius-xl: calc(var(--radius) + 4px);
 	--radius-2xl: calc(var(--radius) + 8px);
+	--radius-3xl: calc(var(--radius) + 12px);
+	--radius-4xl: calc(var(--radius) + 16px);
 }
 @layer base {
 	* {
@@ -103,7 +111,7 @@
 	.wxcn-docs h2 {
 		@apply mt-12 mb-4 border-t pt-8 text-2xl font-semibold tracking-tight;
 	}
-	.wxcn-docs p {
+	.wxcn-docs p:not(:where([data-slot='preview'] *)) {
 		@apply my-4 text-muted-foreground;
 	}
 	.wxcn-docs li {
@@ -158,4 +166,32 @@
 		position: absolute;
 		inset: -0.5rem;
 	}
+}
+
+@utility step {
+	counter-increment: step;
+	@apply relative;
+	&:before {
+		@apply end-0 me-2 hidden size-7 items-center justify-center rounded-full text-center -indent-px font-mono text-sm font-medium text-muted-foreground md:absolute;
+		content: counter(step);
+	}
+}
+@layer components {
+	.steps {
+		&:first-child {
+			@apply !mt-0;
+		}
+		&:first-child > *[aria-level='3']:first-child {
+			@apply !mt-0;
+		}
+		> *[aria-level='3'] {
+			@apply !mt-16;
+		}
+		> *[aria-level='3'] + p {
+			@apply !mt-2;
+		}
+	}
+}
+:root {
+	--color-code: var(--muted);
 }

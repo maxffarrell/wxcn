@@ -69,7 +69,7 @@ let stationsCache: { expires: number; stations: Station[] } | undefined;
 export async function loadTides(
 	location: LocationInput,
 	fetcher: typeof fetch = fetch,
-	useNearest = false
+	useNearest = true
 ) {
 	if (!stationsCache || stationsCache.expires < Date.now()) {
 		const response = await fetcher(

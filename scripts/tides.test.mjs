@@ -38,7 +38,7 @@ test('NOAA uses UTC and fetches past/future extrema, continuous predictions, and
 	const { loadTides } = await import('../src/lib/server/forecast.ts');
 	const requests = [];
 	const result = await loadTides(
-		{ latitude: 29.31, longitude: -94.79, timeZone: 'America/Chicago' },
+		{ latitude: 30.2672, longitude: -97.7431, timeZone: 'America/Chicago' },
 		async (input) => {
 			const url = new URL(input);
 			requests.push(url);
@@ -60,6 +60,8 @@ test('NOAA uses UTC and fetches past/future extrema, continuous predictions, and
 	assert.equal(result.reading.time, '2026-09-06T16:00Z');
 	assert.equal(result.station.timeZone, 'America/Chicago');
 	assert.equal(result.series.length, 2);
+	assert.equal(result.station.station, '8771450');
+	assert.ok(result.station.distanceKm > 100);
 	for (const url of requests.slice(1)) assert.equal(url.searchParams.get('time_zone'), 'gmt');
 	assert.ok(requests.some((url) => url.searchParams.get('interval') === '6'));
 	const start = requests

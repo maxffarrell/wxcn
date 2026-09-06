@@ -4,7 +4,23 @@
 	import { goto } from '$app/navigation';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import FrameworkTabs from '$lib/components/site/framework-tabs.svelte';
-	import { encodePreset, decodePreset, presetOptions, type Preset } from '$lib/preset.js';
+	import {
+		encodePreset,
+		decodePreset,
+		generateRandomConfig,
+		DEFAULT_PRESET_CONFIG,
+		PRESET_STYLES,
+		PRESET_BASE_COLOR_KEYS,
+		PRESET_THEME_KEYS,
+		PRESET_CHART_COLORS,
+		PRESET_FONTS,
+		PRESET_RADII,
+		type Preset
+	} from '$lib/preset.js';
+	import { fontLoaders } from '$lib/upstream/load-fonts.js';
+	import { buildRegistryTheme } from '$lib/upstream/theme.js';
+	import { FONT_DEFINITIONS } from '$lib/upstream/font-definitions.js';
+	import { mode } from 'mode-watcher';
 	import { UseClipboard } from '$lib/hooks/use-clipboard.svelte.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
@@ -34,7 +50,7 @@
 	} from '$lib/data/types.js';
 	const icons = getContext<{ value: IconSet }>('wxcn-icons');
 	let theme = $state('neutral'),
-		radius = $state('0.75rem'),
+		radius = $state('default'),
 		density = $state<CardDensity>('comfortable'),
 		unit = $state<WeatherUnit>('fahrenheit'),
 		animation = $state('on');
@@ -42,53 +58,62 @@
 	let tideUnit = $state<TideUnit>('ft'),
 		windUnit = $state<'mph' | 'km/h' | 'm/s' | 'knots'>('mph');
 	let base = $state('neutral'),
-		chartColor = $state('theme'),
-		font = $state('geist'),
-		heading = $state('geist');
+		chartColor = $state('neutral'),
+		font = $state('inter'),
+		heading = $state('inherit');
 	let presetOpen = $state(false),
 		presetInput = $state('');
 	const clipboard = new UseClipboard();
+	let style = $state('nova'),
+		menuAccent = $state('subtle'),
+		menuColor = $state('default');
 	const config = $derived({
-		style: 'nova',
-		base,
+		style,
+		baseColor: base,
 		theme,
-		chart: chartColor,
+		chartColor,
 		font,
-		heading,
-		icons: icons.value,
+		fontHeading: heading,
+		iconLibrary:
+			icons.value === 'phosphor-svelte'
+				? 'phosphor'
+				: icons.value === 'remix'
+					? 'remixicon'
+					: icons.value,
 		radius,
-		density,
-		temperature: unit,
-		tide: tideUnit,
-		wind: windUnit,
-		animation,
-		scene
-	});
+		menuAccent,
+		menuColor
+	} as Preset);
 	const presetCode = $derived(encodePreset(config));
-	const nextPreset = $derived(decodePreset(presetInput));
+	const nextPreset = $derived(decodePreset(presetInput.trim().replace(/^--preset\s+/, '')));
 	function applyPreset(p: Preset) {
-		base = p.base;
+		style = p.style;
+		base = p.baseColor;
 		theme = p.theme;
-		chartColor = p.chart;
+		chartColor = p.chartColor ?? DEFAULT_PRESET_CONFIG.chartColor!;
 		font = p.font;
-		heading = p.heading;
-		icons.value = p.icons as IconSet;
+		heading = p.fontHeading;
 		radius = p.radius;
-		density = p.density as CardDensity;
-		unit = p.temperature as WeatherUnit;
-		tideUnit = p.tide as TideUnit;
-		windUnit = p.wind as typeof windUnit;
-		animation = p.animation;
-		scene = p.scene;
+		menuAccent = p.menuAccent;
+		menuColor = p.menuColor;
+		icons.value =
+			p.iconLibrary === 'phosphor'
+				? 'phosphor-svelte'
+				: p.iconLibrary === 'remixicon'
+					? 'remix'
+					: p.iconLibrary;
 	}
 	function shuffle() {
-		const p = {} as Preset;
-		for (const key of Object.keys(presetOptions) as (keyof Preset)[]) {
-			const values = presetOptions[key];
-			p[key] = values[Math.floor(Math.random() * values.length)];
-		}
-		applyPreset(p);
+		applyPreset(generateRandomConfig());
 	}
+	const options = (values: readonly string[]) =>
+		values.map((value) => ({
+			value,
+			label: value
+				.split('-')
+				.map((w) => w[0].toUpperCase() + w.slice(1))
+				.join(' ')
+		}));
 	function openPreset() {
 		if (nextPreset) {
 			applyPreset(nextPreset);
@@ -96,19 +121,6 @@
 			presetInput = '';
 		}
 	}
-	const fonts: Record<string, string> = {
-		geist: 'Geist Variable, sans-serif',
-		system: 'system-ui, sans-serif',
-		serif: 'Georgia, serif',
-		mono: 'ui-monospace, monospace'
-	};
-	const baseColors: Record<string, string> = {
-		neutral: '0 0',
-		stone: '.006 75',
-		zinc: '.005 286',
-		gray: '.012 260'
-	};
-
 	let codeOpen = $state(false),
 		ready = $state(false);
 	const item = $derived(
@@ -137,19 +149,31 @@
 	let message = $state('Use your location to see your forecast in every card.'),
 		tideSource = $state('Coastal example · station time');
 	let locationRequest = 0;
-	let nearestCoastal = $state(false);
+
 	let tideLoading = $state(false);
 	let tideRequest = 0;
-	const themes: Record<string, string> = {
-		neutral: '',
-		blue: 'oklch(0.546 0.245 262.881)',
-		green: 'oklch(0.50 0.14 155)',
-		orange: 'oklch(0.60 0.17 45)'
-	};
-	const previewStyle = $derived(
-		`--radius:${radius};--preview-font:${fonts[font]};--preview-heading:${fonts[heading]};--base-chroma:${baseColors[base].split(' ')[0]};--base-hue:${baseColors[base].split(' ')[1]};${themes[theme] ? `--primary:${themes[theme]};--primary-foreground:white;` : ''}${chartColor !== 'theme' ? `--chart-1:${themes[chartColor]};` : '--chart-1:var(--primary);'}`
-	);
-
+	$effect(() => {
+		for (const name of [font, heading]) {
+			const definition = FONT_DEFINITIONS.find((f) => f.name === name);
+			if (definition) void fontLoaders[definition.dependency]();
+		}
+	});
+	const registryTheme = $derived(buildRegistryTheme(config));
+	const previewStyle = $derived.by(() => {
+		const vars = {
+			...registryTheme.cssVars.light,
+			...(mode.current === 'dark' ? registryTheme.cssVars.dark : {})
+		};
+		const family = FONT_DEFINITIONS.find((f) => f.name === font)?.family;
+		const headingFamily =
+			heading === 'inherit' ? family : FONT_DEFINITIONS.find((f) => f.name === heading)?.family;
+		return (
+			Object.entries(vars)
+				.map(([k, v]) => `--${k}:${v}`)
+				.join(';') +
+			`;font-family:${family};--font-sans:${family};--font-heading:${headingFamily};--preview-heading:${headingFamily}`
+		);
+	});
 	const conditions: Record<string, string> = {
 		rain: 'Rain',
 		snow: 'Snow',
@@ -186,19 +210,13 @@
 		void goto(url, { replaceState: true, noScroll: true, keepFocus: true });
 	}
 	function reset() {
-		theme = 'neutral';
-		base = 'neutral';
-		chartColor = 'theme';
-		font = 'geist';
-		heading = 'geist';
-		tideUnit = 'ft';
-		windUnit = 'mph';
-		radius = '0.75rem';
+		applyPreset(DEFAULT_PRESET_CONFIG);
 		density = 'comfortable';
 		unit = 'fahrenheit';
+		tideUnit = 'ft';
+		windUnit = 'mph';
 		animation = 'on';
 		scene = 'live';
-		icons.value = 'lucide';
 	}
 	async function updateLocation(coords: { latitude: number; longitude: number }, request: number) {
 		status = 'loading';
@@ -223,6 +241,7 @@
 			if (request !== locationRequest) return;
 			status = 'error';
 			message = `${error instanceof Error ? error.message : 'Could not load weather.'} Showing the Austin example.`;
+			await updateTides(coords);
 			return;
 		}
 		await updateTides(coords);
@@ -232,7 +251,7 @@
 		const query = new URLSearchParams({
 			latitude: String(coords.latitude),
 			longitude: String(coords.longitude),
-			nearest: String(nearestCoastal)
+			nearest: 'true'
 		});
 		tideLoading = true;
 		tides = [];
@@ -251,14 +270,12 @@
 			tideLocation = data.station
 				? {
 						...data.station,
-						timeZone: nearestCoastal
-							? data.station.timeZone
-							: (location.timeZone ?? data.station.timeZone)
+						timeZone: data.station.timeZone
 					}
 				: { ...coords, label: 'No nearby coastal station' };
 			tideSource = data.station
-				? `NOAA · ${nearestCoastal ? `${data.station.distanceKm} km from ${location.label ?? 'your location'} · UTC` : 'live predictions · station time'}`
-				: 'No tide station within 100 km';
+				? `NOAA · ${data.station.distanceKm} km from ${coords.latitude === location.latitude && coords.longitude === location.longitude ? (location.label ?? 'your location') : 'your location'} · UTC`
+				: 'No coastal tide station available';
 		} catch {
 			if (request !== tideRequest) return;
 			tideLocation = { ...coords, label: 'Tide service unavailable' };
@@ -288,7 +305,9 @@
 	function useLocation() {
 		resetLocationData();
 		if (!navigator.geolocation) {
-			message = 'Location is unavailable in this browser. Showing the Austin example.';
+			message =
+				'Location is unavailable in this browser. Showing Austin and its nearest coastal station.';
+			void updateTides(location);
 			status = 'error';
 			return;
 		}
@@ -304,8 +323,9 @@
 				status = 'error';
 				message =
 					error.code === 1
-						? 'Location permission was declined. Showing the Austin example.'
+						? 'Location permission was declined. Showing Austin weather and its nearest coastal station.'
 						: 'Could not determine your location. Showing the Austin example.';
+				void updateTides(location);
 			},
 			{ enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
 		);
@@ -386,7 +406,7 @@
 			>
 		</div>
 		<div
-			class="preview-surface relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl ring ring-foreground/10"
+			class={`preview-surface style-${style} relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl ring ring-foreground/10`}
 			style={previewStyle}
 		>
 			<div
@@ -416,16 +436,6 @@
 			</div>
 			<div class="flex shrink-0 flex-wrap items-center gap-2 border-b bg-background px-4 py-2">
 				<p class="flex-1 text-xs text-muted-foreground" role="status">{message}</p>
-				{#if item === 'all' || item === 'tides'}<Button
-						size="sm"
-						variant={nearestCoastal ? 'secondary' : 'outline'}
-						aria-pressed={nearestCoastal}
-						disabled={tideLoading || status === 'loading' || status === 'locating'}
-						onclick={() => {
-							nearestCoastal = !nearestCoastal;
-							void updateTides(location);
-						}}>{tideLoading ? 'Finding a station…' : 'Use nearest coastal station'}</Button
-					>{/if}
 			</div>
 			<div
 				class="min-h-0 flex-1 overflow-auto overscroll-contain bg-muted dark:bg-background"
@@ -507,52 +517,23 @@
 				class="no-scrollbar min-h-0 flex-1 overflow-x-auto overflow-y-hidden md:overflow-y-auto"
 			>
 				<div class="flex flex-row gap-2.5 py-px md:flex-col md:gap-3.25">
-					<Picker label="Style" value="nova" options={[{ value: 'nova', label: 'Nova' }]} />
+					<Picker label="Style" bind:value={style} options={options(PRESET_STYLES)} />
 					<div class="-mx-4 hidden w-auto border-t md:block"></div>
-					<Picker
-						label="Base color"
-						bind:value={base}
-						options={['neutral', 'stone', 'zinc', 'gray'].map((value) => ({
-							value,
-							label: value[0].toUpperCase() + value.slice(1)
-						}))}
-					/>
+					<Picker label="Base color" bind:value={base} options={options(PRESET_BASE_COLOR_KEYS)} />
 
-					<Picker
-						label="Theme"
-						bind:value={theme}
-						options={[
-							{ value: 'neutral', label: 'Neutral' },
-							{ value: 'blue', label: 'Blue' },
-							{ value: 'green', label: 'Green' },
-							{ value: 'orange', label: 'Orange' }
-						]}
-					/>
+					<Picker label="Theme" bind:value={theme} options={options(PRESET_THEME_KEYS)} />
 					<Picker
 						label="Chart color"
 						bind:value={chartColor}
-						options={['theme', 'blue', 'green', 'orange'].map((value) => ({
-							value,
-							label: value[0].toUpperCase() + value.slice(1)
-						}))}
+						options={options(PRESET_CHART_COLORS)}
 					/>
 					<div class="-mx-4 hidden w-auto border-t md:block"></div>
 					<Picker
 						label="Heading"
 						bind:value={heading}
-						options={['geist', 'system', 'serif', 'mono'].map((value) => ({
-							value,
-							label: value[0].toUpperCase() + value.slice(1)
-						}))}
+						options={options(['inherit', ...PRESET_FONTS])}
 					/>
-					<Picker
-						label="Font"
-						bind:value={font}
-						options={['geist', 'system', 'serif', 'mono'].map((value) => ({
-							value,
-							label: value[0].toUpperCase() + value.slice(1)
-						}))}
-					/>
+					<Picker label="Font" bind:value={font} options={options(PRESET_FONTS)} />
 					<div class="-mx-4 hidden w-auto border-t md:block"></div>
 					<Picker
 						label="Icon library"
@@ -568,12 +549,7 @@
 					<Picker
 						label="Radius"
 						bind:value={radius}
-						options={[
-							{ value: '0rem', label: 'Square' },
-							{ value: '0.5rem', label: 'Medium' },
-							{ value: '0.75rem', label: 'Large' },
-							{ value: '1rem', label: 'Extra large' }
-						]}
+						options={Object.values(PRESET_RADII).map((r) => ({ value: r.name, label: r.label }))}
 					/>
 					<div class="-mx-4 hidden w-auto border-t md:block"></div>
 					<Picker
@@ -664,16 +640,16 @@
 		>
 			<Dialog.Header
 				><Dialog.Title>Open Preset</Dialog.Title><Dialog.Description
-					>Paste a wxcn preset code to load a saved configuration.</Dialog.Description
+					>Paste a shadcn-svelte preset code to load a saved configuration.</Dialog.Description
 				></Dialog.Header
 			><label for="preset-code" class="sr-only">Preset code</label><input
 				id="preset-code"
 				bind:value={presetInput}
-				placeholder="wx1.… or --preset wx1.…"
+				placeholder="b0 or --preset b0"
 				class="my-4 h-10 w-full rounded-md border bg-transparent px-3 text-sm"
 				aria-invalid={presetInput.length > 0 && !nextPreset}
 			/>{#if presetInput.length > 0 && !nextPreset}<p class="mb-3 text-xs text-destructive">
-					Enter a valid wxcn preset.
+					Enter a valid shadcn-svelte preset.
 				</p>{/if}<Dialog.Footer
 				><Button type="button" variant="outline" onclick={() => (presetOpen = false)}>Cancel</Button
 				><Button type="submit" disabled={!nextPreset}>Open</Button></Dialog.Footer
@@ -703,19 +679,6 @@
 >
 
 <style>
-	.preview-surface {
-		font-family: var(--preview-font);
-		--background: oklch(0.99 var(--base-chroma) var(--base-hue));
-		--card: oklch(1 var(--base-chroma) var(--base-hue));
-		--muted: oklch(0.97 var(--base-chroma) var(--base-hue));
-		--border: oklch(0.91 var(--base-chroma) var(--base-hue));
-	}
-	:global(.dark) .preview-surface {
-		--background: oklch(0.145 var(--base-chroma) var(--base-hue));
-		--card: oklch(0.2 var(--base-chroma) var(--base-hue));
-		--muted: oklch(0.22 var(--base-chroma) var(--base-hue));
-		--border: oklch(0.32 var(--base-chroma) var(--base-hue));
-	}
 	.preview-surface :global([data-slot='card-title']) {
 		font-family: var(--preview-heading);
 	}

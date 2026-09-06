@@ -49,7 +49,7 @@ Explore a wide canvas of mixed cards, or open a component collection to compare 
 - **Native to your project.** Registry installation follows `components.json`, including aliases and Lucide, Tabler, Hugeicons, Phosphor, or Remix icons.
 - **Light and dark, naturally.** Cards inherit your theme tokens. The registry adds no global theme or font.
 - **Motion with restraint.** Atmospheric backgrounds sit behind readable information. Rain and snow respect reduced motion; offscreen animations pause.
-- **Location-aware previews.** Browser location loads local US weather and coastal tides. Inland visitors can choose **Use nearest coastal station**. Unavailable data stays clearly labeled.
+- **Location-aware previews.** Browser location loads local US weather and coastal tides. Tides automatically use the nearest coastal station, including for inland visitors. Unavailable data stays clearly labeled.
 
 Svelte is available today. **React and Vue are looking for contributors!**
 
@@ -123,7 +123,7 @@ Component source lives in [`src/lib/components/wxcn`](src/lib/components/wxcn). 
 <details>
 <summary>About playground presets</summary>
 
-wxcn presets use the `wx1.` format and include appearance, units, and condition previews. They are distinct from shadcn CLI presets. Copy a code with **--preset** and restore it with **Open**.
+Presets use the native `shadcn-svelte/preset` encoder and settings, so the same code produces the same theme in both projects. Units and weather conditions remain separate playground controls. Copy a code with **--preset** and restore it with **Open**.
 
 </details>
 

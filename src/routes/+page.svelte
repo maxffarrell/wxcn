@@ -5,7 +5,6 @@
 	import * as Card from '$lib/components/ui/card/index.js';
 	import FrameworkTabs from '$lib/components/site/framework-tabs.svelte';
 	import {
-		encodePreset,
 		decodePreset,
 		generateRandomConfig,
 		DEFAULT_PRESET_CONFIG,
@@ -21,7 +20,6 @@
 	import { buildRegistryTheme } from '$lib/upstream/theme.js';
 	import { FONT_DEFINITIONS } from '$lib/upstream/font-definitions.js';
 	import { mode } from 'mode-watcher';
-	import { UseClipboard } from '$lib/hooks/use-clipboard.svelte.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import Picker from '$lib/components/site/picker.svelte';
@@ -30,8 +28,6 @@
 	import WeatherForecast from '$lib/components/wxcn/WeatherForecast.svelte';
 	import MoonForecast from '$lib/components/wxcn/MoonForecast.svelte';
 	import TideForecast from '$lib/components/wxcn/TideForecast.svelte';
-	import Locate from '@lucide/svelte/icons/locate-fixed';
-	import Code from '@lucide/svelte/icons/code';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import { sampleWeather } from '$lib/data/weather.js';
 	import { sampleTides } from '$lib/data/tides.js';
@@ -63,7 +59,6 @@
 		heading = $state('inherit');
 	let presetOpen = $state(false),
 		presetInput = $state('');
-	const clipboard = new UseClipboard();
 	let style = $state('nova'),
 		menuAccent = $state('subtle'),
 		menuColor = $state('default');
@@ -84,7 +79,6 @@
 		menuAccent,
 		menuColor
 	} as Preset);
-	const presetCode = $derived(encodePreset(config));
 	const nextPreset = $derived(decodePreset(presetInput.trim().replace(/^--preset\s+/, '')));
 	function applyPreset(p: Preset) {
 		style = p.style;
@@ -337,7 +331,6 @@
 		moon = getMoonForecast(new Date());
 		useLocation();
 		return () => {
-			clearTimeout(clipboard.timeout);
 			locationRequest++;
 			tideRequest++;
 		};
@@ -400,11 +393,6 @@
 >
 	<h1 class="sr-only">wxcn — weather, moon, and tide components</h1>
 	<section class="flex min-h-0 min-w-0 flex-1 flex-col gap-3" aria-label="Forecast previews">
-		<div class="flex min-w-0 items-center justify-between gap-2 px-1">
-			<FrameworkTabs /><Button size="sm" onclick={() => (codeOpen = true)}
-				><Code class="size-4" />Get code</Button
-			>
-		</div>
 		<div
 			class={`preview-surface style-${style} relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl ring ring-foreground/10`}
 			style={previewStyle}
@@ -420,23 +408,9 @@
 							onclick={() => selectItem(entry.value)}>{entry.label}</Button
 						>{/each}
 				</nav>
-				<Button
-					size="sm"
-					variant="ghost"
-					disabled={status === 'locating' || status === 'loading'}
-					onclick={useLocation}
-					><Locate class="size-3.5" />{status === 'live'
-						? location.label
-						: status === 'loading'
-							? 'Loading…'
-							: status === 'locating'
-								? 'Locating…'
-								: 'Use my location'}</Button
-				>
+				<FrameworkTabs />
 			</div>
-			<div class="flex shrink-0 flex-wrap items-center gap-2 border-b bg-background px-4 py-2">
-				<p class="flex-1 text-xs text-muted-foreground" role="status">{message}</p>
-			</div>
+			<p class="sr-only" role="status">{message}</p>
 			<div
 				class="min-h-0 flex-1 overflow-auto overscroll-contain bg-muted dark:bg-background"
 				data-slot="preview-scroll"
@@ -602,14 +576,12 @@
 					/>
 				</div></Card.Content
 			>
-			<Card.Footer class="flex min-w-0 gap-2 md:flex-col md:rounded-b-none md:**:[button,a]:w-full">
+			<Card.Footer class="flex min-w-0 gap-2 md:flex-col md:**:[button,a]:w-full">
 				<Button
 					variant="outline"
-					onclick={() => clipboard.copy(`--preset ${presetCode}`)}
+					onclick={() => (codeOpen = true)}
 					class="min-w-0 flex-1 touch-manipulation overflow-hidden bg-transparent! px-2! py-0! text-sm! transition-none select-none hover:bg-muted! md:flex-none pointer-coarse:h-10!"
-					><span class="min-w-0 truncate"
-						>{clipboard.copied ? 'Copied' : `--preset ${presetCode}`}</span
-					></Button
+					>Get Code</Button
 				>
 				<Button
 					variant="outline"
@@ -624,9 +596,6 @@
 					>Shuffle</Button
 				>
 			</Card.Footer>
-			<Card.Footer class="-mt-3 hidden min-w-0 gap-2 md:flex md:flex-col md:**:[button,a]:w-full"
-				><Button onclick={() => (codeOpen = true)}>Get code</Button></Card.Footer
-			>
 		</Card.Root>
 	</div>
 </main>

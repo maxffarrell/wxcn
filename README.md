@@ -44,7 +44,7 @@ A forecast at a glance, a view of the lunar cycle, or the next turn of the tide.
 
 ## Make it yours
 
-Explore a wide canvas of mixed cards, or open a component collection to compare its variants. Resize a preview to see its typography adapt. Switch colors, fonts, icons, density, and units; use **Shuffle** to explore and **--preset / Open** to save and restore a configuration.
+Explore a wide canvas of mixed cards, or open a component collection to compare its variants. Resize a preview to see its typography adapt. Switch colors, fonts, icons, density, and units; use **Shuffle** to explore, **Open** to load a shadcn-svelte preset, and **Get Code** to install a component.
 
 - **Native to your project.** Registry installation follows `components.json`, including aliases and Lucide, Tabler, Hugeicons, Phosphor, or Remix icons.
 - **Light and dark, naturally.** Cards inherit your theme tokens. The registry adds no global theme or font.
@@ -123,7 +123,7 @@ Component source lives in [`src/lib/components/wxcn`](src/lib/components/wxcn). 
 <details>
 <summary>About playground presets</summary>
 
-Presets use the native `shadcn-svelte/preset` encoder and settings, so the same code produces the same theme in both projects. Units and weather conditions remain separate playground controls. Copy a code with **--preset** and restore it with **Open**.
+Presets use the native `shadcn-svelte/preset` encoder and settings, so the same code produces the same theme in both projects. Units and weather conditions remain separate playground controls. Load a code from shadcn-svelte with **Open**.
 
 </details>
 

@@ -20,7 +20,7 @@ type NwsForecast = {
 
 const headers = {
 	Accept: 'application/geo+json',
-	'User-Agent': 'wxcn-svelte/0.1 (https://github.com/wxcn-svelte/wxcn-svelte)'
+	'User-Agent': 'wxcn/0.1 (https://github.com/wxcn/wxcn)'
 };
 
 export async function fetchWeatherForecast(location: LocationInput): Promise<WeatherPeriod[]> {
@@ -64,3 +64,14 @@ export const sampleWeather: WeatherPeriod[] = [
 	windDirection: 'S',
 	detailedForecast: `${shortForecast}. South wind 5 to 10 mph.`
 }));
+
+export function convertWindSpeed(speed: string, unit: 'mph' | 'km/h' | 'm/s' | 'knots' = 'mph') {
+	const factors = { mph: 0.44704, 'km/h': 1 / 3.6, 'm/s': 1, knots: 0.514444 };
+	const source = speed.match(/mph|km\/h|m\/s|knots/);
+	if (!source) return speed;
+	return speed
+		.replace(/\d+(?:\.\d+)?/g, (n) =>
+			String(Math.round((Number(n) * factors[source[0] as keyof typeof factors]) / factors[unit]))
+		)
+		.replace(source[0], unit);
+}

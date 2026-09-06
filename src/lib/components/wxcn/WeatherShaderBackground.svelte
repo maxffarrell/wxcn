@@ -24,6 +24,19 @@
 	import { onMount } from 'svelte';
 	let { mode = 'clear', paused = false }: { mode?: WeatherShaderMode; paused?: boolean } = $props();
 	let canvas: HTMLCanvasElement;
+	let active = $state(true);
+	const rain = $derived(/rain|drizzle|thunderstorm|wintry/.test(mode));
+	const snow = $derived(/snow|wintry/.test(mode));
+	const particles = Array.from({ length: 36 }, (_, i) => ({
+		left: (i * 61.803) % 100,
+		delay: -(i * 0.173) % 3,
+		duration: 0.65 + (i % 7) * 0.09
+	}));
+	onMount(() => {
+		const observer = new IntersectionObserver(([entry]) => (active = entry.isIntersecting));
+		observer.observe(canvas);
+		return () => observer.disconnect();
+	});
 	let redraw = () => {};
 	const modes: WeatherShaderMode[] = [
 		'sunrise',
@@ -129,26 +142,6 @@ void main(){
   cloud.a+=(1.-cloud.a)*a;
  }
  vec3 color=sky*(1.-cloud.a)+cloud.rgb;
- // Sparse, independently jittered particles at three depths. No repeated columns.
- for(int j=0;j<3;j++){
-  float layer=float(j)+1.;
-  vec2 rain=p*vec2(32.+layer*14.,7.+layer*4.);
-  rain.x+=rain.y*.09;
-  rain.y+=time*(2.2+layer*1.3);
-  vec2 cell=floor(rain);
-  vec2 center=vec2(.18+.64*hash(vec3(cell,layer)),.25+.5*hash(vec3(cell+17.,layer)));
-  vec2 local=fract(rain)-center;
-  float streak=(1.-smoothstep(.008,.028,abs(local.x)))*(1.-smoothstep(.06,.27,abs(local.y)));
-  streak*=step(.67,hash(vec3(cell+31.,layer)));
-  color=mix(color,vec3(.72,.78,.81),streak*wet*(.18+.05*layer));
-  vec2 flakes=p*(10.+layer*6.)+vec2(time*.025,time*(.13+layer*.06));
-  vec2 fid=floor(flakes);
-  vec2 jitter=vec2(.2+.6*hash(vec3(fid,layer)),.2+.6*hash(vec3(fid+9.,layer)));
-  vec2 ff=fract(flakes)-jitter;
-  ff.x+=sin(time*.5+hash(vec3(fid,layer))*6.28)*.035;
-  float flake=(1.-smoothstep(.01,.045,length(ff)))*step(.65,hash(vec3(fid+23.,layer)));
-  color=mix(color,vec3(.86,.89,.92),flake*snow*(.4+.1*layer));
- }
  float stars=pow(hash(vec3(floor(uv*resolution/2.),1.)),180.);
  color+=stars*.35*night*(1.-cloud.a);
  vec2 moon=(uv-vec2(.8,.76))*vec2(resolution.x/resolution.y,1.);
@@ -261,11 +254,81 @@ void main(){
 	});
 </script>
 
-<div class="sky" class:night={mode.includes('night')} aria-hidden="true">
+<div
+	class="sky"
+	class:night={mode.includes('night')}
+	class:still={paused || !active}
+	aria-hidden="true"
+>
 	<canvas bind:this={canvas}></canvas>
+	{#if rain}<div class="precipitation rain" data-precipitation="rain">
+			{#each particles as p, i}<i
+					style={`left:${p.left}%;animation-delay:${p.delay}s;animation-duration:${p.duration}s;opacity:${0.25 + (i % 4) * 0.12};height:${9 + (i % 12)}px`}
+				></i>{/each}
+		</div>{/if}
+	{#if snow}<div class="precipitation snow" data-precipitation="snow">
+			{#each particles.slice(0, 24) as p, i}<i
+					style={`left:${p.left}%;animation-delay:${p.delay * 3}s;animation-duration:${4 + p.duration * 2}s;width:${2 + (i % 3)}px;height:${2 + (i % 3)}px;opacity:${0.45 + (i % 4) * 0.12}`}
+				></i>{/each}
+		</div>{/if}
 </div>
 
 <style>
+	.sky {
+		container-type: size;
+	}
+	.precipitation {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		pointer-events: none;
+	}
+	.precipitation i {
+		position: absolute;
+		top: -20px;
+		display: block;
+		will-change: transform;
+		animation: fall linear infinite;
+	}
+	.rain i {
+		width: 1px;
+		background: linear-gradient(transparent, rgba(230, 240, 255, 0.9));
+		transform: rotate(12deg);
+	}
+	.snow i {
+		border-radius: 50%;
+		background: #f7fbff;
+		filter: blur(0.3px);
+		animation-name: snowfall;
+	}
+	.still i {
+		animation-play-state: paused;
+	}
+	@keyframes fall {
+		from {
+			transform: translate(0, -20px) rotate(12deg);
+		}
+		to {
+			transform: translate(-45px, calc(100cqh + 40px)) rotate(12deg);
+		}
+	}
+	@keyframes snowfall {
+		0% {
+			transform: translate(0, -20px);
+		}
+		50% {
+			transform: translate(15px, 50cqh);
+		}
+		100% {
+			transform: translate(-8px, calc(100cqh + 40px));
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.precipitation i {
+			animation-play-state: paused;
+		}
+	}
+
 	.sky {
 		position: absolute;
 		inset: 0;

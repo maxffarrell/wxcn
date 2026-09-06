@@ -39,3 +39,7 @@ export type MoonForecast = {
 	nextFullMoon: string;
 	nextNewMoon: string;
 };
+
+/** Feet above MLLW. Prefer ISO 8601 timestamps with an explicit offset. */
+export type TidePoint = { time: string; height: string };
+export type TideReading = TidePoint;

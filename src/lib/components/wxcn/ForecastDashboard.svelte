@@ -15,6 +15,7 @@
 		size = 'default',
 		density = 'comfortable',
 		weatherUnit = 'fahrenheit',
+		windUnit = 'mph',
 		tideUnit = 'ft',
 		iconType,
 		animatedWeatherBackground = false,
@@ -29,6 +30,7 @@
 		size?: 'sm' | 'default' | 'lg';
 		density?: 'compact' | 'comfortable';
 		weatherUnit?: WeatherUnit;
+		windUnit?: 'mph' | 'km/h' | 'm/s' | 'knots';
 		tideUnit?: TideUnit;
 		iconType?: IconSet;
 		animatedWeatherBackground?: boolean;
@@ -43,6 +45,7 @@
 		{size}
 		{density}
 		unit={weatherUnit}
+		{windUnit}
 		{iconType}
 		{location}
 		animatedBackground={animatedWeatherBackground}

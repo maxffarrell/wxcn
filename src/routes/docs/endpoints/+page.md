@@ -7,7 +7,7 @@ The registry avoids free APIs that restrict commercial use.
 NWS API data is open data and free to use for any purpose. Use `fetchWeatherForecast(location)` with a United States latitude and longitude.
 
 ```ts
-import { fetchWeatherForecast } from 'wxcn-svelte';
+import { fetchWeatherForecast } from 'wxcn';
 
 const forecast = await fetchWeatherForecast({
 	label: 'Austin, TX',
@@ -21,7 +21,7 @@ const forecast = await fetchWeatherForecast({
 NOAA CO-OPS predictions are fetched by station id.
 
 ```ts
-import { fetchTidePredictions } from 'wxcn-svelte';
+import { fetchTidePredictions } from 'wxcn';
 
 const predictions = await fetchTidePredictions({
 	label: 'Galveston Pier 21, TX',
@@ -36,7 +36,7 @@ const predictions = await fetchTidePredictions({
 Moon data is calculated locally from the synodic month. This keeps the component usable in commercial products without an external moon API dependency.
 
 ```ts
-import { getMoonForecast } from 'wxcn-svelte';
+import { getMoonForecast } from 'wxcn';
 
 const moon = getMoonForecast(new Date());
 ```

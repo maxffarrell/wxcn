@@ -1,4 +1,7 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { Chart, Svg, Area } from 'layerchart';
+	import { curveMonotoneX } from 'd3-shape';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import ForecastIcon from '$lib/icons/forecast-icons.svelte';
 	import type {
@@ -6,9 +9,12 @@
 		IconSet,
 		LocationInput,
 		TidePrediction,
-		TideUnit
+		TideUnit,
+		TidePoint,
+		TideReading
 	} from '$lib/data/types.js';
-	import { sampleTides } from '$lib/data/tides.js';
+	import { sampleTides, sampleTideSeries, sampleTideTime } from '$lib/data/tides.js';
+	import { tideState, tideTimestamp } from '$lib/data/tide-state.js';
 	let {
 		type = 'summary',
 		size = 'default',
@@ -20,9 +26,14 @@
 			label: 'Galveston Pier 21, TX',
 			latitude: 29.31,
 			longitude: -94.7933,
-			station: '8771450'
+			station: '8771450',
+			timeZone: 'America/Chicago'
 		},
 		predictions = sampleTides,
+		example = predictions === sampleTides,
+		series,
+		reading = null,
+		at,
 		sourceLabel = 'Sample tides · station time'
 	}: {
 		type?: ForecastType;
@@ -33,36 +44,57 @@
 		iconType?: IconSet;
 		location?: LocationInput;
 		predictions?: TidePrediction[];
+		example?: boolean;
+		series?: TidePoint[];
+		reading?: TideReading | null;
+		at?: number;
 		sourceLabel?: string;
 	} = $props();
-	const visible = $derived(
-		predictions.slice(
-			0,
-			type === 'simple' ? 1 : type === 'detailed' ? 8 : density === 'compact' ? 2 : 4
-		)
-	);
-	const height = (p: TidePrediction) =>
-		(Number(p.height) * (unit === 'meter' ? 0.3048 : 1)).toFixed(1);
-	const time = (p: TidePrediction) => p.time.slice(11, 16);
-	const chart = $derived.by(() => {
-		const values = visible.map((p) => Number(p.height));
-		const min = Math.min(...values);
-		const range = Math.max(0.1, Math.max(...values) - min);
-		const points = values.map((v, i) => ({
-			x: 10 + (i * 280) / Math.max(1, values.length - 1),
-			y: 70 - ((v - min) / range) * 50
-		}));
-		return points
-			.map((p, i) =>
-				i
-					? `C ${points[i - 1].x + (p.x - points[i - 1].x) / 2} ${points[i - 1].y}, ${p.x - (p.x - points[i - 1].x) / 2} ${p.y}, ${p.x} ${p.y}`
-					: `M ${p.x} ${p.y}`
-			)
-			.join(' ');
+	let clock = $state(Date.now());
+	onMount(() => {
+		clock = Date.now();
+		const timer = setInterval(() => (clock = Date.now()), 60000);
+		return () => clearInterval(timer);
 	});
+	const isSample = $derived(example);
+	const now = $derived(at ?? (isSample ? sampleTideTime : clock));
+	const tide = $derived(
+		tideState(predictions, series ?? (isSample ? sampleTideSeries : []), reading, now)
+	);
+	const chartData = $derived(
+		(tide.points.length
+			? tide.points
+			: tide.events.map((p) => ({ time: tideTimestamp(p.time), height: Number(p.height) }))
+		).filter((p) => p.time >= now - 12 * 3600000 && p.time <= now + 18 * 3600000)
+	);
+	const markerTime = $derived(tide.observed ? tideTimestamp(tide.observed.time) : now);
+	const domain = $derived.by(() => {
+		const v = chartData.map((p) => p.height);
+		if (tide.level !== null) v.push(tide.level);
+		const lo = Math.min(...v),
+			hi = Math.max(...v);
+		return [lo - Math.max(0.15, (hi - lo) * 0.2), hi + Math.max(0.15, (hi - lo) * 0.2)];
+	});
+	const height = (value: number) => (value * (unit === 'meter' ? 0.3048 : 1)).toFixed(1);
+	const symbol = $derived(unit === 'meter' ? 'm' : 'ft');
+	const time = (value: string | number) =>
+		new Intl.DateTimeFormat('en-US', {
+			hour: 'numeric',
+			minute: '2-digit',
+			timeZone: location.timeZone ?? 'UTC'
+		}).format(typeof value === 'string' ? tideTimestamp(value) : value);
+	const dateTime = (p: TidePrediction) =>
+		new Intl.DateTimeFormat('en-US', {
+			month: 'short',
+			day: 'numeric',
+			hour: 'numeric',
+			minute: '2-digit',
+			timeZone: location.timeZone ?? 'UTC'
+		}).format(tideTimestamp(p.time));
 </script>
 
 <Card.Root
+	style="container-type: inline-size"
 	size={size === 'sm' ? 'sm' : 'default'}
 	data-density={density}
 	data-card-size={size}
@@ -77,46 +109,125 @@
 			/></Card.Action
 		></Card.Header
 	>
-	<Card.Content class="grid gap-4">
-		{#if visible.length}
-			<div class="flex items-baseline justify-between">
-				<p class="text-sm text-muted-foreground">
-					First {visible[0].type === 'H' ? 'high' : 'low'} tide
-				</p>
-				<p class="text-3xl font-medium tracking-tight tabular-nums">
-					{height(visible[0])}<span class="ml-1 text-sm text-muted-foreground"
-						>{unit === 'meter' ? 'm' : 'ft'}</span
+	<Card.Content class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}>
+		{#if tide.events.length || tide.points.length}
+			<div class="flex flex-wrap items-end justify-between gap-3">
+				<div>
+					<p class="mb-1 text-xs text-muted-foreground">
+						{isSample
+							? 'Example water level'
+							: tide.observed
+								? 'Current water level'
+								: tide.predicted !== null
+									? 'Predicted water level'
+									: 'Current reading unavailable'}
+					</p>
+					<p
+						style="font-size:clamp(1.5rem,12cqw,2.5rem)"
+						class={`${size === 'sm' ? 'text-3xl' : 'text-4xl'} font-medium tracking-tight tabular-nums`}
 					>
-				</p>
-			</div>
-			{#if visible.length > 1}
-				<svg
-					viewBox="0 0 300 90"
-					class={`w-full text-primary ${size === 'sm' ? 'h-14' : size === 'lg' ? 'h-36' : 'h-24'}`}
-					role="img"
-					aria-label="Schematic of supplied tide predictions"
-					><path
-						d="M10 75H290 M10 45H290 M10 15H290"
-						stroke="var(--border)"
-						stroke-dasharray="3 4"
-					/><path d={chart} fill="none" stroke="currentColor" stroke-width="2" /></svg
-				>
-			{/if}
-			<div class="divide-y border-t">
-				{#each visible as p, i (`${p.time}-${i}`)}<div
-						class={`flex items-center justify-between gap-3 text-sm ${density === 'compact' ? 'py-2' : 'py-3'}`}
-					>
-						<span>{p.type === 'H' ? 'High tide' : 'Low tide'}</span><span
-							class="ml-auto text-muted-foreground tabular-nums">{time(p)}</span
-						><span class="min-w-14 text-right tabular-nums"
-							>{height(p)} {unit === 'meter' ? 'm' : 'ft'}</span
+						{tide.level === null ? '—' : height(tide.level)}<span
+							class="ml-1 text-sm text-muted-foreground">{symbol}</span
 						>
-					</div>{/each}
+					</p>
+				</div>
+				<div class="text-right text-xs text-muted-foreground">
+					<p>
+						{tide.next
+							? tide.next.type === 'H'
+								? 'Rising toward high tide'
+								: 'Falling toward low tide'
+							: 'Tide outlook'}
+					</p>
+					<p class="mt-1">{tide.observed ? 'Observed ' : ''}{time(markerTime)}</p>
+				</div>
 			</div>
-			{#if type === 'detailed'}<p class="text-xs leading-5 text-muted-foreground">
-					MLLW datum. The curve connects supplied extrema and is not a continuous water-level
-					prediction.
-				</p>{/if}
+			{#if chartData.length > 1}
+				<div
+					class={size === 'sm' ? 'h-20' : size === 'lg' ? 'h-36' : 'h-28'}
+					role="img"
+					aria-label="Tide prediction curve with current water level marker"
+				>
+					<Chart
+						data={chartData}
+						x="time"
+						y="height"
+						yDomain={domain}
+						padding={{ top: 8, right: 8, bottom: 4, left: 8 }}
+					>
+						{#snippet children({ context })}
+							<Svg>
+								<Area
+									curve={curveMonotoneX}
+									fill="var(--chart-1, var(--primary))"
+									opacity={0.12}
+									line={{
+										stroke: 'var(--chart-1, var(--primary))',
+										strokeWidth: 2,
+										fill: 'none',
+										opacity: 1
+									}}
+									motion={{ type: 'tween', duration: 0 }}
+								/>
+								{#if tide.level !== null && markerTime >= chartData[0].time && markerTime <= chartData[chartData.length - 1].time}
+									<line
+										x1={context.xScale(markerTime)}
+										x2={context.xScale(markerTime)}
+										y1={0}
+										y2={context.height}
+										stroke="var(--muted-foreground)"
+										stroke-dasharray="3 4"
+									/>
+									<circle
+										data-slot="current-tide-marker"
+										cx={context.xScale(markerTime)}
+										cy={context.yScale(tide.level)}
+										r={4.5}
+										fill="var(--chart-1, var(--primary))"
+										stroke="var(--card)"
+										stroke-width="2"
+									/>
+								{/if}
+							</Svg>
+						{/snippet}
+					</Chart>
+				</div>
+				<div class="-mt-2 flex justify-between text-[10px] text-muted-foreground">
+					<span>{time(chartData[0].time)}</span><span
+						>MLLW · {tide.points.length ? 'predicted curve' : 'extrema only'}</span
+					><span>{time(chartData.at(-1)!.time)}</span>
+				</div>
+			{/if}
+			<div class="grid grid-cols-2 gap-3 border-t pt-3">
+				{#each [{ label: 'Previous', event: tide.previous }, { label: 'Next', event: tide.next }] as entry}
+					<div>
+						<p class="text-xs text-muted-foreground">
+							{entry.label}
+							{entry.event ? (entry.event.type === 'H' ? 'high tide' : 'low tide') : 'tide'}
+						</p>
+						<p class="mt-1 text-sm font-medium tabular-nums">
+							{entry.event ? time(entry.event.time) : 'Unavailable'}
+						</p>
+						{#if entry.event}<p class="mt-1 text-xs text-muted-foreground">
+								{height(Number(entry.event.height))}
+								{symbol}
+							</p>{/if}
+					</div>
+				{/each}
+			</div>
+			{#if type !== 'simple'}
+				<div class="divide-y border-t">
+					{#each tide.events
+						.filter((p) => tideTimestamp(p.time) > now)
+						.slice(0, type === 'detailed' ? 6 : density === 'compact' ? 2 : 4) as event}<div
+							class={`flex justify-between gap-2 text-xs ${density === 'compact' ? 'py-2' : 'py-3'}`}
+						>
+							<span>{event.type === 'H' ? 'High tide' : 'Low tide'}</span><span
+								class="ml-auto text-muted-foreground">{dateTime(event)}</span
+							><span class="tabular-nums">{height(Number(event.height))} {symbol}</span>
+						</div>{/each}
+				</div>
+			{/if}
 		{:else}<p role="status" class="py-8 text-center text-sm text-muted-foreground">
 				No tide predictions available.
 			</p>{/if}

@@ -38,6 +38,7 @@
 </script>
 
 <Card.Root
+	style="container-type: inline-size"
 	size={size === 'sm' ? 'sm' : 'default'}
 	data-density={density}
 	data-card-size={size}
@@ -64,10 +65,13 @@
 					? 'size-16 shrink-0'
 					: size === 'lg'
 						? 'size-36 shrink-0'
-						: 'size-24 shrink-0'}
+						: 'size-24 max-w-[28cqw] shrink-0'}
 			/>
 			<div>
-				<p class={`font-medium tracking-tight ${size === 'sm' ? 'text-lg' : 'text-2xl'}`}>
+				<p
+					style="font-size:clamp(1rem,6cqw,1.5rem)"
+					class={`font-medium tracking-tight ${size === 'sm' ? 'text-lg' : 'text-2xl'}`}
+				>
 					{forecast.phaseName}
 				</p>
 				<p class="mt-2 text-sm text-muted-foreground">{forecast.illumination}% illuminated</p>

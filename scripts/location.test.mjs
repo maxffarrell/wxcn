@@ -20,6 +20,7 @@ test('location input rejects missing, invalid, and out-of-range coordinates', ()
 test('inland visitors are not assigned an unrelated coastal station', () => {
 	const stations = [{ id: '8771450', name: 'Galveston', lat: 29.31, lng: -94.7933 }];
 	assert.equal(nearestStation(austin, stations), null);
+	assert.equal(nearestStation(austin, stations, Infinity).id, '8771450');
 	assert.equal(nearestStation({ latitude: 29.3, longitude: -94.8 }, stations).id, '8771450');
 });
 test('NWS location lookup uses visitor coordinates and resolves local forecast', async () => {

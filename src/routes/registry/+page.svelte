@@ -8,7 +8,7 @@
 </script>
 
 <svelte:head>
-	<title>Registry - wxcn-svelte</title>
+	<title>Registry - wxcn</title>
 </svelte:head>
 
 <main class="container py-10">

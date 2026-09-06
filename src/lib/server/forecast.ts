@@ -18,7 +18,7 @@ export function coordinates(url: URL) {
 export async function loadForecast(location: LocationInput, fetcher: typeof fetch = fetch) {
 	const headers = {
 		Accept: 'application/geo+json',
-		'User-Agent': 'wxcn-svelte (https://github.com/maxffarrell/wxcn-svelte)'
+		'User-Agent': 'wxcn (https://github.com/maxffarrell/wxcn-svelte)'
 	};
 	const point = await fetcher(
 		`https://api.weather.gov/points/${location.latitude.toFixed(4)},${location.longitude.toFixed(4)}`,
@@ -66,7 +66,11 @@ export function nearestStation(location: LocationInput, stations: Station[], max
 	);
 }
 let stationsCache: { expires: number; stations: Station[] } | undefined;
-export async function loadTides(location: LocationInput, fetcher: typeof fetch = fetch) {
+export async function loadTides(
+	location: LocationInput,
+	fetcher: typeof fetch = fetch,
+	useNearest = false
+) {
 	if (!stationsCache || stationsCache.expires < Date.now()) {
 		const response = await fetcher(
 			'https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=tidepredictions',
@@ -77,37 +81,60 @@ export async function loadTides(location: LocationInput, fetcher: typeof fetch =
 		if (!Array.isArray(data.stations)) throw new Error('No tide stations were returned.');
 		stationsCache = { stations: data.stations, expires: Date.now() + 86400000 };
 	}
-	const station = nearestStation(location, stationsCache.stations);
+	const station = nearestStation(location, stationsCache.stations, useNearest ? Infinity : 100);
 	if (!station) return { station: null, predictions: [] };
-	const url = new URL('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter');
-	url.search = new URLSearchParams({
-		product: 'predictions',
-		application: 'wxcn-svelte',
-		date: 'today',
-		range: '72',
-		datum: 'MLLW',
-		station: station.id,
-		time_zone: 'lst_ldt',
-		units: 'english',
-		interval: 'hilo',
-		format: 'json'
-	}).toString();
-	const response = await fetcher(url, { signal: AbortSignal.timeout(12000) });
-	if (!response.ok) throw new Error('Tide predictions are temporarily unavailable.');
-	const data = await response.json();
-	if (!Array.isArray(data.predictions))
+
+	const date = new Date();
+	const begin = new Date(date.getTime() - 24 * 3600000)
+		.toISOString()
+		.slice(0, 16)
+		.replace('T', ' ')
+		.replaceAll('-', '');
+	async function request(extra: Record<string, string>) {
+		const url = new URL('https://api.tidesandcurrents.noaa.gov/api/prod/datagetter');
+		url.search = new URLSearchParams({
+			application: 'wxcn',
+			datum: 'MLLW',
+			station: station!.id,
+			time_zone: 'gmt',
+			units: 'english',
+			format: 'json',
+			...extra
+		}).toString();
+		const response = await fetcher(url, { signal: AbortSignal.timeout(12000) });
+		if (!response.ok) throw new Error('Tide data is temporarily unavailable.');
+		return response.json();
+	}
+	const [extrema, continuous, observed] = await Promise.all([
+		request({ product: 'predictions', begin_date: begin, range: '72', interval: 'hilo' }),
+		request({ product: 'predictions', begin_date: begin, range: '72', interval: '6' }).catch(
+			() => null
+		),
+		request({ product: 'water_level', date: 'latest' }).catch(() => null)
+	]);
+	if (!Array.isArray(extrema.predictions))
 		throw new Error('This station has no high/low predictions available.');
+	const point = (p: { t: string; v: string }) => ({
+		time: p.t.replace(' ', 'T') + 'Z',
+		height: p.v
+	});
+	const latest = observed?.data
+		?.filter((p: { v: string }) => p.v.trim() && Number.isFinite(Number(p.v)))
+		.at(-1);
 	return {
 		station: {
 			label: station.name,
 			latitude: station.lat,
 			longitude: station.lng,
-			station: station.id
+			station: station.id,
+			distanceKm: Math.round(station.distance),
+			timeZone: location.timeZone ?? 'UTC'
 		},
-		predictions: data.predictions.map((p: { t: string; v: string; type: 'H' | 'L' }) => ({
-			time: p.t,
-			height: p.v,
+		predictions: extrema.predictions.map((p: { t: string; v: string; type: 'H' | 'L' }) => ({
+			...point(p),
 			type: p.type
-		})) as TidePrediction[]
+		})) as TidePrediction[],
+		series: Array.isArray(continuous?.predictions) ? continuous.predictions.map(point) : [],
+		reading: latest ? point(latest) : null
 	};
 }

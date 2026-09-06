@@ -13,5 +13,7 @@ export type {
 	LocationInput,
 	WeatherPeriod,
 	TidePrediction,
+	TidePoint,
+	TideReading,
 	MoonForecast as MoonForecastData
 } from './data/types.js';

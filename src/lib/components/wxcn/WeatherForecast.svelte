@@ -12,7 +12,7 @@
 		WeatherPeriod,
 		WeatherUnit
 	} from '$lib/data/types.js';
-	import { sampleWeather } from '$lib/data/weather.js';
+	import { sampleWeather, convertWindSpeed } from '$lib/data/weather.js';
 	let {
 		type = 'summary',
 		size = 'default',
@@ -23,6 +23,7 @@
 		location = { label: 'Austin, TX', latitude: 30.2672, longitude: -97.7431 },
 		forecast = sampleWeather,
 		sourceLabel = 'Sample forecast · Austin, TX',
+		windUnit = 'mph',
 		animatedBackground = false
 	}: {
 		type?: ForecastType;
@@ -34,6 +35,7 @@
 		location?: LocationInput;
 		forecast?: WeatherPeriod[];
 		sourceLabel?: string;
+		windUnit?: 'mph' | 'km/h' | 'm/s' | 'knots';
 		animatedBackground?: boolean;
 	} = $props();
 	const current = $derived(forecast[0]);
@@ -78,6 +80,7 @@
 </script>
 
 <Card.Root
+	style="container-type: inline-size"
 	size={size === 'sm' ? 'sm' : 'default'}
 	data-density={density}
 	data-card-size={size}
@@ -105,11 +108,20 @@
 					>
 						<WeatherShaderBackground mode={condition(current)} />
 					</div>{/if}
+				{#if animatedBackground}<div
+						class="pointer-events-none absolute inset-0 bg-linear-to-r from-black/55 via-black/25 to-black/10"
+						aria-hidden="true"
+					></div>{/if}
 				<div
-					class="relative z-10 w-fit rounded-lg bg-card/90 p-3 text-card-foreground backdrop-blur-sm"
+					class={`relative z-10 ${animatedBackground ? 'text-white [text-shadow:0_1px_5px_rgb(0_0_0/35%)]' : 'text-card-foreground'}`}
 				>
-					<p class="mb-2 text-xs text-muted-foreground">{current.name}</p>
 					<p
+						class={`mb-2 text-xs ${animatedBackground ? 'text-white/80' : 'text-muted-foreground'}`}
+					>
+						{current.name}
+					</p>
+					<p
+						style="font-size:clamp(2rem,16cqw,4.5rem)"
 						class={`font-medium tracking-tighter tabular-nums ${size === 'sm' ? 'text-4xl' : size === 'lg' ? 'text-7xl' : 'text-6xl'}`}
 					>
 						{temperature(current)}<span class="align-top text-3xl"
@@ -118,11 +130,16 @@
 					</p>
 					<p class="mt-2 text-sm">{current.shortForecast}</p>
 				</div>
-			</div>
-			<div class="flex items-center justify-between gap-3 text-sm">
-				<span class="flex items-center gap-2 text-muted-foreground"
-					><ForecastIcon name="wind" iconSet={iconType} class="size-4" />Wind</span
-				><span class="tabular-nums">{current.windDirection} {current.windSpeed}</span>
+
+				<div
+					class={`relative z-10 mt-5 flex flex-wrap items-center justify-between gap-3 text-xs ${animatedBackground ? 'text-white' : 'text-card-foreground'}`}
+				>
+					<span class="flex items-center gap-2 opacity-80"
+						><ForecastIcon name="wind" iconSet={iconType} class="size-4" />Wind</span
+					><span class="tabular-nums"
+						>{current.windDirection} {convertWindSpeed(current.windSpeed, windUnit)}</span
+					>
+				</div>
 			</div>
 			{#if type !== 'simple'}
 				<div class="divide-y border-t">

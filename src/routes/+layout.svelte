@@ -37,7 +37,7 @@
 			<a
 				href="/"
 				class="hidden items-center gap-2 text-sm font-semibold lg:flex"
-				aria-label="wxcn-svelte home"><Logo class="size-6" /><span>wxcn-svelte</span></a
+				aria-label="wxcn home"><Logo class="size-6" /><span>wxcn</span></a
 			>
 			<nav aria-label="Main navigation" class="hidden items-center gap-5 text-sm lg:flex">
 				{#each mainNavItems.slice(1) as link}<a

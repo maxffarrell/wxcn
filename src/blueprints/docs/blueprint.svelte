@@ -12,8 +12,7 @@
 </script>
 
 <svelte:head
-	><title
-		>{page.url.pathname.endsWith('endpoints') ? 'Data sources' : 'Components'} — wxcn-svelte</title
+	><title>{page.url.pathname.endsWith('endpoints') ? 'Data sources' : 'Components'} — wxcn</title
 	></svelte:head
 >
 <div class="container grid gap-10 py-10 lg:grid-cols-[180px_minmax(0,1fr)]">

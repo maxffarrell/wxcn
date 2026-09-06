@@ -27,7 +27,7 @@
 </script>
 
 <Button
-	aria-label={`View wxcn-svelte on GitHub (${stars} stars)`}
+	aria-label={`View wxcn on GitHub (${stars} stars)`}
 	href="https://github.com/maxffarrell/wxcn-svelte"
 	target="_blank"
 	rel="noreferrer"

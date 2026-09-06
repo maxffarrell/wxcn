@@ -83,12 +83,20 @@ for (const [name, component, data, description, registryDependencies] of definit
 				'wxcn/MoonDisc.svelte'
 			)
 		);
+	if (name === 'tide-forecast')
+		files.push(await file('src/lib/data/tide-state.ts', 'registry:lib', 'data/tide-state.ts'));
 	items.push({
 		$schema: 'https://shadcn-svelte.com/schema/registry-item.json',
 		name,
 		type: 'registry:component',
 		description,
 		registryDependencies,
+		...(name === 'tide-forecast'
+			? {
+					dependencies: ['layerchart@^2.4.0', 'd3-shape@^3.2.0'],
+					devDependencies: ['@types/d3-shape@^3.1.0']
+				}
+			: {}),
 		files
 	});
 }
@@ -117,8 +125,8 @@ await writeFile(
 	JSON.stringify(
 		{
 			$schema: 'https://shadcn-svelte.com/schema/registry.json',
-			name: 'wxcn-svelte',
-			homepage: 'https://wxcn-svelte.dev',
+			name: 'wxcn',
+			homepage: 'https://wxcn.dev',
 			items
 		},
 		null,

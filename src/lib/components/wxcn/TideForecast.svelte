@@ -11,6 +11,8 @@
 	import { sampleTides } from '$lib/data/tides.js';
 	let {
 		type = 'summary',
+		size = 'default',
+		density = 'comfortable',
 		class: className = '',
 		unit = 'ft',
 		iconType,
@@ -24,6 +26,8 @@
 		sourceLabel = 'Sample tides · station time'
 	}: {
 		type?: ForecastType;
+		size?: 'sm' | 'default' | 'lg';
+		density?: 'compact' | 'comfortable';
 		class?: string;
 		unit?: TideUnit;
 		iconType?: IconSet;
@@ -32,7 +36,10 @@
 		sourceLabel?: string;
 	} = $props();
 	const visible = $derived(
-		predictions.slice(0, type === 'simple' ? 2 : type === 'detailed' ? 8 : 4)
+		predictions.slice(
+			0,
+			type === 'simple' ? 1 : type === 'detailed' ? 8 : density === 'compact' ? 2 : 4
+		)
 	);
 	const height = (p: TidePrediction) =>
 		(Number(p.height) * (unit === 'meter' ? 0.3048 : 1)).toFixed(1);
@@ -55,7 +62,12 @@
 	});
 </script>
 
-<Card.Root class={`min-w-0 overflow-hidden ${className}`}>
+<Card.Root
+	size={size === 'sm' ? 'sm' : 'default'}
+	data-density={density}
+	data-card-size={size}
+	class={`min-w-0 overflow-hidden ${className}`}
+>
 	<Card.Header
 		><Card.Title>Tides</Card.Title><Card.Description>{location.label}</Card.Description><Card.Action
 			><ForecastIcon
@@ -77,20 +89,22 @@
 					>
 				</p>
 			</div>
-			<svg
-				viewBox="0 0 300 90"
-				class="h-24 w-full text-primary"
-				role="img"
-				aria-label="Schematic of supplied tide predictions"
-				><path
-					d="M10 75H290 M10 45H290 M10 15H290"
-					stroke="var(--border)"
-					stroke-dasharray="3 4"
-				/><path d={chart} fill="none" stroke="currentColor" stroke-width="2" /></svg
-			>
+			{#if visible.length > 1}
+				<svg
+					viewBox="0 0 300 90"
+					class={`w-full text-primary ${size === 'sm' ? 'h-14' : size === 'lg' ? 'h-36' : 'h-24'}`}
+					role="img"
+					aria-label="Schematic of supplied tide predictions"
+					><path
+						d="M10 75H290 M10 45H290 M10 15H290"
+						stroke="var(--border)"
+						stroke-dasharray="3 4"
+					/><path d={chart} fill="none" stroke="currentColor" stroke-width="2" /></svg
+				>
+			{/if}
 			<div class="divide-y border-t">
 				{#each visible as p, i (`${p.time}-${i}`)}<div
-						class="flex items-center justify-between gap-3 py-3 text-sm"
+						class={`flex items-center justify-between gap-3 text-sm ${density === 'compact' ? 'py-2' : 'py-3'}`}
 					>
 						<span>{p.type === 'H' ? 'High tide' : 'Low tide'}</span><span
 							class="ml-auto text-muted-foreground tabular-nums">{time(p)}</span

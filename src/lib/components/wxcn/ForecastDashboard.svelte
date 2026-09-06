@@ -12,6 +12,8 @@
 
 	let {
 		type = 'summary',
+		size = 'default',
+		density = 'comfortable',
 		weatherUnit = 'fahrenheit',
 		tideUnit = 'ft',
 		iconType,
@@ -24,6 +26,8 @@
 		}
 	}: {
 		type?: ForecastType;
+		size?: 'sm' | 'default' | 'lg';
+		density?: 'compact' | 'comfortable';
 		weatherUnit?: WeatherUnit;
 		tideUnit?: TideUnit;
 		iconType?: IconSet;
@@ -36,11 +40,13 @@
 <div class="grid gap-4 lg:grid-cols-3">
 	<WeatherForecast
 		{type}
+		{size}
+		{density}
 		unit={weatherUnit}
 		{iconType}
 		{location}
 		animatedBackground={animatedWeatherBackground}
 	/>
-	<TideForecast {type} unit={tideUnit} {iconType} location={tideLocation} />
-	<MoonForecast {type} {iconType} {location} />
+	<TideForecast {type} {size} {density} unit={tideUnit} {iconType} location={tideLocation} />
+	<MoonForecast {type} {size} {density} {iconType} {location} />
 </div>

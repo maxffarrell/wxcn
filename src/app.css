@@ -145,3 +145,17 @@
 		transition-duration: 0.01ms !important;
 	}
 }
+@utility no-scrollbar {
+	scrollbar-width: none;
+	&::-webkit-scrollbar {
+		display: none;
+	}
+}
+@utility extend-touch-target {
+	position: relative;
+	&::after {
+		content: '';
+		position: absolute;
+		inset: -0.5rem;
+	}
+}

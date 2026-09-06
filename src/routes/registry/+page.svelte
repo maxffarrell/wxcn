@@ -1,4 +1,6 @@
 <script lang="ts">
+	import PMBlock from '$lib/components/site/pm-block.svelte';
+	import { page } from '$app/state';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
@@ -35,6 +37,10 @@
 					<div class="rounded-lg border bg-muted p-3 font-mono text-xs text-muted-foreground">
 						{item.files.length} files · {item.registryDependencies.join(', ')}
 					</div>
+					<PMBlock
+						type="execute"
+						command={['shadcn-svelte@latest', 'add', `${page.url.origin}/r/${item.name}.json`]}
+					/>
 					<Button class="mt-4" href={`/r/${item.name}.json`} variant="outline"
 						>View installable JSON</Button
 					>

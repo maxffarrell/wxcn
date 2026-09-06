@@ -129,18 +129,25 @@ void main(){
   cloud.a+=(1.-cloud.a)*a;
  }
  vec3 color=sky*(1.-cloud.a)+cloud.rgb;
- // Fine precipitation at three depths, without flashing or glass overlays.
+ // Sparse, independently jittered particles at three depths. No repeated columns.
  for(int j=0;j<3;j++){
   float layer=float(j)+1.;
-  vec2 rain=p*vec2(72.,8.)*layer;
-  rain.x+=rain.y*.16; rain.y+=time*(5.+layer);
-  vec2 cell=floor(rain);vec2 f=fract(rain);
-  float drop=step(.82,hash(vec3(cell.x,0.,layer)))*(1.-smoothstep(.0,.055,abs(f.x-.5)))*smoothstep(.1,.85,f.y);
-  color+=vec3(.6,.69,.76)*drop*wet*.12;
-  vec2 flakes=p*(18.+layer*10.)+vec2(sin(time*.15+layer),time*(.16+layer*.1));
-  vec2 fid=floor(flakes);vec2 ff=fract(flakes)-.5;
-  float flake=(1.-smoothstep(.025,.085,length(ff)))*step(.72,hash(vec3(fid,layer)));
-  color+=vec3(.85,.88,.9)*flake*snow*.3;
+  vec2 rain=p*vec2(32.+layer*14.,7.+layer*4.);
+  rain.x+=rain.y*.09;
+  rain.y+=time*(2.2+layer*1.3);
+  vec2 cell=floor(rain);
+  vec2 center=vec2(.18+.64*hash(vec3(cell,layer)),.25+.5*hash(vec3(cell+17.,layer)));
+  vec2 local=fract(rain)-center;
+  float streak=(1.-smoothstep(.008,.028,abs(local.x)))*(1.-smoothstep(.06,.27,abs(local.y)));
+  streak*=step(.67,hash(vec3(cell+31.,layer)));
+  color=mix(color,vec3(.72,.78,.81),streak*wet*(.18+.05*layer));
+  vec2 flakes=p*(10.+layer*6.)+vec2(time*.025,time*(.13+layer*.06));
+  vec2 fid=floor(flakes);
+  vec2 jitter=vec2(.2+.6*hash(vec3(fid,layer)),.2+.6*hash(vec3(fid+9.,layer)));
+  vec2 ff=fract(flakes)-jitter;
+  ff.x+=sin(time*.5+hash(vec3(fid,layer))*6.28)*.035;
+  float flake=(1.-smoothstep(.01,.045,length(ff)))*step(.65,hash(vec3(fid+23.,layer)));
+  color=mix(color,vec3(.86,.89,.92),flake*snow*(.4+.1*layer));
  }
  float stars=pow(hash(vec3(floor(uv*resolution/2.),1.)),180.);
  color+=stars*.35*night*(1.-cloud.a);

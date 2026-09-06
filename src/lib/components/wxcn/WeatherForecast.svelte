@@ -15,6 +15,8 @@
 	import { sampleWeather } from '$lib/data/weather.js';
 	let {
 		type = 'summary',
+		size = 'default',
+		density = 'comfortable',
 		class: className = '',
 		unit = 'fahrenheit',
 		iconType,
@@ -24,6 +26,8 @@
 		animatedBackground = false
 	}: {
 		type?: ForecastType;
+		size?: 'sm' | 'default' | 'lg';
+		density?: 'compact' | 'comfortable';
 		class?: string;
 		unit?: WeatherUnit;
 		iconType?: IconSet;
@@ -33,7 +37,9 @@
 		animatedBackground?: boolean;
 	} = $props();
 	const current = $derived(forecast[0]);
-	const periods = $derived(forecast.slice(1, type === 'detailed' ? 8 : 5));
+	const periods = $derived(
+		forecast.slice(1, type === 'detailed' ? 8 : density === 'compact' ? 3 : 5)
+	);
 	function temperature(p: WeatherPeriod) {
 		return Math.round(
 			unit === 'celsius' && p.temperatureUnit === 'F'
@@ -71,7 +77,12 @@
 	}
 </script>
 
-<Card.Root class={`relative isolate min-w-0 overflow-hidden ${className}`}>
+<Card.Root
+	size={size === 'sm' ? 'sm' : 'default'}
+	data-density={density}
+	data-card-size={size}
+	class={`relative isolate min-w-0 overflow-hidden ${className}`}
+>
 	<Card.Header>
 		<Card.Title>Weather</Card.Title>
 		<Card.Description>{location.label ?? 'Local forecast'}</Card.Description>
@@ -84,8 +95,10 @@
 		>
 	</Card.Header>
 	{#if current}
-		<Card.Content class="grid gap-6">
-			<div class="relative isolate overflow-hidden rounded-lg border bg-muted/20 p-5">
+		<Card.Content class={density === 'compact' ? 'grid gap-3' : 'grid gap-6'}>
+			<div
+				class={`relative isolate overflow-hidden rounded-lg border bg-muted/20 ${size === 'sm' ? 'p-3' : size === 'lg' ? 'p-6' : 'p-5'}`}
+			>
 				{#if animatedBackground}<div
 						class="pointer-events-none absolute inset-0 -z-10"
 						aria-hidden="true"
@@ -96,7 +109,9 @@
 					class="relative z-10 w-fit rounded-lg bg-card/90 p-3 text-card-foreground backdrop-blur-sm"
 				>
 					<p class="mb-2 text-xs text-muted-foreground">{current.name}</p>
-					<p class="text-6xl font-medium tracking-tighter tabular-nums">
+					<p
+						class={`font-medium tracking-tighter tabular-nums ${size === 'sm' ? 'text-4xl' : size === 'lg' ? 'text-7xl' : 'text-6xl'}`}
+					>
 						{temperature(current)}<span class="align-top text-3xl"
 							>°{unit === 'celsius' ? 'C' : 'F'}</span
 						>
@@ -112,7 +127,9 @@
 			{#if type !== 'simple'}
 				<div class="divide-y border-t">
 					{#each periods as period, index (`${period.startTime}-${index}`)}
-						<div class="grid grid-cols-[1fr_auto_auto] items-center gap-4 py-3 text-sm">
+						<div
+							class={`grid grid-cols-[1fr_auto_auto] items-center gap-4 text-sm ${density === 'compact' ? 'py-2' : 'py-3'}`}
+						>
 							<div>
 								<p>{period.name}</p>
 								{#if type === 'detailed'}<p

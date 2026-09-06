@@ -7,6 +7,8 @@ export { fetchTidePredictions } from './data/tides.js';
 export { getMoonForecast } from './data/moon.js';
 export type {
 	ForecastType,
+	CardSize,
+	CardDensity,
 	IconSet,
 	LocationInput,
 	WeatherPeriod,

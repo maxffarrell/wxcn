@@ -1,4 +1,6 @@
 <script>
+ import PMBlock from "$lib/components/site/pm-block.svelte";
+ import { page } from "$app/state";
 	import ForecastDashboard from '$lib/components/wxcn/ForecastDashboard.svelte';
 	import WeatherForecast from '$lib/components/wxcn/WeatherForecast.svelte';
 	import TideForecast from '$lib/components/wxcn/TideForecast.svelte';
@@ -10,17 +12,22 @@
 		tideExample,
 		moonExample
 	} from '$lib/docs/component-examples.js';
+ const installCommand = $derived(['shadcn-svelte@latest', 'add', page.url.origin + '/r/forecast-dashboard.json']);
 </script>
 
 # Components
 
-`wxcn-svelte` ships registry-ready cards for forecast interfaces. Examples use deterministic Austin fixtures. Tides use Galveston Pier 21, since Austin is inland.
+`wxcn-svelte` ships registry-ready cards for forecast interfaces. The homepage requests browser location and loads local NWS weather and nearby NOAA tide predictions. If location is declined or unavailable, the Austin example remains clearly labeled. These documentation previews use deterministic fixtures.
 
 Install a card from `/r/weather-forecast.json`, `/r/moon-forecast.json`, or `/r/tide-forecast.json` using `shadcn-svelte add`. `/r/forecast-dashboard.json` installs the complete set. The registry resolves your existing base components, theme, aliases, and the icon library selected in `components.json`. No global wxcn stylesheet is needed.
 
+<PMBlock type="execute" command={installCommand} />
+
 The shared props are:
 
-- `type`: `summary`, `detailed`, or `simple`
+- `size`: `sm`, `default`, or `lg` — changes the visual scale and primitive sizing
+- `density`: `compact` or `comfortable` — changes row spacing and summary data count
+- `type`: `summary`, `detailed`, or `simple` — selects the amount of content
 - `iconType`: live icon switching in the npm/demo version. Registry installs use your `components.json` icon library at installation time.
 - `location`: `{ label, latitude, longitude, station }`
 - `unit`: `WeatherForecast` supports `fahrenheit` or `celsius`; `TideForecast` supports `ft` or `meter`

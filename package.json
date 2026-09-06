@@ -33,7 +33,7 @@
 		"package": "svelte-package",
 		"lint": "prettier --check .",
 		"registry:build": "node scripts/build-registry.mjs",
-		"test": "node scripts/build-registry.mjs && node --conditions=svelte --test scripts/registry.test.mjs"
+		"test": "node scripts/build-registry.mjs && node --conditions=svelte --test scripts/*.test.mjs"
 	},
 	"dependencies": {
 		"@fontsource-variable/geist": "^5.3.0",
@@ -44,12 +44,14 @@
 		"bits-ui": "^2.19.0",
 		"clsx": "^2.1.1",
 		"mode-watcher": "^1.1.0",
+		"package-manager-detector": "^1.8.0",
 		"phosphor-svelte": "^3.1.0",
 		"remixicon-svelte": "^0.0.5",
 		"tailwind-merge": "^3.6.0",
 		"tailwind-variants": "^3.3.1"
 	},
 	"devDependencies": {
+		"@internationalized/date": "^3.12.0",
 		"@sveltejs/adapter-vercel": "^6.3.4",
 		"@sveltejs/kit": "^2.70.3",
 		"@sveltejs/package": "^2.5.8",

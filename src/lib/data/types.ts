@@ -1,3 +1,5 @@
+export type CardSize = 'sm' | 'default' | 'lg';
+export type CardDensity = 'compact' | 'comfortable';
 export type ForecastType = 'summary' | 'detailed' | 'simple';
 export type IconSet = 'hugeicons' | 'phosphor-svelte' | 'lucide' | 'tabler' | 'remix';
 export type WeatherUnit = 'fahrenheit' | 'celsius';
@@ -8,6 +10,7 @@ export type LocationInput = {
 	latitude: number;
 	longitude: number;
 	station?: string;
+	timeZone?: string;
 };
 
 export type WeatherPeriod = {

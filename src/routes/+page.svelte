@@ -1,245 +1,448 @@
 <script lang="ts">
-	import { getContext } from 'svelte';
+	import { getContext, onMount } from 'svelte';
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import * as Select from '$lib/components/ui/native-select/index.js';
-	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
+	import Picker from '$lib/components/site/picker.svelte';
+	import PMBlock from '$lib/components/site/pm-block.svelte';
+	import Logo from '$lib/components/site/logo.svelte';
 	import WeatherForecast from '$lib/components/wxcn/WeatherForecast.svelte';
 	import MoonForecast from '$lib/components/wxcn/MoonForecast.svelte';
 	import TideForecast from '$lib/components/wxcn/TideForecast.svelte';
-	import WeatherShaderBackground, {
-		type WeatherShaderMode
-	} from '$lib/components/wxcn/WeatherShaderBackground.svelte';
-	import type { IconSet, WeatherUnit } from '$lib/data/types.js';
+	import Locate from '@lucide/svelte/icons/locate-fixed';
+	import Code from '@lucide/svelte/icons/code';
+	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import { sampleWeather } from '$lib/data/weather.js';
-	import ArrowRight from '@lucide/svelte/icons/arrow-right';
-	import Copy from '@lucide/svelte/icons/copy';
-	import Check from '@lucide/svelte/icons/check';
-	import MapPin from '@lucide/svelte/icons/map-pin';
+	import { sampleTides } from '$lib/data/tides.js';
+	import { getMoonForecast, sampleMoon } from '$lib/data/moon.js';
+	import type {
+		IconSet,
+		LocationInput,
+		WeatherPeriod,
+		TidePrediction,
+		WeatherUnit,
+		CardDensity,
+		ForecastType
+	} from '$lib/data/types.js';
 	const icons = getContext<{ value: IconSet }>('wxcn-icons');
-	let unit = $state<WeatherUnit>('fahrenheit');
-	let theme = $state('neutral');
-	let radius = $state('0.75rem');
-	let animated = $state(true);
-	let active = $state('all');
-	let copied = $state(false);
-	let copyError = $state('');
-	let scene = $state<WeatherShaderMode>('partly-cloudy');
+	let theme = $state('neutral'),
+		radius = $state('0.75rem'),
+		density = $state<CardDensity>('comfortable'),
+		unit = $state<WeatherUnit>('fahrenheit'),
+		animation = $state('on');
+	let scene = $state('live');
+	let codeOpen = $state(false),
+		ready = $state(false);
+	const item = $derived(
+		['weather', 'moon', 'tides'].includes(page.url.searchParams.get('item') ?? '')
+			? page.url.searchParams.get('item')!
+			: 'all'
+	);
+	let location = $state<LocationInput>({
+		label: 'Austin, TX',
+		latitude: 30.2672,
+		longitude: -97.7431
+	});
+	let forecast = $state<WeatherPeriod[]>(sampleWeather),
+		moon = $state(sampleMoon),
+		tides = $state<TidePrediction[]>(sampleTides);
+	let tideLocation = $state<LocationInput>({
+		label: 'Galveston Pier 21, TX',
+		latitude: 29.31,
+		longitude: -94.7933,
+		station: '8771450'
+	});
+	let status = $state<'sample' | 'locating' | 'loading' | 'live' | 'error'>('sample');
+	let message = $state('Use your location to see your forecast in every card.'),
+		tideSource = $state('Coastal example · station time');
+	let locationRequest = 0;
 	const themes: Record<string, string> = {
 		neutral: '',
 		blue: 'oklch(0.546 0.245 262.881)',
 		green: 'oklch(0.50 0.14 155)',
 		orange: 'oklch(0.60 0.17 45)'
 	};
-	const scenes: { value: WeatherShaderMode; label: string }[] = [
-		{ value: 'partly-cloudy', label: 'Clouds' },
-		{ value: 'clear', label: 'Clear' },
-		{ value: 'sunset', label: 'Sunset' },
-		{ value: 'rain', label: 'Rain' },
-		{ value: 'snow', label: 'Snow' },
-		{ value: 'clear-night', label: 'Night' }
-	];
-	const command = 'pnpm dlx shadcn-svelte@latest add ';
-	async function copyCommand() {
+	const sizeOptions = [
+		{ size: 'sm', type: 'simple', title: 'Small', description: 'A glance. Just the essentials.' },
+		{ size: 'default', type: 'summary', title: 'Standard', description: 'The everyday forecast.' },
+		{ size: 'lg', type: 'detailed', title: 'Expanded', description: 'More room for the details.' }
+	] as const;
+	const conditions: Record<string, string> = {
+		rain: 'Rain',
+		snow: 'Snow',
+		clear: 'Sunny',
+		night: 'Clear',
+		clouds: 'Partly Cloudy'
+	};
+	const displayedForecast = $derived(
+		scene === 'live'
+			? forecast
+			: forecast.map((p, i) =>
+					i
+						? p
+						: {
+								...p,
+								shortForecast: conditions[scene] ?? 'Partly Cloudy',
+								isDaytime: scene !== 'night'
+							}
+				)
+	);
+	const weatherSource = $derived(
+		scene !== 'live'
+			? 'Condition preview'
+			: status === 'live'
+				? 'NWS · live forecast'
+				: 'Austin example · sample data'
+	);
+	function selectItem(value: string) {
+		const url = new URL(page.url);
+		if (value === 'all') url.searchParams.delete('item');
+		else url.searchParams.set('item', value);
+		void goto(url, { replaceState: true, noScroll: true, keepFocus: true });
+	}
+	function reset() {
+		theme = 'neutral';
+		radius = '0.75rem';
+		density = 'comfortable';
+		unit = 'fahrenheit';
+		animation = 'on';
+		scene = 'live';
+		icons.value = 'lucide';
+	}
+	async function updateLocation(coords: { latitude: number; longitude: number }, request: number) {
+		status = 'loading';
+		message = 'Loading your local forecast…';
+		const query = new URLSearchParams({
+			latitude: coords.latitude.toFixed(4),
+			longitude: coords.longitude.toFixed(4)
+		});
 		try {
-			await navigator.clipboard.writeText(
-				`${command}${window.location.origin}/r/weather-forecast.json`
-			);
-			copied = true;
-			copyError = '';
+			const response = await fetch(`/api/forecast?${query}`, {
+				signal: AbortSignal.timeout(26000)
+			});
+			const data = await response.json();
+			if (!response.ok) throw new Error(data.message);
+			if (request !== locationRequest) return;
+			location = data.location;
+			forecast = data.forecast;
+			moon = getMoonForecast(new Date());
+			status = 'live';
+			message = `Forecast for ${location.label}.`;
+		} catch (error) {
+			if (request !== locationRequest) return;
+			status = 'error';
+			message = `${error instanceof Error ? error.message : 'Could not load weather.'} Showing the Austin example.`;
+			return;
+		}
+		tides = [];
+		tideLocation = { ...coords, label: 'Checking nearby tide stations' };
+		tideSource = 'Finding a coastal station…';
+		try {
+			const response = await fetch(`/api/tides?${query}`, { signal: AbortSignal.timeout(26000) });
+			const data = await response.json();
+			if (!response.ok) throw new Error(data.message);
+			if (request !== locationRequest) return;
+			tides = data.predictions;
+			tideLocation = data.station ?? { ...coords, label: 'No nearby coastal station' };
+			tideSource = data.station
+				? 'NOAA · live predictions · station time'
+				: 'No tide station within 100 km';
 		} catch {
-			copyError = 'Select and copy the command below.';
+			if (request !== locationRequest) return;
+			tideLocation = { ...coords, label: 'Tide service unavailable' };
+			tideSource = 'Unable to load local tides';
 		}
 	}
+	function resetLocationData() {
+		location = { label: 'Austin, TX', latitude: 30.2672, longitude: -97.7431 };
+		forecast = sampleWeather;
+		tides = sampleTides;
+		tideLocation = {
+			label: 'Galveston Pier 21, TX',
+			latitude: 29.31,
+			longitude: -94.7933,
+			station: '8771450'
+		};
+		tideSource = 'Coastal example · station time';
+	}
+
+	function useLocation() {
+		resetLocationData();
+		if (!navigator.geolocation) {
+			message = 'Location is unavailable in this browser. Showing the Austin example.';
+			status = 'error';
+			return;
+		}
+		const request = ++locationRequest;
+		status = 'locating';
+		message = 'Waiting for location permission…';
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				if (request === locationRequest) void updateLocation(position.coords, request);
+			},
+			(error) => {
+				if (request !== locationRequest) return;
+				status = 'error';
+				message =
+					error.code === 1
+						? 'Location permission was declined. Showing the Austin example.'
+						: 'Could not determine your location. Showing the Austin example.';
+			},
+			{ enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+		);
+	}
+	onMount(() => {
+		ready = true;
+		moon = getMoonForecast(new Date());
+		useLocation();
+		return () => {
+			locationRequest++;
+		};
+	});
+	const registryName = $derived(
+		item === 'all' ? 'forecast-dashboard' : item === 'tides' ? 'tide-forecast' : `${item}-forecast`
+	);
 </script>
 
 <svelte:head
-	><title>wxcn-svelte — Weather components for your design system</title><meta
+	><title>wxcn-svelte — Make the forecast your own</title><meta
 		name="description"
-		content="Theme-aware weather, moon, and tide cards built with shadcn-svelte. Copy the code, keep your theme, and make it your own."
+		content="Customize weather, moon, and tide cards for your shadcn-svelte project. Explore sizes, data density, themes, and icons."
 	/></svelte:head
 >
-<main>
-	<section class="container flex flex-col items-center pt-16 pb-14 text-center md:pt-16 md:pb-12">
-		<Badge variant="secondary" class="mb-6 gap-2"
-			>The forecast, in your design system <ArrowRight class="size-3" /></Badge
+<main
+	class="flex h-[calc(100svh-4rem)] min-h-0 flex-col gap-4 overflow-hidden bg-muted/35 p-4 pt-1 md:flex-row-reverse md:gap-6 md:p-6 md:pt-1"
+	data-slot="designer"
+>
+	<h1 class="sr-only">Customize weather, moon, and tide cards</h1>
+	<section class="flex min-h-0 min-w-0 flex-1 flex-col gap-3" aria-label="Forecast previews">
+		<div class="flex min-w-0 items-center gap-3 px-1">
+			<Logo class="size-5 shrink-0 lg:hidden" />
+			<p class="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+				Weather components. Your location. Your design system.
+			</p>
+			<Button size="sm" onclick={() => (codeOpen = true)}><Code class="size-4" />Get code</Button>
+		</div>
+		<div
+			class="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl bg-background ring-1 ring-foreground/10"
+			style={`--radius:${radius};${themes[theme] ? `--primary:${themes[theme]};--primary-foreground:white;` : ''}`}
 		>
-		<h1
-			class="max-w-6xl text-4xl leading-[1.08] font-semibold tracking-[-0.045em] text-balance sm:text-5xl lg:text-5xl"
-		>
-			The forecast for your design system.
-		</h1>
-		<p class="mt-5 max-w-2xl text-base leading-7 text-pretty text-muted-foreground sm:text-lg">
-			Beautiful weather, moon, and tide components. Built on shadcn-svelte.<br
-				class="hidden sm:block"
-			/> Your theme. Your icons. Your code.
-		</p>
-		<div class="mt-7 flex gap-3">
-			<Button href="/docs/components">Explore components <ArrowRight class="size-4" /></Button
-			><Button href="/registry" variant="outline">View registry</Button>
+			<div
+				class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b px-3 py-2 md:px-5"
+			>
+				<nav aria-label="Card collection" class="flex gap-1">
+					{#each [{ value: 'all', label: 'All cards' }, { value: 'weather', label: 'Weather' }, { value: 'moon', label: 'Moon' }, { value: 'tides', label: 'Tides' }] as entry}<Button
+							size="sm"
+							variant={item === entry.value ? 'secondary' : 'ghost'}
+							aria-pressed={item === entry.value}
+							onclick={() => selectItem(entry.value)}>{entry.label}</Button
+						>{/each}
+				</nav>
+				<Button
+					size="sm"
+					variant="ghost"
+					disabled={status === 'locating' || status === 'loading'}
+					onclick={useLocation}
+					><Locate class="size-3.5" /><span class="max-w-40 truncate"
+						>{status === 'live'
+							? location.label
+							: status === 'loading'
+								? 'Loading forecast…'
+								: status === 'locating'
+									? 'Locating…'
+									: 'Use my location'}</span
+					></Button
+				>
+			</div>
+			<div
+				class="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 md:p-6"
+				data-slot="preview-scroll"
+			>
+				<p class="mb-6 text-xs leading-5 text-muted-foreground" role="status">{message}</p>
+				{#each ['weather', 'moon', 'tides'] as collection}
+					{#if item === 'all' || item === collection}
+						<section class="mb-10 last:mb-2" aria-label={`${collection} card sizes`}>
+							<div class="mb-5 flex items-end justify-between gap-3">
+								<div>
+									<h2 class="text-lg font-semibold tracking-tight">
+										{collection === 'weather'
+											? 'Weather forecast'
+											: collection === 'moon'
+												? 'Moon phase'
+												: 'Tide forecast'}
+									</h2>
+									<p class="mt-1 text-xs text-muted-foreground">
+										{collection === 'weather'
+											? location.label
+											: collection === 'moon'
+												? 'The current lunar cycle'
+												: tideLocation.label}
+									</p>
+								</div>
+								<span class="text-xs text-muted-foreground">3 sizes</span>
+							</div>
+							<div
+								class="grid items-start gap-5 xl:grid-cols-[minmax(0,.8fr)_minmax(0,1fr)_minmax(0,1.2fr)]"
+							>
+								{#each sizeOptions as example}
+									<div class="min-w-0">
+										<div class="mb-3 flex items-baseline justify-between gap-2">
+											<span class="text-xs font-medium">{example.title}</span><span
+												class="text-[11px] text-muted-foreground"
+												>{example.type === 'simple'
+													? 'Essential'
+													: example.type === 'summary'
+														? 'Summary'
+														: 'Detailed'}</span
+											>
+										</div>
+										{#if collection === 'weather'}<WeatherForecast
+												size={example.size}
+												type={example.type}
+												{density}
+												{unit}
+												{location}
+												forecast={displayedForecast}
+												sourceLabel={weatherSource}
+												animatedBackground={animation === 'on'}
+											/>
+										{:else if collection === 'moon'}<MoonForecast
+												size={example.size}
+												type={example.type}
+												{density}
+												{location}
+												forecast={moon}
+											/>
+										{:else}<TideForecast
+												size={example.size}
+												type={example.type}
+												{density}
+												predictions={tides}
+												location={tideLocation}
+												sourceLabel={tideSource}
+											/>{/if}
+										<p class="mt-3 text-xs text-muted-foreground">{example.description}</p>
+									</div>
+								{/each}
+							</div>
+						</section>
+					{/if}
+				{/each}
+			</div>
 		</div>
 	</section>
-	<section
-		class="container"
-		aria-label="Component playground"
-		style={`--radius:${radius};${themes[theme] ? `--primary:${themes[theme]};--primary-foreground:white;` : ''}`}
+	<aside
+		class="dark flex shrink-0 flex-col overflow-hidden rounded-2xl bg-card text-card-foreground shadow-xl ring-1 ring-foreground/10 md:w-52 2xl:w-56"
+		aria-label="Customize cards"
 	>
-		<div class="flex flex-wrap items-center justify-between gap-4 border-b pb-4">
-			<div class="flex gap-1" aria-label="Component filter">
-				{#each [{ value: 'all', label: 'All components' }, { value: 'weather', label: 'Weather' }, { value: 'moon', label: 'Moon' }, { value: 'tides', label: 'Tides' }] as tab}<Button
-						size="sm"
-						variant={active === tab.value ? 'secondary' : 'ghost'}
-						aria-pressed={active === tab.value}
-						onclick={() => (active = tab.value)}>{tab.label}</Button
-					>{/each}
-			</div>
-			<p class="flex items-center gap-1.5 text-xs text-muted-foreground">
-				<MapPin class="size-3.5" />Austin, Texas <span class="mx-1 text-border">/</span>Sample data
+		<div class="hidden items-center justify-between border-b px-4 py-3 md:flex">
+			<span class="text-sm font-medium">Customize</span><Button
+				size="icon-xs"
+				variant="ghost"
+				aria-label="Reset appearance"
+				onclick={reset}><RotateCcw class="size-3.5" /></Button
+			>
+		</div>
+		<div
+			class="no-scrollbar flex min-h-0 gap-2.5 overflow-x-auto px-3 py-3 md:flex-1 md:flex-col md:overflow-x-hidden md:overflow-y-auto"
+			data-slot="picker-scroll"
+		>
+			<Picker
+				label="Theme"
+				bind:value={theme}
+				options={[
+					{ value: 'neutral', label: 'Neutral' },
+					{ value: 'blue', label: 'Blue' },
+					{ value: 'green', label: 'Green' },
+					{ value: 'orange', label: 'Orange' }
+				]}
+			/>
+			<Picker
+				label="Icon library"
+				bind:value={icons.value}
+				options={[
+					{ value: 'lucide', label: 'Lucide' },
+					{ value: 'hugeicons', label: 'Hugeicons' },
+					{ value: 'phosphor-svelte', label: 'Phosphor' },
+					{ value: 'tabler', label: 'Tabler' },
+					{ value: 'remix', label: 'Remix Icon' }
+				]}
+			/>
+			<Picker
+				label="Radius"
+				bind:value={radius}
+				options={[
+					{ value: '0rem', label: 'Square' },
+					{ value: '0.5rem', label: 'Medium' },
+					{ value: '0.75rem', label: 'Large' },
+					{ value: '1rem', label: 'Extra large' }
+				]}
+			/>
+			<Picker
+				label="Data density"
+				bind:value={density}
+				options={[
+					{ value: 'comfortable', label: 'Comfortable' },
+					{ value: 'compact', label: 'Compact' }
+				]}
+			/>
+			<Picker
+				label="Temperature"
+				bind:value={unit}
+				options={[
+					{ value: 'fahrenheit', label: 'Fahrenheit' },
+					{ value: 'celsius', label: 'Celsius' }
+				]}
+			/>
+			<Picker
+				label="Background"
+				bind:value={animation}
+				options={[
+					{ value: 'on', label: 'Animated' },
+					{ value: 'off', label: 'Plain' }
+				]}
+			/>
+			<Picker
+				label="Weather preview"
+				bind:value={scene}
+				options={[
+					{ value: 'live', label: 'Local forecast' },
+					{ value: 'clear', label: 'Clear sky' },
+					{ value: 'clouds', label: 'Clouds' },
+					{ value: 'rain', label: 'Rain' },
+					{ value: 'snow', label: 'Snow' },
+					{ value: 'night', label: 'Night' }
+				]}
+			/>
+		</div>
+		<div class="hidden border-t p-3 md:block">
+			<Button class="w-full" variant="secondary" onclick={() => (codeOpen = true)}
+				><Code class="size-4" />Get code</Button
+			>
+			<p class="mt-3 px-1 text-[11px] leading-5 text-muted-foreground">
+				Your theme and icons come from your project's components.json.
 			</p>
 		</div>
-		<div class="flex flex-wrap items-center gap-x-5 gap-y-3 py-5 text-xs">
-			<label class="flex items-center gap-2 text-muted-foreground"
-				>Theme<Select.Root aria-label="Theme color" bind:value={theme}
-					><Select.Option value="neutral">Neutral</Select.Option><Select.Option value="blue"
-						>Blue</Select.Option
-					><Select.Option value="green">Green</Select.Option><Select.Option value="orange"
-						>Orange</Select.Option
-					></Select.Root
-				></label
-			>
-			<label class="flex items-center gap-2 text-muted-foreground"
-				>Icons<Select.Root aria-label="Icon library" bind:value={icons.value}
-					><Select.Option value="lucide">Lucide</Select.Option><Select.Option value="hugeicons"
-						>Hugeicons</Select.Option
-					><Select.Option value="phosphor-svelte">Phosphor</Select.Option><Select.Option
-						value="tabler">Tabler</Select.Option
-					><Select.Option value="remix">Remix Icon</Select.Option></Select.Root
-				></label
-			>
-			<label class="flex items-center gap-2 text-muted-foreground"
-				>Radius<Select.Root aria-label="Corner radius" bind:value={radius}
-					><Select.Option value="0rem">Square</Select.Option><Select.Option value="0.5rem"
-						>Medium</Select.Option
-					><Select.Option value="0.75rem">Large</Select.Option><Select.Option value="1rem"
-						>Extra large</Select.Option
-					></Select.Root
-				></label
-			>
-			<div class="flex items-center gap-2 sm:ml-auto">
-				<Button
-					size="xs"
-					variant="outline"
-					aria-pressed={animated}
-					onclick={() => (animated = !animated)}
-					>{animated ? 'Animation on' : 'Animation off'}</Button
-				><Select.Root aria-label="Temperature unit" bind:value={unit}
-					><Select.Option value="fahrenheit">°F</Select.Option><Select.Option value="celsius"
-						>°C</Select.Option
-					></Select.Root
-				>
-			</div>
-		</div>
-		<div class="grid items-start gap-5 lg:grid-cols-3">
-			{#if active === 'all' || active === 'weather'}
-				<div class="grid gap-5">
-					<WeatherForecast {unit} animatedBackground={animated} />
-					<div class="px-1">
-						<p class="text-sm font-medium">Weather forecast</p>
-						<p class="mt-1 text-xs leading-5 text-muted-foreground">
-							A forecast that feels at home in your app.
-						</p>
-					</div>
-				</div>
-			{/if}
-			{#if active === 'all' || active === 'moon'}<div class="grid gap-5">
-					<MoonForecast />{#if active === 'all'}<WeatherForecast
-							type="simple"
-							{unit}
-							forecast={[{ ...sampleWeather[1], name: 'Tonight' }]}
-							animatedBackground={animated}
-						/>{/if}
-				</div>{/if}
-			{#if active === 'all' || active === 'tides'}<div class="grid gap-5">
-					<TideForecast /><Card.Root
-						><Card.Header
-							><Card.Title>Made to be yours.</Card.Title><Card.Description
-								>Real shadcn-svelte primitives, from the inside out.</Card.Description
-							></Card.Header
-						><Card.Content class="flex flex-wrap gap-2"
-							><Badge variant="secondary">CSS variables</Badge><Badge variant="secondary"
-								>Selected icons</Badge
-							><Badge variant="secondary">Svelte 5</Badge></Card.Content
-						><Card.Footer
-							><Button href="/docs/components" variant="outline" class="w-full"
-								>Make it your own <ArrowRight class="size-4" /></Button
-							></Card.Footer
-						></Card.Root
-					>
-				</div>{/if}
-		</div>
-		<p class="mt-5 text-xs text-muted-foreground">
-			Austin weather and lunar examples. Tide examples use Galveston Pier 21 on the Texas coast. All
-			forecasts shown are fixtures.
-		</p>
-	</section>
-	<section class="container mt-20">
-		<div class="grid gap-8 border-t pt-10 md:grid-cols-[1fr_1.2fr] md:items-center">
-			<div>
-				<p class="mb-3 text-xs text-muted-foreground">Small detail. Different feeling.</p>
-				<h2 class="text-3xl font-semibold tracking-tight">Let the weather in.</h2>
-				<p class="mt-4 max-w-md text-sm leading-6 text-muted-foreground">
-					Slow-moving clouds. Soft evening light. Rain with depth. A quiet layer of atmosphere,
-					contained within the card.
-				</p>
-				<div class="mt-6 flex flex-wrap gap-1">
-					{#each scenes as s}<Button
-							size="sm"
-							variant={scene === s.value ? 'secondary' : 'ghost'}
-							aria-pressed={scene === s.value}
-							onclick={() => (scene = s.value)}>{s.label}</Button
-						>{/each}
-				</div>
-				<p class="mt-4 text-xs text-muted-foreground">
-					Respects reduced motion. Pauses when out of view.
-				</p>
-			</div>
-			<Card.Root class="relative isolate min-h-72 overflow-hidden"
-				><WeatherShaderBackground mode={scene} paused={!animated} />
-				<div
-					class="absolute right-5 bottom-5 left-5 rounded-lg border bg-card/95 p-4 text-card-foreground backdrop-blur-sm"
-				>
-					<p class="text-sm font-medium">
-						{scenes.find((s) => s.value === scene)?.label} in the forecast
-					</p>
-					<p class="mt-1 text-xs text-muted-foreground">
-						An atmospheric preview, ready for your card.
-					</p>
-				</div></Card.Root
-			>
-		</div>
-	</section>
-	<section class="container mt-20">
-		<div
-			class="flex flex-col justify-between gap-6 rounded-xl border bg-muted/20 p-6 sm:flex-row sm:items-center"
-		>
-			<div>
-				<h2 class="text-lg font-medium tracking-tight">
-					Copy the component. Keep your conventions.
-				</h2>
-				<p class="mt-2 text-sm text-muted-foreground">
-					The CLI uses your base components, aliases, and selected icon library.
-				</p>
-			</div>
-			<Button variant="outline" onclick={copyCommand}
-				>{#if copied}<Check class="size-4" />Copied{:else}<Copy class="size-4" />Copy install
-					command{/if}</Button
-			>
-		</div>
-		{#if copyError}<p role="status" class="mt-3 text-sm">{copyError}</p>
-			<code class="block overflow-auto p-3 text-xs"
-				>{command}{typeof window !== 'undefined'
-					? window.location.origin
-					: ''}/r/weather-forecast.json</code
-			>{/if}
-	</section>
+	</aside>
 </main>
+<Dialog.Root bind:open={codeOpen}
+	><Dialog.Content class="sm:max-w-2xl"
+		><Dialog.Header
+			><Dialog.Title>Add to your project</Dialog.Title><Dialog.Description
+				>Install the selected collection. Your base components, theme, and icon library stay yours.</Dialog.Description
+			></Dialog.Header
+		><PMBlock
+			type="execute"
+			command={[
+				'shadcn-svelte@latest',
+				'add',
+				`${ready ? page.url.origin : ''}/r/${registryName}.json`
+			]}
+		/>
+		<p class="text-xs leading-5 text-muted-foreground">
+			Use <code>size="sm" | "default" | "lg"</code> and
+			<code>density="compact" | "comfortable"</code> to adapt each card.
+		</p></Dialog.Content
+	></Dialog.Root
+>

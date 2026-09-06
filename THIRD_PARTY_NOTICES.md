@@ -1,6 +1,6 @@
 # shadcn-svelte
 
-The UI primitives in `src/lib/components/ui/` and their Nova styles are derived from https://github.com/huntabyte/shadcn-svelte, retrieved September 6, 2026.
+The UI primitives in `src/lib/components/ui/` and the site components (mobile navigation, mode switcher, GitHub link, PMBlock, clipboard and package-manager utilities) are derived from https://github.com/huntabyte/shadcn-svelte, retrieved September 6, 2026. The create-layout reference is PR #2755 at commit 07d9093edfd3bf8d599fb874c5e37645b9e41127.
 
 MIT License
 

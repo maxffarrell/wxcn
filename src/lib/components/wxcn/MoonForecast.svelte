@@ -1,4 +1,5 @@
 <script lang="ts">
+	import MoonDisc from './MoonDisc.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import ForecastIcon from '$lib/icons/forecast-icons.svelte';
 	import type {
@@ -10,6 +11,8 @@
 	import { sampleMoon } from '$lib/data/moon.js';
 	let {
 		type = 'summary',
+		size = 'default',
+		density = 'comfortable',
 		class: className = '',
 		iconType,
 		location = { label: 'Austin, TX', latitude: 30.2672, longitude: -97.7431 },
@@ -17,6 +20,8 @@
 		sourceLabel = 'Lunar cycle estimate'
 	}: {
 		type?: ForecastType;
+		size?: 'sm' | 'default' | 'lg';
+		density?: 'compact' | 'comfortable';
 		class?: string;
 		iconType?: IconSet;
 		location?: LocationInput;
@@ -27,13 +32,17 @@
 		new Intl.DateTimeFormat('en-US', {
 			month: 'short',
 			day: 'numeric',
-			timeZone: 'America/Chicago'
+			timeZone: location.timeZone ?? 'UTC'
 		}).format(new Date(v));
 	const phase = $derived(forecast.age / 29.530588853);
-	const moonId = $props.id();
 </script>
 
-<Card.Root class={`min-w-0 overflow-hidden ${className}`}>
+<Card.Root
+	size={size === 'sm' ? 'sm' : 'default'}
+	data-density={density}
+	data-card-size={size}
+	class={`min-w-0 overflow-hidden ${className}`}
+>
 	<Card.Header
 		><Card.Title>Moon phase</Card.Title><Card.Description>{location.label}</Card.Description
 		><Card.Action
@@ -44,38 +53,27 @@
 			/></Card.Action
 		></Card.Header
 	>
-	<Card.Content class="grid gap-5">
-		<div class="flex items-center gap-6 rounded-lg border bg-muted/20 p-5">
-			<svg
-				viewBox="0 0 100 100"
-				class="size-24 shrink-0"
-				role="img"
-				aria-label={`${forecast.phaseName}, ${forecast.illumination}% illuminated`}
-			>
-				<defs
-					><radialGradient id={`${moonId}-light`} cx="35%" cy="30%"
-						><stop stop-color="#f4f4f4" /><stop offset="1" stop-color="#999" /></radialGradient
-					><clipPath id={`${moonId}-clip`}><circle cx="50" cy="50" r="46" /></clipPath></defs
-				>
-				<circle cx="50" cy="50" r="46" fill={`url(#${moonId}-light)`} />
-				<g clip-path={`url(#${moonId}-clip)`} fill="#555" opacity=".22"
-					><circle cx="33" cy="35" r="12" /><circle cx="63" cy="62" r="16" /><circle
-						cx="72"
-						cy="29"
-						r="8"
-					/><circle cx="30" cy="71" r="6" /><circle cx="47" cy="55" r="7" /></g
-				>
-				<path
-					d={`M50 4 A46 46 0 0 ${phase < 0.5 ? 0 : 1} 50 96 A${Math.abs(Math.cos(phase * Math.PI * 2)) * 46} 46 0 0 ${Math.cos(phase * Math.PI * 2) > 0 ? (phase < 0.5 ? 0 : 1) : phase < 0.5 ? 1 : 0} 50 4`}
-					fill="#171717"
-				/>
-			</svg>
+	<Card.Content class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}>
+		<div
+			class={`flex items-center gap-4 ${size === 'lg' ? 'flex-col rounded-lg bg-muted/20 p-5 text-center' : ''}`}
+		>
+			<MoonDisc
+				{phase}
+				label={`${forecast.phaseName}, ${forecast.illumination}% illuminated`}
+				class={size === 'sm'
+					? 'size-16 shrink-0'
+					: size === 'lg'
+						? 'size-36 shrink-0'
+						: 'size-24 shrink-0'}
+			/>
 			<div>
-				<p class="text-2xl font-medium tracking-tight">{forecast.phaseName}</p>
+				<p class={`font-medium tracking-tight ${size === 'sm' ? 'text-lg' : 'text-2xl'}`}>
+					{forecast.phaseName}
+				</p>
 				<p class="mt-2 text-sm text-muted-foreground">{forecast.illumination}% illuminated</p>
 			</div>
 		</div>
-		{#if type !== 'simple'}<dl class="divide-y text-sm">
+		{#if type !== 'simple'}<dl class="moon-data divide-y text-sm">
 				<div class="flex justify-between gap-4 pb-3">
 					<dt class="text-muted-foreground">Moon age</dt>
 					<dd>{forecast.age} days</dd>
@@ -98,3 +96,9 @@
 		>{sourceLabel} · {date(forecast.date)}</Card.Footer
 	>
 </Card.Root>
+
+<style>
+	:global([data-density='compact']) .moon-data > div {
+		padding-block: 0.4rem;
+	}
+</style>

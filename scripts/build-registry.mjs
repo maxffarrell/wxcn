@@ -75,6 +75,14 @@ for (const [name, component, data, description, registryDependencies] of definit
 				'wxcn/WeatherShaderBackground.svelte'
 			)
 		);
+	if (name === 'moon-forecast')
+		files.push(
+			await file(
+				'src/lib/components/wxcn/MoonDisc.svelte',
+				'registry:component',
+				'wxcn/MoonDisc.svelte'
+			)
+		);
 	items.push({
 		$schema: 'https://shadcn-svelte.com/schema/registry-item.json',
 		name,

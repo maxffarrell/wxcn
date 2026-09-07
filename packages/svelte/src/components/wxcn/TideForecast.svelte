@@ -6,6 +6,7 @@
 	import { curveMonotoneX } from 'd3-shape';
 	import * as Card from '../ui/card/index.js';
 	import ForecastScreens from './ForecastScreens.svelte';
+	import ForecastIcon from '../../icons/forecast-icons.svelte';
 	import { forecastDays } from '@wxcn/core/forecast-days.js';
 	import type {
 		ForecastType,
@@ -143,13 +144,21 @@
 	size={size === 'sm' ? 'sm' : 'default'}
 	data-density={density}
 	data-card-size={size}
-	class={`min-w-0 overflow-hidden ${className}`}
+	class={`relative isolate min-w-0 overflow-hidden ${className}`}
 >
-	<ForecastScreens {interactive} {days} title="Tide" {density} {sourceLabel}>
-		{#snippet children(openDay)}
+	<ForecastScreens
+		{interactive}
+		{days}
+		title="Tide"
+		{density}
+		{sourceLabel}
+		{iconType}
+		showWeek={size === 'sm' || type === 'simple'}
+	>
+		{#snippet children(openDay, weekAction)}
 			<Card.Header
 				><Card.Title>Tides</Card.Title><Card.Description>{location.label}</Card.Description
-				></Card.Header
+				>{@render weekAction(false)}</Card.Header
 			>
 			<Card.Content class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}>
 				{#if tide.events.length || tide.points.length}
@@ -300,6 +309,61 @@
 					</p>{/if}
 				{#if sourceLabel}<p class="text-[10px] text-muted-foreground">{sourceLabel}</p>{/if}
 			</Card.Content>
+		{/snippet}
+		{#snippet detail(day)}
+			{@const events = tide.events.filter((event) =>
+				day.entries.some((entry) => entry.time === tideTimestamp(event.time))
+			)}
+			{@const highs = events
+				.filter((event) => event.type === 'H')
+				.map((event) => Number(event.height))}
+			{@const lows = events
+				.filter((event) => event.type === 'L')
+				.map((event) => Number(event.height))}
+			<div class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'} data-slot="tide-day-detail">
+				<dl class="grid grid-cols-2 gap-4 border-b pb-4">
+					{#each [{ label: 'High tide', values: highs, value: Math.max(...highs), icon: 'arrowUp' as const }, { label: 'Low tide', values: lows, value: Math.min(...lows), icon: 'arrowDown' as const }] as entry}
+						<div>
+							<dt class="flex items-center gap-2 text-xs text-muted-foreground">
+								<ForecastIcon name={entry.icon} iconSet={iconType} class="size-3.5" />{entry.label}
+							</dt>
+							<dd class="mt-2 text-2xl font-medium tracking-tight tabular-nums">
+								{entry.values.length ? height(entry.value) : '—'}<span
+									class="ml-1 text-xs font-normal text-muted-foreground">{symbol}</span
+								>
+							</dd>
+						</div>
+					{/each}
+				</dl>
+				<div>
+					<h4 class="mb-1 text-xs font-medium text-muted-foreground">Tide times</h4>
+					<ol class="divide-y">
+						{#each events as event}<li
+								class={`flex items-center gap-3 ${density === 'compact' ? 'py-2' : 'py-3'}`}
+							>
+								<span
+									class="flex size-8 shrink-0 items-center justify-center rounded-full bg-muted/50"
+									><ForecastIcon
+										name={event.type === 'H' ? 'arrowUp' : 'arrowDown'}
+										iconSet={iconType}
+										class="size-4 text-muted-foreground"
+									/></span
+								>
+								<div class="min-w-0 flex-1">
+									<p class="text-sm font-medium tabular-nums">{time(event.time)}</p>
+									<p class="mt-0.5 text-xs text-muted-foreground">
+										{event.type === 'H' ? 'High tide' : 'Low tide'}
+									</p>
+								</div>
+								<p class="text-sm tabular-nums">
+									{height(Number(event.height))}
+									<span class="text-xs text-muted-foreground">{symbol}</span>
+								</p>
+							</li>{/each}
+					</ol>
+				</div>
+				<p class="text-[10px] text-muted-foreground">Predicted heights above MLLW</p>
+			</div>
 		{/snippet}
 	</ForecastScreens>
 </Card.Root>

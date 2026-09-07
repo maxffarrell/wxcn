@@ -3,6 +3,7 @@
 	import MoonDisc from './MoonDisc.svelte';
 	import * as Card from '../ui/card/index.js';
 	import ForecastScreens from './ForecastScreens.svelte';
+	import ForecastIcon from '../../icons/forecast-icons.svelte';
 	import { forecastDays } from '@wxcn/core/forecast-days.js';
 	import type {
 		ForecastType,
@@ -70,13 +71,13 @@
 	size={size === 'sm' ? 'sm' : 'default'}
 	data-density={density}
 	data-card-size={size}
-	class={`min-w-0 overflow-hidden ${className}`}
+	class={`relative isolate min-w-0 overflow-hidden ${className}`}
 >
-	<ForecastScreens {interactive} {days} title="Moon" {density} {sourceLabel}>
-		{#snippet children(openDay)}
+	<ForecastScreens {interactive} {days} title="Moon" {density} {sourceLabel} {iconType}>
+		{#snippet children(openDay, weekAction)}
 			<Card.Header
 				><Card.Title>Moon phase</Card.Title><Card.Description>{location.label}</Card.Description
-				></Card.Header
+				>{@render weekAction(false)}</Card.Header
 			>
 			<Card.Content class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}>
 				<div
@@ -120,6 +121,45 @@
 						{sourceLabel} · {date(forecast.date)}
 					</p>{/if}
 			</Card.Content>
+		{/snippet}
+		{#snippet detail(day)}
+			{@const value =
+				day.entries[0].time === Date.parse(forecast.date)
+					? forecast
+					: getMoonForecast(new Date(day.entries[0].time))}
+			<div class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'} data-slot="moon-day-detail">
+				<div class="flex items-center gap-4 py-2">
+					<MoonDisc
+						phase={value.age / 29.530588853}
+						label={value.phaseName}
+						class="size-20 max-w-[28cqw] shrink-0"
+					/>
+					<div>
+						<p class="text-lg font-medium tracking-tight">{value.phaseName}</p>
+						<p class="mt-2 text-xs text-muted-foreground">{value.illumination}% illuminated</p>
+					</div>
+				</div>
+				<dl class="moon-data divide-y text-sm">
+					<div class="flex items-center justify-between gap-3 pb-3">
+						<dt class="flex items-center gap-2 text-xs text-muted-foreground">
+							<ForecastIcon name="moon" iconSet={iconType} class="size-4" />Moon age
+						</dt>
+						<dd class="tabular-nums">{value.age} days</dd>
+					</div>
+					<div class="flex items-center justify-between gap-3 py-3">
+						<dt class="flex items-center gap-2 text-xs text-muted-foreground">
+							<MoonDisc phase={0.5} class="size-4" label="Full moon" />Next full moon
+						</dt>
+						<dd>{date(value.nextFullMoon)}</dd>
+					</div>
+					<div class="flex items-center justify-between gap-3 pt-3">
+						<dt class="flex items-center gap-2 text-xs text-muted-foreground">
+							<MoonDisc phase={0} class="size-4" label="New moon" />Next new moon
+						</dt>
+						<dd>{date(value.nextNewMoon)}</dd>
+					</div>
+				</dl>
+			</div>
 		{/snippet}
 	</ForecastScreens>
 </Card.Root>

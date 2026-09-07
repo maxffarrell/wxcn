@@ -52,9 +52,16 @@
 		{/if}
 		<H3 id={`${item.name}-interaction`}>Interactive forecasts</H3>
 		<p>
-			Set <code>interactive={true}</code> to enable View Week and daily detail screens inside the
-			card. It defaults to <code>false</code>. Select a forecast day or tide event to drill down;
-			Back returns to the original card. ForecastDashboard forwards the prop to all three cards.
+			Set <code>interactive</code> to enable navigation inside each card; it defaults to
+			<code>false</code>. Small and simple cards have a subtle View week action in the top-right
+			corner. Weather and tide cards that already display the forecast list open daily details
+			directly from each entry. Moon cards offer a weekly phase table.
+		</p>
+		<p>
+			Detail screens preserve the card's dimensions and scroll internally. Back and Escape return to
+			the previous screen and restore focus. Weather details use the selected day's animated
+			background when <code>animatedBackground</code> is enabled. ForecastDashboard forwards
+			<code>interactive</code> to all three cards.
 		</p>
 		<p>
 			Weather and tides show supplied periods only, up to seven days; missing days are not filled

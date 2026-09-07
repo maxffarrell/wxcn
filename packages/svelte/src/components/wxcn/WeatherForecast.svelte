@@ -2,7 +2,7 @@
 	import { onMount } from 'svelte';
 	import * as Card from '../ui/card/index.js';
 	import ForecastScreens from './ForecastScreens.svelte';
-	import { forecastDays } from '@wxcn/core/forecast-days.js';
+	import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 	import ForecastIcon from '../../icons/forecast-icons.svelte';
 	import WeatherShaderBackground, {
 		type WeatherShaderMode
@@ -125,6 +125,16 @@
 			displayTimeZone
 		)
 	);
+
+	function dayPeriods(day: ForecastDay) {
+		return forecast
+			.filter((period) => day.entries.some((entry) => entry.time === Date.parse(period.startTime)))
+			.toSorted((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime));
+	}
+	function heroPeriod(day: ForecastDay) {
+		const values = dayPeriods(day);
+		return values.find((period) => period.isDaytime) ?? values[0];
+	}
 </script>
 
 <Card.Root
@@ -134,14 +144,23 @@
 	data-card-size={size}
 	class={`relative isolate min-w-0 gap-0 overflow-hidden py-0 ${className}`}
 >
-	<ForecastScreens flush {interactive} {days} title="Weather" {density} {sourceLabel}>
-		{#snippet children(openDay)}
+	<ForecastScreens
+		{interactive}
+		{days}
+		title="Weather"
+		{density}
+		{sourceLabel}
+		{iconType}
+		showWeek={size === 'sm' || type === 'simple'}
+		animated={animatedBackground}
+	>
+		{#snippet children(openDay, weekAction, overviewVisible)}
 			<div
 				class={`relative isolate overflow-hidden ${animatedBackground && current ? 'text-white' : 'text-card-foreground'}`}
 			>
 				{#if animatedBackground && current}
 					<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-						<WeatherShaderBackground mode={condition(current)} />
+						<WeatherShaderBackground mode={condition(current)} paused={!overviewVisible} />
 					</div>
 					<div
 						class="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-black/35 via-black/15 to-black/55"
@@ -153,6 +172,7 @@
 					<Card.Description class={animatedBackground && current ? 'text-white/80' : ''}
 						>{location.label ?? 'Local forecast'}</Card.Description
 					>
+					{@render weekAction(animatedBackground && !!current)}
 				</Card.Header>
 				<Card.Content class="relative grid gap-5 py-(--card-spacing)">
 					{#if current}
@@ -241,6 +261,87 @@
 					{/if}
 					{#if sourceLabel}<p class="mt-2 text-[10px] text-muted-foreground">{sourceLabel}</p>{/if}
 				</Card.Content>
+			{/if}
+		{/snippet}
+		{#snippet background(day)}
+			{@const hero = heroPeriod(day)}
+			{#if hero}<WeatherShaderBackground mode={condition(hero)} />
+				<div class="absolute inset-0 bg-linear-to-b from-black/35 via-black/45 to-black/80"></div>
+			{/if}
+		{/snippet}
+		{#snippet detail(day)}
+			{@const values = dayPeriods(day)}
+			{@const hero = heroPeriod(day)}
+			{#if hero}
+				<div
+					class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}
+					data-slot="weather-day-detail"
+				>
+					<div class="flex items-center justify-between gap-4 py-2">
+						<div>
+							<p
+								class={`mb-2 text-xs ${animatedBackground ? 'text-white/70' : 'text-muted-foreground'}`}
+							>
+								{hero.isDaytime ? 'Daytime' : 'Overnight'}
+							</p>
+							<p
+								class="leading-none font-medium tracking-tighter tabular-nums"
+								style="font-size:clamp(2.5rem,18cqw,4.5rem)"
+							>
+								{temperature(hero)}<span class="align-top text-lg"
+									>°{unit === 'celsius' ? 'C' : 'F'}</span
+								>
+							</p>
+							<p class="mt-3 text-sm">{hero.shortForecast}</p>
+						</div>
+						<ForecastIcon
+							name={icon(hero)}
+							iconSet={iconType}
+							class={`size-12 shrink-0 ${animatedBackground ? 'text-white/80' : 'text-muted-foreground'}`}
+						/>
+					</div>
+					<div
+						class={`flex items-center justify-between gap-3 border-y py-3 text-xs ${animatedBackground ? 'border-white/15' : ''}`}
+					>
+						<span class="flex items-center gap-2"
+							><ForecastIcon name="wind" iconSet={iconType} class="size-4" />Wind</span
+						>
+						<span class="text-right tabular-nums"
+							>{hero.windDirection} {convertWindSpeed(hero.windSpeed, windUnit)}</span
+						>
+					</div>
+					<div class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}>
+						{#each values as period}
+							<section class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2">
+								<ForecastIcon
+									name={period.isDaytime ? 'sun' : 'moon'}
+									iconSet={iconType}
+									class={`mt-0.5 size-4 ${animatedBackground ? 'text-white/70' : 'text-muted-foreground'}`}
+								/>
+								<h4 class="flex items-center justify-between gap-3 text-sm font-medium">
+									<span>{period.isDaytime ? 'Day' : 'Night'}</span><span class="tabular-nums"
+										>{temperature(period)}°</span
+									>
+								</h4>
+								<p
+									class={`col-start-2 text-xs leading-5 ${animatedBackground ? 'text-white/80' : 'text-muted-foreground'}`}
+								>
+									{period.detailedForecast || period.shortForecast}
+								</p>
+								{#if period !== hero}<p
+										class={`col-start-2 flex items-center gap-2 text-xs ${animatedBackground ? 'text-white/70' : 'text-muted-foreground'}`}
+									>
+										<ForecastIcon
+											name="wind"
+											iconSet={iconType}
+											class="size-3"
+										/>{period.windDirection}
+										{convertWindSpeed(period.windSpeed, windUnit)}
+									</p>{/if}
+							</section>
+						{/each}
+					</div>
+				</div>
 			{/if}
 		{/snippet}
 	</ForecastScreens>

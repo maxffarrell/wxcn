@@ -50,6 +50,17 @@
 				observations.
 			</p>
 		{/if}
+		<H3 id={`${item.name}-interaction`}>Interactive forecasts</H3>
+		<p>
+			Set <code>interactive={true}</code> to enable View Week and daily detail screens inside the
+			card. It defaults to <code>false</code>. Select a forecast day or tide event to drill down;
+			Back returns to the original card. ForecastDashboard forwards the prop to all three cards.
+		</p>
+		<p>
+			Weather and tides show supplied periods only, up to seven days; missing days are not filled
+			in. Moon summaries use the existing lunar estimates anchored to the supplied forecast date.
+			Set <code>timeZone</code> or <code>location.timeZone</code> to group days in the local calendar.
+		</p>
 		<H3 id={`${item.name}-installation`}>Installation</H3>
 		<InstallTabs>
 			{#snippet cli()}<PMBlock

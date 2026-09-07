@@ -152,6 +152,7 @@
 	);
 	let showTemperatureTrend = $state(true);
 	let showHighLow = $state(false);
+	let interaction = $state('on');
 	let status = $state<'sample' | 'locating' | 'loading' | 'live' | 'error'>('sample');
 	let message = $state('Use your location to see your forecast in every card.'),
 		tideSource = $state('Coastal example · station time');
@@ -223,6 +224,7 @@
 		tideUnit = 'ft';
 		windUnit = 'mph';
 		animation = 'on';
+		interaction = 'on';
 		scene = 'live';
 		showTemperatureTrend = true;
 		showHighLow = false;
@@ -379,6 +381,7 @@
 )}
 	{#if collection === 'weather'}<WeatherForecast
 			{size}
+			interactive={interaction === 'on'}
 			type={variant}
 			density={cardDensity}
 			{unit}
@@ -404,6 +407,7 @@
 		/>
 	{:else if collection === 'moon'}<MoonForecast
 			{size}
+			interactive={interaction === 'on'}
 			type={variant}
 			density={cardDensity}
 			iconType={icons.value}
@@ -412,6 +416,7 @@
 		/>
 	{:else}<TideForecast
 			{size}
+			interactive={interaction === 'on'}
 			type={variant}
 			density={cardDensity}
 			unit={tideUnit}
@@ -594,6 +599,14 @@
 						]}
 					/>
 					<Picker
+						label="Interaction"
+						bind:value={interaction}
+						options={[
+							{ value: 'on', label: 'Interactive' },
+							{ value: 'off', label: 'Static' }
+						]}
+					/>
+					<Picker
 						label="Background"
 						bind:value={animation}
 						options={[
@@ -693,7 +706,8 @@
 		/>
 		<p class="text-xs leading-5 text-muted-foreground">
 			Use <code>size="sm" | "default" | "lg"</code> and
-			<code>density="compact" | "comfortable"</code> to adapt each card.
+			<code>density="compact" | "comfortable"</code> to adapt each card. Set
+			<code>interactive={interaction === 'on' ? '{true}' : '{false}'}</code> for the selected interaction.
 		</p></Dialog.Content
 	></Dialog.Root
 >

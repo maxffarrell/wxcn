@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, type Snippet } from 'svelte';
 	import * as Card from '../ui/card/index.js';
+	import WeatherGradientBackground from './WeatherGradientBackground.svelte';
 	import ForecastScreens from './ForecastScreens.svelte';
 	import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 	import ForecastIcon from '../../icons/forecast-icons.svelte';
@@ -13,7 +14,8 @@
 		LocationInput,
 		WeatherPeriod,
 		CurrentWeather,
-		WeatherUnit
+		WeatherUnit,
+		WeatherBackground
 	} from '@wxcn/core/types.js';
 	import { sampleWeather, sampleCurrentWeather, convertWindSpeed } from '@wxcn/core/weather.js';
 	import { weatherOutlook } from '@wxcn/core/weather-outlook.js';
@@ -40,7 +42,7 @@
 		at,
 		sourceLabel = forecast === sampleWeather ? 'Sample forecast' : '',
 		windUnit = 'mph',
-		animatedBackground = false
+		background = 'none'
 	}: {
 		interactive?: boolean;
 		timeZone?: string;
@@ -59,7 +61,7 @@
 		at?: number;
 		sourceLabel?: string;
 		windUnit?: 'mph' | 'km/h' | 'm/s' | 'knots';
-		animatedBackground?: boolean;
+		background?: WeatherBackground;
 	} = $props();
 	let visitorTimeZone = $state('UTC');
 	onMount(() => {
@@ -162,11 +164,19 @@
 	{@const view = day ? heroPeriod(day) : current}
 	{@const displayedPeriods = day ? dayPeriods(day) : periods}
 	<div
-		class={`${day ? 'contents' : 'relative isolate overflow-hidden'} ${animatedBackground && view ? 'text-white' : 'text-card-foreground'}`}
+		class={`${day ? 'contents' : 'relative isolate overflow-hidden'} ${background !== 'none' && view ? 'text-white' : 'text-card-foreground'}`}
 	>
-		{#if animatedBackground && view}
+		{#if background !== 'none' && view}
 			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-				<WeatherShaderBackground mode={condition(view)} paused={!overviewVisible} />
+				{#if background === 'gradient'}
+					<WeatherGradientBackground mode={condition(view)} />
+				{:else}
+					<WeatherShaderBackground
+						mode={condition(view)}
+						paused={!overviewVisible}
+						dithered={background === 'dithered'}
+					/>
+				{/if}
 			</div>
 			<div
 				class="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-black/35 via-black/15 to-black/55"
@@ -175,16 +185,16 @@
 		{/if}
 		<Card.Header class="relative pt-(--card-spacing)">
 			<Card.Title class="min-w-0 truncate">{day?.label ?? 'Weather'}</Card.Title>
-			<Card.Description class={`truncate ${animatedBackground && view ? 'text-white/80' : ''}`}
+			<Card.Description class={`truncate ${background !== 'none' && view ? 'text-white/80' : ''}`}
 				>{location.label ?? 'Local forecast'}</Card.Description
 			>
-			{@render action(animatedBackground && !!view)}
+			{@render action(background !== 'none' && !!view)}
 		</Card.Header>
 		<Card.Content class="relative grid min-w-0 shrink-0 gap-5 py-(--card-spacing)">
 			{#if view}
 				<div>
 					<p
-						class={`mb-2 text-xs ${animatedBackground ? 'text-white/75' : 'text-muted-foreground'}`}
+						class={`mb-2 text-xs ${background !== 'none' ? 'text-white/75' : 'text-muted-foreground'}`}
 					>
 						{day ? (view.isDaytime ? 'Daytime' : 'Overnight') : 'Now'}
 					</p>
@@ -232,7 +242,7 @@
 					Current conditions unavailable.
 				</p>{/if}
 			{#if !day && type === 'simple' && sourceLabel}<p
-					class={`text-[10px] ${animatedBackground && view ? 'text-white/70' : 'text-muted-foreground'}`}
+					class={`text-[10px] ${background !== 'none' && view ? 'text-white/70' : 'text-muted-foreground'}`}
 				>
 					{sourceLabel}
 				</p>{/if}
@@ -276,7 +286,7 @@
 										>{period.name}</button
 									>{:else}<p>{period.name}</p>{/if}
 								{#if type === 'detailed' || (day && size !== 'sm')}<p
-										class={`mt-1 text-xs leading-5 ${day ? 'line-clamp-2' : ''} ${day && animatedBackground ? 'text-white/75' : 'text-muted-foreground'}`}
+										class={`mt-1 text-xs leading-5 ${day ? 'line-clamp-2' : ''} ${day && background !== 'none' ? 'text-white/75' : 'text-muted-foreground'}`}
 									>
 										{type === 'detailed' ? period.detailedForecast : period.shortForecast}
 									</p>{/if}
@@ -284,7 +294,7 @@
 							<ForecastIcon
 								name={icon(period)}
 								iconSet={iconType}
-								class={`size-4 ${day && animatedBackground ? 'text-white/75' : 'text-muted-foreground'}`}
+								class={`size-4 ${day && background !== 'none' ? 'text-white/75' : 'text-muted-foreground'}`}
 							/>
 							<span class="min-w-9 text-right tabular-nums">{temperature(period)}°</span>
 						</div>
@@ -320,7 +330,7 @@
 		{/snippet}
 		{#snippet detail(day, action)}
 			<div
-				class={`relative isolate flex h-full min-h-0 flex-col ${animatedBackground ? 'text-white' : ''}`}
+				class={`relative isolate flex h-full min-h-0 flex-col ${background !== 'none' ? 'text-white' : ''}`}
 			>
 				{@render cardView(day, action, true, () => {})}
 			</div>

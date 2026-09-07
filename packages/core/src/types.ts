@@ -51,3 +51,5 @@ export type CurrentWeather = WeatherPeriod & {
 	highToday?: number;
 	lowToday?: number;
 };
+
+export type WeatherBackground = 'none' | 'realistic' | 'dithered' | 'gradient';

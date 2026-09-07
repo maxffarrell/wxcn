@@ -5,14 +5,14 @@ export const overviewExample = `<script>
 </script>
 
 <!-- Icons and base components follow components.json at installation. -->
-<WeatherForecast interactive unit="celsius" animatedBackground />
+<WeatherForecast interactive unit="celsius" background="realistic" />
 <TideForecast interactive unit="meter" />
 <MoonForecast interactive type="simple" />`;
 
 export const weatherExample = `<WeatherForecast interactive
  type="summary"
  unit="celsius"
- animatedBackground
+ background="realistic"
 />`;
 export const tideExample = `<TideForecast interactive type="summary" unit="meter" />`;
 export const moonExample = `<MoonForecast interactive type="summary" />`;

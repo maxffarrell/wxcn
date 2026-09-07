@@ -79,6 +79,11 @@ for (const [name, component, data, description, registryDependencies] of definit
 	];
 	if (name === 'weather-forecast')
 		files.push(
+			await file(
+				'packages/svelte/src/components/wxcn/WeatherGradientBackground.svelte',
+				'registry:component',
+				'wxcn/WeatherGradientBackground.svelte'
+			),
 			await file('packages/core/src/weather-outlook.ts', 'registry:lib', 'data/weather-outlook.ts'),
 			await file(
 				'packages/svelte/src/components/wxcn/WeatherShaderBackground.svelte',

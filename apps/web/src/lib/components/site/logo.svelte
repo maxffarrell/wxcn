@@ -4,6 +4,6 @@
 
 <span
 	class={className}
-	style="display: inline-block; background: currentColor; mask: url('/favicon.svg?v=arc-wave') center / contain no-repeat;"
+	style="display: inline-block; background: currentColor; mask: url('/favicon.svg?v=arc-wave-white') center / contain no-repeat;"
 	aria-hidden="true"
 ></span>

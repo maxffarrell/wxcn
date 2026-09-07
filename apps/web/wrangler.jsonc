@@ -17,5 +17,16 @@
 	],
 	"observability": {
 		"enabled": true
+	},
+	"env": {
+		"preview": {
+			"name": "wxcn-preview",
+			"routes": [],
+			"workers_dev": true,
+			"assets": {
+				"directory": ".svelte-kit/cloudflare",
+				"binding": "ASSETS"
+			}
+		}
 	}
 }

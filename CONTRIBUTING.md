@@ -42,3 +42,9 @@ Preserve the exact shadcn-svelte preset codec for Svelte. New frameworks need ex
 Production runs on Cloudflare Workers at `https://wxcn.dev`. Run `pnpm run deploy` from the repository root after `wrangler whoami` confirms the intended account. `apps/web/wrangler.jsonc` owns the Worker, static assets, and custom domain configuration. The Cloudflare adapter writes `.svelte-kit/cloudflare`. Documentation source transforms and syntax highlighting run at build time to keep Node-only tooling out of the Worker. `pnpm dev`, `pnpm check`, and `pnpm build` generate that data automatically.
 
 The root workspace is private, and framework/core packages are private while their npm distribution contracts are being established. Registry installation remains the supported distribution path.
+
+### GitHub deployments
+
+CI uses the latest verified action releases. After validation, pushes to `main` deploy to the GitHub `production` environment at `https://wxcn.dev`. Same-repository pull requests deploy isolated `wxcn-pr-<number>` Workers to the `preview` environment; closing the PR removes that Worker. Fork pull requests run checks without deployment credentials. The manual workflow defaults to a separate preview; production is restricted to `main`.
+
+Set the repository secret `CLOUDFLARE_API_TOKEN` to a durable Cloudflare API token with Workers Scripts: Edit and Workers Routes: Edit for the deployment account, and Zone: Read for `wxcn.dev`. The local Wrangler OAuth login is not a CI credential. GitHub environments record deployment status and URLs. Preview configuration has no custom-domain routes, so it cannot replace `wxcn.dev`.

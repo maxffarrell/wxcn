@@ -6,7 +6,7 @@ export default function Example() {
 			<WeatherForecast
 				interactive
 				unit="celsius"
-				animatedBackground
+				background="realistic"
 				showTemperatureTrend
 				showHighLow
 			/>

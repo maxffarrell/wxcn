@@ -7,7 +7,7 @@ const page = await browser.newPage({
 	reducedMotion: 'reduce'
 });
 const errors = [];
-page.on('pageerror', (e) => errors.push(e.message));
+page.on('pageerror', (error) => errors.push(error.message));
 const shift = Date.now() - sampleTideTime;
 const shifted = (entries) =>
 	entries.map((entry) => ({
@@ -38,18 +38,16 @@ try {
 		await page.goto(`${base}/react?item=${kind}`);
 		await page.waitForLoadState('networkidle');
 		const cards = page.locator(`[data-react-forecast="${kind}"] [data-slot="card"]`);
-		await cards.first().waitFor();
-		let cardIndex = 0;
+		let index = 0;
 		while (
-			cardIndex < (await cards.count()) &&
+			index < (await cards.count()) &&
 			!(await cards
-				.nth(cardIndex)
-				.getByRole('button', { name: /View .* week/ })
+				.nth(index)
+				.getByRole('button', { name: /View .* week|Upcoming tides/ })
 				.count())
 		)
-			cardIndex++;
-		const card = cards.nth(cardIndex);
-		await card.waitFor();
+			index++;
+		const card = cards.nth(index);
 		await card.evaluate((el) => {
 			const form = document.createElement('form');
 			form.id = 'forecast-test-form';
@@ -63,51 +61,45 @@ try {
 			new MutationObserver(associate).observe(el, { childList: true, subtree: true });
 			associate();
 		});
-		const week = card.getByRole('button', { name: /View .* week/ });
-		await week.waitFor();
+		const week = card.getByRole('button', { name: /View .* week|Upcoming tides/ });
 		const before = await card.boundingBox();
 		await week.click();
 		const screen = card.locator('[data-slot="forecast-screen"]');
 		await screen.waitFor();
-		const after = await card.boundingBox();
-		assert.equal(Math.round(after.height), Math.round(before.height), kind + ' fixed height');
-		if (kind === 'moon') {
-			const table = screen.locator('[data-slot="forecast-week-table"]');
-			const height = await table.evaluate((el) => el.clientHeight);
-			await card.evaluate(
-				(el, delta) => (el.style.height = `${el.getBoundingClientRect().height + delta}px`),
-				100 - height
-			);
-			await page.waitForFunction(
-				() => document.querySelector('[data-slot="forecast-screen"] tbody')?.children.length === 2
-			);
-			const next = screen.getByRole('button', { name: 'Next forecast days' });
-			await next.click();
-			await next.click();
-		}
-		const dayButton = screen.locator('[data-forecast-day]').first();
-		const key = await dayButton.getAttribute('data-forecast-day');
-		await dayButton.click();
-		await screen.getByRole('button', { name: 'Back', exact: true }).waitFor();
-		assert.equal(await card.locator('[data-slot="card"]').count(), 0, kind + ' no nested cards');
-		if (kind === 'moon')
-			await card.evaluate(
-				(el) => (el.style.height = `${el.getBoundingClientRect().height + 32}px`)
-			);
-		await page.keyboard.press('Escape');
-		await screen.locator(`[data-forecast-day="${key}"]`).waitFor();
-		if (kind === 'moon') await expect(screen.locator('tbody tr')).toHaveCount(3);
-		await page.waitForFunction(
-			(key) => document.activeElement?.getAttribute('data-forecast-day') === key,
-			key
+		assert.equal(
+			Math.round((await card.boundingBox()).height),
+			Math.round(before.height),
+			kind + ' fixed height'
 		);
+		if (kind === 'tides') {
+			await expect(screen.locator('[data-slot="upcoming-tides"] > div').first()).toBeVisible();
+		} else {
+			if (kind === 'moon') {
+				await card.evaluate((el) => {
+					const table = el.querySelector('[data-slot="forecast-week-table"]');
+					el.style.height = `${el.getBoundingClientRect().height + 200 - table.clientHeight}px`;
+				});
+				await expect(screen.locator('[data-forecast-day]')).toHaveCount(7);
+			}
+			const day = screen.locator('[data-forecast-day]').nth(kind === 'moon' ? 4 : 0);
+			const key = await day.getAttribute('data-forecast-day');
+			await day.click();
+			await screen.getByRole('button', { name: 'Back', exact: true }).waitFor();
+			assert.equal(await card.locator('[data-slot="card"]').count(), 0, kind + ' no nested cards');
+			if (kind === 'moon')
+				await card.evaluate(
+					(el) => (el.style.height = `${el.getBoundingClientRect().height - 96}px`)
+				);
+			await page.keyboard.press('Escape');
+			await expect(screen.locator(`[data-forecast-day="${key}"]`)).toBeFocused();
+			if (kind === 'moon') await expect(screen.locator('[data-forecast-day]')).toHaveCount(7);
+		}
 		await screen.getByRole('button', { name: 'Back', exact: true }).click();
-		await screen.waitFor({ state: 'detached' });
 		await expect(week).toBeFocused();
 		assert.equal(
 			await page.locator('form[data-submitted]').count(),
 			0,
-			kind + ' navigation does not submit forms'
+			kind + ' no form submission'
 		);
 		if (kind !== 'moon') {
 			const defaultCard = cards.first();
@@ -117,7 +109,7 @@ try {
 			await page.keyboard.press('Escape');
 			await expect(entry).toBeFocused();
 		}
-		console.log(kind, 'week/day, contained layout, Escape and Back focus passed');
+		console.log(kind, 'compact summary, day navigation, contained layout, resize and focus passed');
 	}
 	assert.deepEqual(errors, []);
 } finally {

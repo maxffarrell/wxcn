@@ -50,19 +50,21 @@ const particles = Array.from({ length: 36 }, (_, i) => ({
 
 export function WeatherShaderBackground({
 	mode = 'clear',
-	paused = false
+	paused = false,
+	dithered = false
 }: {
 	mode?: WeatherShaderMode;
 	paused?: boolean;
+	dithered?: boolean;
 }) {
 	const canvasRef = useRef<HTMLCanvasElement>(null);
-	const settings = useRef({ mode, paused });
+	const settings = useRef({ mode, paused, dithered });
 	const redraw = useRef(() => {});
 	const [active, setActive] = useState(true);
 	useEffect(() => {
-		settings.current = { mode, paused };
+		settings.current = { mode, paused, dithered };
 		redraw.current();
-	}, [mode, paused]);
+	}, [mode, paused, dithered]);
 	useEffect(() => {
 		const element = canvasRef.current;
 		if (!element) return;
@@ -108,6 +110,10 @@ precision highp float;
 uniform vec2 resolution;
 uniform float time;
 uniform float mode;
+uniform float dithered;
+uniform float pixelRatio;
+float bayer2(vec2 p){p=mod(floor(p),2.);return mod(2.*p.x+3.*p.y,4.);}
+float bayer4(vec2 p){return (4.*bayer2(p)+bayer2(floor(p/2.))+.5)/16.;}
 float hash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
 float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}
 float fbm(vec3 p){float v=0.;float a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p=p*2.03+vec3(12.1,3.7,8.2);a*=.5;}return v;}
@@ -161,6 +167,10 @@ void main(){
  color+=vec3(.78,.83,.91)*(1.-smoothstep(.025,.03,length(moon)))*night*(1.-cloud.a);
  color=mix(color,vec3(.69,.73,.74),fog*.55);
  color+=(hash(vec3(gl_FragCoord.xy,0.))-.5)/255.;
+ if(dithered>.5){
+  vec2 cell=floor(gl_FragCoord.xy/(2.*pixelRatio));
+  color=floor(clamp(color,0.,1.)*7.+bayer4(cell))/7.;
+ }
  gl_FragColor=vec4(color,1.);
 }`
 		);
@@ -191,7 +201,9 @@ void main(){
 		const position = gl.getAttribLocation(program, 'position');
 		const size = gl.getUniformLocation(program, 'resolution'),
 			clock = gl.getUniformLocation(program, 'time'),
-			scene = gl.getUniformLocation(program, 'mode');
+			scene = gl.getUniformLocation(program, 'mode'),
+			texture = gl.getUniformLocation(program, 'dithered'),
+			pixelRatio = gl.getUniformLocation(program, 'pixelRatio');
 		const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 		let visible = true,
 			frame = 0,
@@ -220,6 +232,8 @@ void main(){
 			gl!.uniform2f(size, canvas.width, canvas.height);
 			gl!.uniform1f(clock, elapsed);
 			gl!.uniform1f(scene, modes.indexOf(settings.current.mode));
+			gl!.uniform1f(texture, settings.current.dithered ? 1 : 0);
+			gl!.uniform1f(pixelRatio, ratio);
 			gl!.drawArrays(gl!.TRIANGLES, 0, 6);
 			if (!reduced.matches && !settings.current.paused) frame = requestAnimationFrame(tick);
 		}
@@ -268,6 +282,7 @@ void main(){
 	}, []);
 	return (
 		<div
+			data-background-style={dithered ? 'dithered' : 'realistic'}
 			className={`wxcn-sky ${mode.includes('night') ? 'night' : ''} ${paused || !active ? 'wxcn-still' : ''}`}
 			aria-hidden="true"
 		>

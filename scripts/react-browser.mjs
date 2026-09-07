@@ -28,7 +28,7 @@ try {
 	}
 	await page.getByRole('button', { name: 'Metric units' }).click();
 	await page.getByRole('button', { name: 'Dark mode' }).click();
-	await page.getByRole('button', { name: 'Animate weather' }).click();
+	await page.getByRole('combobox', { name: /^Background/ }).selectOption('realistic');
 	await page.getByRole('combobox', { name: /^Size/ }).selectOption('default');
 	const chart = page.locator('.recharts-wrapper');
 	const box = await chart.boundingBox();

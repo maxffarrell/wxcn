@@ -74,6 +74,21 @@ try {
 	await page.locator('[data-react-forecast="dashboard"]').waitFor();
 	assert.ok(page.url().includes('/react/docs/components'));
 	await page.goto(base + '/react?item=weather');
+	await page.waitForLoadState('networkidle');
+	for (const mode of ['Realistic', 'Dithered', 'Gradient', 'None']) {
+		await page.getByRole('button', { name: 'Background', exact: true }).click();
+		await page.getByRole('menuitemradio', { name: mode, exact: true }).click();
+		if (mode === 'None')
+			await page
+				.locator('[data-react-forecast=weather] [data-background-style]')
+				.first()
+				.waitFor({ state: 'detached' });
+		else
+			await page
+				.locator(`[data-react-forecast=weather] [data-background-style="${mode.toLowerCase()}"]`)
+				.first()
+				.waitFor();
+	}
 	await page.setViewportSize({ width: 375, height: 900 });
 	await page.locator('[data-react-forecast="weather"]').first().waitFor();
 	assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);

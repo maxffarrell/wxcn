@@ -11,7 +11,7 @@ import {
 	XAxis,
 	YAxis
 } from 'recharts';
-import { type IconSet } from '../../icons/forecast-icons';
+import { ForecastIcon, type IconSet } from '../../icons/forecast-icons';
 import { ForecastScreens, type ForecastAction, type OpenForecastDay } from './forecast-screens';
 import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 import type {
@@ -448,7 +448,7 @@ export function TideForecast({
 												key={`${event.time}-${event.type}`}
 												className={`flex justify-between gap-2 text-xs ${density === 'compact' ? 'py-2' : 'py-3'}`}
 											>
-												{interactive && !day ? (
+												{interactive && size !== 'lg' && !day ? (
 													<button
 														type="button"
 														className="min-h-8 text-left underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
@@ -481,11 +481,41 @@ export function TideForecast({
 							No tide predictions available.
 						</p>
 					)}
-					{sourceLabel ? <p className="text-[10px] text-muted-foreground">{sourceLabel}</p> : null}
+					{!day && sourceLabel ? (
+						<p className="text-[10px] text-muted-foreground">{sourceLabel}</p>
+					) : null}
 				</CardContent>
 			</>
 		);
 	}
+	const upcomingSummary = (availableHeight: number) => (
+		<div className="divide-y" data-slot="upcoming-tides">
+			{tide.events
+				.filter((event) => tideTimestamp(event.time) >= now)
+				.slice(0, Math.max(1, Math.floor(availableHeight / 32)))
+				.map((event) => (
+					<div
+						className="flex h-8 items-center justify-between gap-2 text-xs"
+						key={`${event.time}-${event.type}`}
+					>
+						<span className="flex shrink-0 items-center gap-1">
+							<ForecastIcon
+								name={event.type === 'H' ? 'arrowUp' : 'arrowDown'}
+								iconSet={iconType}
+								className="size-3"
+							/>
+							{event.type === 'H' ? 'High' : 'Low'}
+						</span>
+						<span className="truncate text-muted-foreground">
+							{formatTime(event.time, displayTimeZone)}
+						</span>
+						<span className="shrink-0 tabular-nums">
+							{height(Number(event.height))} {symbol}
+						</span>
+					</div>
+				))}
+		</div>
+	);
 
 	return (
 		<Card
@@ -496,13 +526,15 @@ export function TideForecast({
 			className={`relative isolate min-w-0 overflow-hidden ${className}`}
 		>
 			<ForecastScreens
-				interactive={interactive}
+				interactive={interactive && size !== 'lg'}
 				days={days}
 				title="Tide"
 				density={density}
 				sourceLabel={sourceLabel}
 				iconType={iconType}
-				showWeek={size === 'sm' || type === 'simple'}
+				showWeek
+				actionLabel="Upcoming tides"
+				summary={upcomingSummary}
 				children={(openDay, action) => cardView(undefined, action, openDay)}
 				detail={(day, action) => cardView(day, action, () => {})}
 			/>

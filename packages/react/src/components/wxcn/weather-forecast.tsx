@@ -7,12 +7,14 @@ import { ForecastIcon, type IconSet, type IconName } from '../../icons/forecast-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { WeatherShaderBackground, type WeatherShaderMode } from './weather-shader-background';
+import { WeatherGradientBackground } from './weather-gradient-background';
 import type {
 	ForecastType,
 	LocationInput,
 	WeatherPeriod,
 	CurrentWeather,
-	WeatherUnit
+	WeatherUnit,
+	WeatherBackground
 } from '@wxcn/core/types.js';
 import { sampleWeather, sampleCurrentWeather, convertWindSpeed } from '@wxcn/core/weather.js';
 import { weatherOutlook } from '@wxcn/core/weather-outlook.js';
@@ -28,13 +30,14 @@ export interface WeatherForecastProps {
 	unit?: WeatherUnit;
 	location?: LocationInput;
 	forecast?: WeatherPeriod[];
+	hourlyForecast?: WeatherPeriod[];
 	currentWeather?: CurrentWeather | null;
 	showTemperatureTrend?: boolean;
 	showHighLow?: boolean;
 	at?: number;
 	sourceLabel?: string;
 	windUnit?: 'mph' | 'km/h' | 'm/s' | 'knots';
-	animatedBackground?: boolean;
+	background?: WeatherBackground;
 }
 
 function condition(p: WeatherPeriod): WeatherShaderMode {
@@ -80,13 +83,14 @@ export function WeatherForecast({
 		timeZone: 'America/Chicago'
 	},
 	forecast = sampleWeather,
+	hourlyForecast = [],
 	currentWeather = forecast === sampleWeather ? sampleCurrentWeather : null,
 	showTemperatureTrend = false,
 	showHighLow = false,
 	at,
 	sourceLabel = forecast === sampleWeather ? 'Sample forecast' : '',
 	windUnit = 'mph',
-	animatedBackground = false
+	background = 'none'
 }: WeatherForecastProps) {
 	const [visitorTimeZone, setVisitorTimeZone] = useState('UTC');
 	const [clock, setClock] = useState<number | null>(null);
@@ -142,6 +146,21 @@ export function WeatherForecast({
 		})),
 		timeZone ?? location.timeZone ?? visitorTimeZone
 	);
+	function dayHours(day: ForecastDay) {
+		const date = new Intl.DateTimeFormat('en-CA', {
+			timeZone: timeZone ?? location.timeZone ?? visitorTimeZone,
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit'
+		});
+		return hourlyForecast
+			.filter(
+				(period) =>
+					Number.isFinite(Date.parse(period.startTime)) &&
+					date.format(new Date(period.startTime)) === day.key
+			)
+			.toSorted((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime));
+	}
 	function cardView(
 		day: ForecastDay | undefined,
 		action: ForecastAction,
@@ -162,14 +181,22 @@ export function WeatherForecast({
 			<>
 				<div
 					className={cn(
-						'relative isolate overflow-hidden',
-						animatedBackground && view ? 'text-white' : 'text-card-foreground'
+						day ? 'contents' : 'relative isolate overflow-hidden',
+						background !== 'none' && view ? 'text-white' : 'text-card-foreground'
 					)}
 				>
-					{animatedBackground && view && (
+					{background !== 'none' && view && (
 						<>
 							<div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-								<WeatherShaderBackground mode={condition(view)} paused={!overviewVisible} />
+								{background === 'gradient' ? (
+									<WeatherGradientBackground mode={condition(view)} />
+								) : (
+									<WeatherShaderBackground
+										mode={condition(view)}
+										paused={!overviewVisible}
+										dithered={background === 'dithered'}
+									/>
+								)}
 							</div>
 							<div
 								className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-black/35 via-black/15 to-black/55"
@@ -178,20 +205,22 @@ export function WeatherForecast({
 						</>
 					)}
 					<CardHeader className="relative px-[var(--card-spacing,var(--wxcn-spacing))] pt-[var(--card-spacing,var(--wxcn-spacing))]">
-						<CardTitle>{day?.label ?? 'Weather'}</CardTitle>
-						<CardDescription className={animatedBackground && view ? 'text-white/80' : ''}>
+						<CardTitle className="min-w-0 truncate">{day?.label ?? 'Weather'}</CardTitle>
+						<CardDescription
+							className={cn('truncate', background !== 'none' && view && 'text-white/80')}
+						>
 							{location.label ?? 'Local forecast'}
 						</CardDescription>
-						{action(animatedBackground && !!view)}
+						{action(background !== 'none' && !!view)}
 					</CardHeader>
-					<CardContent className="relative grid gap-5 px-[var(--card-spacing,var(--wxcn-spacing))] py-[var(--card-spacing,var(--wxcn-spacing))]">
+					<CardContent className="relative grid min-w-0 shrink-0 gap-5 px-[var(--card-spacing,var(--wxcn-spacing))] py-[var(--card-spacing,var(--wxcn-spacing))]">
 						{view ? (
 							<>
 								<div>
 									<p
 										className={cn(
 											'mb-2 text-xs',
-											animatedBackground ? 'text-white/75' : 'text-muted-foreground'
+											background !== 'none' ? 'text-white/75' : 'text-muted-foreground'
 										)}
 									>
 										{day ? (view.isDaytime ? 'Daytime' : 'Overnight') : 'Now'}
@@ -257,11 +286,11 @@ export function WeatherForecast({
 								Current conditions unavailable.
 							</p>
 						)}
-						{type === 'simple' && sourceLabel && (
+						{!day && type === 'simple' && sourceLabel && (
 							<p
 								className={cn(
 									'text-[10px]',
-									animatedBackground && view ? 'text-white/70' : 'text-muted-foreground'
+									background !== 'none' && view ? 'text-white/70' : 'text-muted-foreground'
 								)}
 							>
 								{sourceLabel}
@@ -269,8 +298,34 @@ export function WeatherForecast({
 						)}
 					</CardContent>
 				</div>
-				{type !== 'simple' && (
-					<CardContent className="px-[var(--card-spacing,var(--wxcn-spacing))] pb-[var(--card-spacing,var(--wxcn-spacing))]">
+				{day && size === 'lg' && type !== 'simple' && dayHours(day).length > 0 ? (
+					<CardContent className="relative min-h-0 flex-1 px-[var(--card-spacing,var(--wxcn-spacing))] pb-[var(--card-spacing,var(--wxcn-spacing))]">
+						<p className="mb-3 text-xs font-medium">Hourly forecast</p>
+						<div className="grid grid-cols-3 gap-x-4 gap-y-2" data-slot="hourly-forecast">
+							{dayHours(day).map((hour) => (
+								<div
+									key={hour.startTime}
+									className="flex min-w-0 items-center justify-between gap-1 text-xs"
+									title={hour.shortForecast}
+								>
+									<span className="opacity-75">
+										{new Intl.DateTimeFormat('en-US', {
+											timeZone: timeZone ?? location.timeZone ?? visitorTimeZone,
+											hour: 'numeric'
+										}).format(new Date(hour.startTime))}
+									</span>
+									<ForecastIcon
+										name={periodIcon(hour)}
+										iconSet={iconType}
+										className="size-3.5 shrink-0"
+									/>
+									<span className="tabular-nums">{temperature(hour)}°</span>
+								</div>
+							))}
+						</div>
+					</CardContent>
+				) : type !== 'simple' ? (
+					<CardContent className="relative min-h-0 min-w-0 px-[var(--card-spacing,var(--wxcn-spacing))] pb-[var(--card-spacing,var(--wxcn-spacing))]">
 						{displayedPeriods.length > 0 && (
 							<div className="divide-y">
 								{displayedPeriods.map((period, index) => {
@@ -297,7 +352,15 @@ export function WeatherForecast({
 													<p>{period.name}</p>
 												)}
 												{(type === 'detailed' || (day && size !== 'sm')) && (
-													<p className="mt-1 text-xs leading-5 text-muted-foreground">
+													<p
+														className={cn(
+															'mt-1 text-xs leading-5',
+															day && 'line-clamp-2',
+															day && background !== 'none'
+																? 'text-white/75'
+																: 'text-muted-foreground'
+														)}
+													>
 														{type === 'detailed' ? period.detailedForecast : period.shortForecast}
 													</p>
 												)}
@@ -305,7 +368,10 @@ export function WeatherForecast({
 											<ForecastIcon
 												name={icon}
 												iconSet={iconType}
-												className="size-4 text-muted-foreground"
+												className={cn(
+													'size-4',
+													day && background !== 'none' ? 'text-white/75' : 'text-muted-foreground'
+												)}
 											/>
 											<span className="min-w-9 text-right tabular-nums">
 												{temperature(period)}°
@@ -315,9 +381,11 @@ export function WeatherForecast({
 								})}
 							</div>
 						)}
-						{sourceLabel && <p className="mt-2 text-[10px] text-muted-foreground">{sourceLabel}</p>}
+						{!day && sourceLabel && (
+							<p className="mt-2 text-[10px] text-muted-foreground">{sourceLabel}</p>
+						)}
 					</CardContent>
-				)}
+				) : null}
 			</>
 		);
 	}
@@ -348,7 +416,16 @@ export function WeatherForecast({
 				iconType={iconType}
 				showWeek={size === 'sm' || type === 'simple'}
 				flush
-				detail={(day, action) => cardView(day, action, true, () => {})}
+				detail={(day, action) => (
+					<div
+						className={cn(
+							'relative isolate flex h-full min-h-0 flex-col',
+							background !== 'none' && 'text-white'
+						)}
+					>
+						{cardView(day, action, true, () => {})}
+					</div>
+				)}
 			>
 				{(openDay, action, visible) => cardView(undefined, action, visible, openDay)}
 			</ForecastScreens>

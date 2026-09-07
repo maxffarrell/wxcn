@@ -47,14 +47,14 @@
 								? {
 										interactive: true,
 										unit: 'celsius',
-										animatedBackground: true,
+										background: 'realistic',
 										showTemperatureTrend: true,
 										showHighLow: true
 									}
 								: item.name === 'tide-forecast'
 									? { interactive: true, unit: 'meter' }
 									: item.name === 'forecast-dashboard'
-										? { interactive: true, animatedWeatherBackground: true }
+										? { interactive: true, background: 'realistic' }
 										: { interactive: true }}
 						/>
 					</div>
@@ -101,11 +101,11 @@
 		</p>
 		<p>
 			Day details reuse the original card layout with the selected day's data, preserving its
-			dimensions without an internal scroll area. Week tables page through the available days when
-			the card is too small to show them all. Back and Escape return to the previous screen and
-			restore focus. Weather details use the selected day's conditions for the chosen <code
-				>background</code
-			>. ForecastDashboard forwards
+			dimensions without an internal scroll area. Week screens use a compact responsive grid for the
+			available days. Tide cards show an Upcoming tides summary, while day buttons remain available
+			from the detailed tide list. Back and Escape return to the previous screen and restore focus.
+			Weather details use the selected day's conditions for the chosen <code>background</code>.
+			ForecastDashboard forwards
 			<code>interactive</code> to all three cards.
 		</p>
 		<p>

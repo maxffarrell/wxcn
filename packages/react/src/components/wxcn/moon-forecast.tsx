@@ -126,7 +126,7 @@ function MoonCardView({
 						</div>
 					</dl>
 				)}
-				{sourceLabel && (
+				{!day && sourceLabel && (
 					<p className="text-[10px] text-muted-foreground">
 						{sourceLabel} · {date(view.date)}
 					</p>

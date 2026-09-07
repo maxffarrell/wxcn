@@ -414,6 +414,7 @@
 							unit,
 							windUnit,
 							forecast: displayedForecast,
+							hourlyForecast,
 							currentWeather:
 								scene === 'live'
 									? currentWeather
@@ -431,7 +432,7 @@
 									: Date.parse(sampleCurrentWeather.observedAt),
 							location,
 							sourceLabel: weatherSource,
-							animatedBackground: animation === 'on'
+							background
 						}
 					: collection === 'moon'
 						? { forecast: moon, location }

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ForecastDashboard } from '@wxcn/react';
 import { Button } from '@/components/ui/button';
-import type { CardDensity, CardSize, ForecastType } from '@wxcn/core/types.js';
+import type { CardDensity, CardSize, ForecastType, WeatherBackground } from '@wxcn/core/types.js';
 
 export function ReactPreview() {
 	const [dark, setDark] = useState(false);
@@ -9,7 +9,7 @@ export function ReactPreview() {
 	const [density, setDensity] = useState<CardDensity>('comfortable');
 	const [type, setType] = useState<ForecastType>('summary');
 	const [metric, setMetric] = useState(false);
-	const [animated, setAnimated] = useState(false);
+	const [background, setBackground] = useState<WeatherBackground>('none');
 	return (
 		<div className={dark ? 'dark' : ''}>
 			<main className="min-h-screen bg-background px-4 py-10 text-foreground sm:px-8">
@@ -31,13 +31,19 @@ export function ReactPreview() {
 						<Button variant="outline" onClick={() => setMetric(!metric)} aria-pressed={metric}>
 							Metric units
 						</Button>
-						<Button
-							variant="outline"
-							onClick={() => setAnimated(!animated)}
-							aria-pressed={animated}
-						>
-							Animate weather
-						</Button>
+						<label className="flex items-center gap-2 text-sm">
+							Background
+							<select
+								className="rounded-md border bg-background p-2"
+								value={background}
+								onChange={(e) => setBackground(e.target.value as WeatherBackground)}
+							>
+								<option value="none">None</option>
+								<option value="realistic">Realistic</option>
+								<option value="dithered">Dithered</option>
+								<option value="gradient">Gradient</option>
+							</select>
+						</label>
 						<label className="flex items-center gap-2 text-sm">
 							Size
 							<select
@@ -82,7 +88,8 @@ export function ReactPreview() {
 						windUnit={metric ? 'km/h' : 'mph'}
 						tideUnit={metric ? 'meter' : 'ft'}
 						timeZone="America/Chicago"
-						animatedWeatherBackground={animated}
+						interactive
+						background={background}
 						showHighLow
 						showTemperatureTrend
 					/>
@@ -93,8 +100,8 @@ export function ReactPreview() {
 						</pre>
 						<p className="text-sm text-muted-foreground">
 							Use WeatherForecast, TideForecast, or MoonForecast individually. Pass your own
-							provider data and source label. React uses Lucide icons and native Recharts; Svelte
-							preset codes do not apply.
+							provider data and source label. React uses the configured native icon library and
+							Recharts; Svelte preset codes do not apply.
 						</p>
 					</section>
 				</div>

@@ -4,7 +4,9 @@ import type {
 	LocationInput,
 	TideUnit,
 	WeatherUnit,
-	CurrentWeather
+	CurrentWeather,
+	WeatherBackground,
+	WeatherPeriod
 } from '@wxcn/core/types.js';
 import { WeatherForecast } from './weather-forecast';
 import { TideForecast } from './tide-forecast';
@@ -20,10 +22,11 @@ export type ForecastDashboardProps = {
 	weatherUnit?: WeatherUnit;
 	windUnit?: 'mph' | 'km/h' | 'm/s' | 'knots';
 	tideUnit?: TideUnit;
-	animatedWeatherBackground?: boolean;
+	background?: WeatherBackground;
 	showTemperatureTrend?: boolean;
 	showHighLow?: boolean;
 	currentWeather?: CurrentWeather | null;
+	hourlyForecast?: WeatherPeriod[];
 	location?: LocationInput;
 	tideLocation?: LocationInput;
 };
@@ -38,10 +41,11 @@ export function ForecastDashboard({
 	weatherUnit = 'fahrenheit',
 	windUnit = 'mph',
 	tideUnit = 'ft',
-	animatedWeatherBackground = false,
+	background = 'none',
 	showTemperatureTrend = false,
 	showHighLow = false,
 	currentWeather,
+	hourlyForecast,
 	tideLocation,
 	location
 }: ForecastDashboardProps) {
@@ -59,10 +63,11 @@ export function ForecastDashboard({
 						unit={weatherUnit}
 						windUnit={windUnit}
 						location={location}
-						animatedBackground={animatedWeatherBackground}
+						background={background}
 						showTemperatureTrend={showTemperatureTrend}
 						showHighLow={showHighLow}
 						currentWeather={currentWeather}
+						hourlyForecast={hourlyForecast}
 					/>
 				</div>
 				<TideForecast

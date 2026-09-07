@@ -33,7 +33,7 @@ const definitions = [
 		'weather-forecast',
 		'Weather forecast with optional atmospheric backgrounds.',
 		['weather', 'weather-outlook'],
-		['weather-shader-background'],
+		['weather-shader-background', 'weather-gradient-background'],
 		['card']
 	],
 	[

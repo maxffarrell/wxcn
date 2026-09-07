@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="docs/images/logo.svg" width="48" height="48" alt="" />
+  <img src="apps/web/static/favicon.svg" width="48" height="48" alt="" />
   <h1>wxcn</h1>
   <p><strong>A little atmosphere for your interface.</strong></p>
   <p>Weather, moon, and tide components for Svelte.<br />Built on shadcn-svelte. Shaped by your theme. Yours to customize.</p>

@@ -28,7 +28,7 @@
 	<aside class="hidden lg:block">
 		<nav aria-label="Documentation" class="sticky top-8 grid gap-1 text-sm">
 			<p class="mb-3 font-medium">Documentation</p>
-			{#each [{ href: '/docs/components', label: 'Components' }, { href: '/docs/endpoints', label: 'Data sources' }, { href: '/registry', label: 'Registry' }] as link}<a
+			{#each [{ href: '/docs/components', label: 'Components' }, { href: '/docs/endpoints', label: 'Data sources' }] as link}<a
 					href={link.href}
 					aria-current={page.url.pathname === link.href ? 'page' : undefined}
 					class="rounded-md px-3 py-2 text-muted-foreground hover:bg-muted aria-[current=page]:bg-muted aria-[current=page]:text-foreground"

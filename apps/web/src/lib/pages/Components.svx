@@ -1,9 +1,12 @@
 <script lang="ts">
+  import FrameworkTabs from '$lib/components/site/framework-tabs.svelte';
   import ComponentDocs from '$lib/components/docs/ComponentDocs.svelte';
   let { data } = $props();
 </script>
 
 # Components
+
+<FrameworkTabs />
 
 Weather, moon, and tide components that inherit your shadcn-svelte theme, base components, and icon library.
 

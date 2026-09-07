@@ -1,8 +1,7 @@
 export const mainNavItems = [
 	{ title: 'Home', href: '/' },
 	{ title: 'Components', href: '/docs/components' },
-	{ title: 'Data sources', href: '/docs/endpoints' },
-	{ title: 'Registry', href: '/registry' }
+	{ title: 'Data sources', href: '/docs/endpoints' }
 ];
 export const sidebarNavItems = [
 	{

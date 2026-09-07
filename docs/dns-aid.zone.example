@@ -1,0 +1,11 @@
+; DNS-AID zone template for wxcn.dev.
+;
+; This file is intentionally non-deployable. Replace the angle-bracket values only
+; after confirming that the endpoint exists, speaks the declared ALPN, and the
+; authoritative zone is DNSSEC-signed with a DS record at the registrar.
+; See docs/dns-aid.md and RFC 9460.
+;
+; ServiceMode is required for DNS-AID discovery (priority >= 1).
+; Do not publish this example as-is.
+
+<service>._agents.wxcn.dev. 3600 IN HTTPS 1 <endpoint>. alpn="<alpn>" port=<port> mandatory="alpn,port"

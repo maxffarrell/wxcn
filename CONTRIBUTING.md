@@ -1,22 +1,22 @@
 # Contributing to wxcn
 
-wxcn distributes editable source through each framework's native shadcn registry. Svelte is implemented; React and Vue are reserved for future contributions.
+wxcn distributes editable source through each framework's native shadcn registry. Svelte and React are implemented; Vue is reserved for future contributions.
 
 ## Workspace
 
-| Directory                                | Responsibility                                                            |
-| ---------------------------------------- | ------------------------------------------------------------------------- |
-| `apps/web`                               | Astro website, documentation, preview shell, and NWS/NOAA endpoints       |
-| `packages/core`                          | Framework-independent data types, conversions, calculations, and fixtures |
-| `packages/svelte`                        | Native Svelte components, icons, and shadcn primitives used by previews   |
-| `packages/react`, `packages/vue`         | Reserved implementation workspaces                                        |
-| `apps/preview-react`, `apps/preview-vue` | Reserved native preview apps                                              |
-| `tooling/registry`                       | Registry build orchestration and framework-specific transforms            |
-| `tooling/contracts`                      | Component availability and shared behavior requirements                   |
+| Directory            | Responsibility                                                            |
+| -------------------- | ------------------------------------------------------------------------- |
+| `apps/web`           | Astro website, documentation, preview shell, and NWS/NOAA endpoints       |
+| `packages/core`      | Framework-independent data types, conversions, calculations, and fixtures |
+| `packages/svelte`    | Native Svelte components, icons, and shadcn primitives used by previews   |
+| `packages/react`     | Native React components and preview primitives                            |
+| `apps/preview-react` | Native React/Vite preview                                                 |
+| `tooling/registry`   | Registry build orchestration and framework-specific transforms            |
+| `tooling/contracts`  | Component availability and shared behavior requirements                   |
 
 Install with `pnpm install`, then run `pnpm dev` from the repository root. Use Node.js 24 or later and the pnpm version declared in `package.json`.
 
-Run `pnpm check`, `pnpm test`, `pnpm lint`, and `pnpm build` before submitting changes. Registry JSON is generated: update source and run `pnpm registry:build` rather than editing generated files.
+Run `pnpm check`, `pnpm test`, `pnpm test:react`, `pnpm lint`, `pnpm build`, `pnpm build:react`, and `pnpm test:consumer:react` before submitting changes. Registry JSON is generated: update source and run `pnpm registry:build` rather than editing generated files.
 
 Project type checks use TypeScript 7 and `svelte-check-native`. Astro’s checker still requires the TypeScript 6 JavaScript API, so its compatibility dependency is isolated in the website tooling; the native checker uses the root TypeScript 7 compiler for all Svelte sources and consumer checks. `tooling/check-svelte.mjs` preserves pnpm workspace dependency resolution in the native checker’s generated overlays.
 
@@ -53,4 +53,4 @@ GitHub Actions runs validation only. Deployment credentials, GitHub deployment e
 
 Astro owns routes in `apps/web/src/pages`, API endpoints, and Markdown content negotiation in `src/middleware.ts`. Interactive Svelte pages live in `src/lib/pages`; the shared shell provides their theme, tooltip, icon, and page-URL context. MDSX documentation uses `.svx` to avoid conflicting with Astro’s native Markdown renderer.
 
-Future React and Vue contributions should add their Astro integration and separate preview islands alongside the Svelte previews. Keep implementations in `packages/react` and `packages/vue` and register their framework adapters; do not import Svelte primitives into those packages. Full-page navigation crosses islands, while playground query changes update the local Svelte page context and browser history.
+React is served at `/react` with its own Astro island and a standalone preview (`pnpm dev:react`). Future Vue contributions should add a separate native island. Keep implementations in `packages/react` and `packages/vue` and register their framework adapters; do not import Svelte primitives into those packages. Full-page navigation crosses islands, while playground query changes update the local Svelte page context and browser history.

@@ -7,10 +7,10 @@
 		"label": "Svelte"
 	},
 	"react": {
-		"status": "planned",
+		"status": "available",
 		"cli": "shadcn",
 		"registryBase": "/r/react",
-		"components": [],
+		"components": ["weather-forecast", "moon-forecast", "tide-forecast", "forecast-dashboard"],
 		"label": "React"
 	},
 	"vue": {

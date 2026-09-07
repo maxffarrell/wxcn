@@ -7,22 +7,29 @@
 		"dev": "pnpm docs:build && pnpm --filter @wxcn/web dev",
 		"build": "pnpm docs:build && pnpm --filter @wxcn/web build && node tooling/deploy/link-worker.mjs",
 		"preview": "pnpm --filter @wxcn/web preview",
-		"check": "pnpm docs:build && pnpm --filter @wxcn/core check && pnpm --filter @wxcn/svelte check && pnpm --filter @wxcn/web check",
+		"check": "pnpm docs:build && pnpm --filter @wxcn/core check && pnpm --filter @wxcn/svelte check && pnpm --filter @wxcn/web check && pnpm --filter @wxcn/react check && pnpm --filter @wxcn/preview-react check",
 		"lint": "prettier --check .",
 		"registry:build": "node tooling/registry/build.mjs",
 		"dns-aid:check": "node scripts/dns-aid-check.mjs",
 		"test": "pnpm registry:build && node --conditions=svelte --test scripts/*.test.mjs",
 		"test:consumer": "pnpm registry:build && node scripts/consumer.test-build.mjs",
-		"docs:build": "pnpm registry:build && pnpm --filter @wxcn/web exec node scripts/build-docs.ts"
+		"docs:build": "pnpm registry:build && pnpm --filter @wxcn/web exec node scripts/build-docs.ts",
+		"dev:react": "pnpm --filter @wxcn/preview-react dev",
+		"build:react": "pnpm --filter @wxcn/preview-react build",
+		"test:react": "tsx --tsconfig packages/react/tsconfig.json --test packages/react/test/react.test.tsx",
+		"test:consumer:react": "pnpm registry:build && node scripts/react-consumer.test-build.mjs"
 	},
 	"devDependencies": {
+		"@playwright/test": "^1.63.0",
 		"@types/node": "^26.5.0",
 		"prettier": "^3.9.6",
 		"prettier-plugin-astro": "^0.14.1",
 		"prettier-plugin-svelte": "^4.1.1",
 		"prettier-plugin-tailwindcss": "^0.8.1",
+		"shadcn": "^4.21.0",
 		"shadcn-svelte": "^1.6.1",
 		"svelte": "^5.57.0",
+		"tsx": "^4.23.13",
 		"typescript": "^7.0.2"
 	}
 }

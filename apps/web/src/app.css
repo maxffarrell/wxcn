@@ -2,6 +2,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @source '../../../packages/svelte/src';
+@source '../../../packages/react/src';
+@source '../../preview-react/src';
 @import './lib/upstream/cards.css';
 @custom-variant dark (&:is(.dark *));
 

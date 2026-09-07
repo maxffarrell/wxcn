@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "forecast-dashboard",
+  "type": "registry:block",
+  "description": "Weather and moon for Austin, with a separate coastal tide card.",
+  "registryDependencies": [
+    "https://wxcn.dev/r/react/weather-forecast.json",
+    "https://wxcn.dev/r/react/moon-forecast.json",
+    "https://wxcn.dev/r/react/tide-forecast.json"
+  ],
+  "files": [
+    {
+      "path": "packages/react/src/components/wxcn/forecast-dashboard.tsx",
+      "type": "registry:component",
+      "target": "@components/wxcn/forecast-dashboard.tsx",
+      "content": "import type {\n\tForecastType,\n\tLocationInput,\n\tTideUnit,\n\tWeatherUnit,\n\tCurrentWeather\n} from '@/lib/wxcn/types.js';\nimport { WeatherForecast } from './weather-forecast';\nimport { TideForecast } from './tide-forecast';\nimport { MoonForecast } from './moon-forecast';\n\nexport type ForecastDashboardProps = {\n\ttimeZone?: string;\n\ttype?: ForecastType;\n\tsize?: 'sm' | 'default' | 'lg';\n\tdensity?: 'compact' | 'comfortable';\n\tweatherUnit?: WeatherUnit;\n\twindUnit?: 'mph' | 'km/h' | 'm/s' | 'knots';\n\ttideUnit?: TideUnit;\n\tanimatedWeatherBackground?: boolean;\n\tshowTemperatureTrend?: boolean;\n\tshowHighLow?: boolean;\n\tcurrentWeather?: CurrentWeather | null;\n\tlocation?: LocationInput;\n\ttideLocation?: LocationInput;\n};\n\nexport function ForecastDashboard({\n\ttimeZone,\n\ttype = 'summary',\n\tsize = 'default',\n\tdensity = 'comfortable',\n\tweatherUnit = 'fahrenheit',\n\twindUnit = 'mph',\n\ttideUnit = 'ft',\n\tanimatedWeatherBackground = false,\n\tshowTemperatureTrend = false,\n\tshowHighLow = false,\n\tcurrentWeather,\n\ttideLocation,\n\tlocation\n}: ForecastDashboardProps) {\n\treturn (\n\t\t<div className=\"@container/dashboard w-full\">\n\t\t\t<div className=\"grid items-start gap-4 @min-[38rem]/dashboard:grid-cols-2 @min-[52rem]/dashboard:grid-cols-3\">\n\t\t\t\t<div className=\"min-w-0 @min-[38rem]/dashboard:col-span-2 @min-[52rem]/dashboard:col-span-1\">\n\t\t\t\t\t<WeatherForecast\n\t\t\t\t\t\ttimeZone={timeZone}\n\t\t\t\t\t\ttype={type}\n\t\t\t\t\t\tsize={size}\n\t\t\t\t\t\tdensity={density}\n\t\t\t\t\t\tunit={weatherUnit}\n\t\t\t\t\t\twindUnit={windUnit}\n\t\t\t\t\t\tlocation={location}\n\t\t\t\t\t\tanimatedBackground={animatedWeatherBackground}\n\t\t\t\t\t\tshowTemperatureTrend={showTemperatureTrend}\n\t\t\t\t\t\tshowHighLow={showHighLow}\n\t\t\t\t\t\tcurrentWeather={currentWeather}\n\t\t\t\t\t/>\n\t\t\t\t</div>\n\t\t\t\t<TideForecast\n\t\t\t\t\ttimeZone={timeZone}\n\t\t\t\t\ttype={type}\n\t\t\t\t\tsize={size}\n\t\t\t\t\tdensity={density}\n\t\t\t\t\tunit={tideUnit}\n\t\t\t\t\tlocation={tideLocation}\n\t\t\t\t/>\n\t\t\t\t<MoonForecast\n\t\t\t\t\ttimeZone={timeZone}\n\t\t\t\t\ttype={type}\n\t\t\t\t\tsize={size}\n\t\t\t\t\tdensity={density}\n\t\t\t\t\tlocation={location}\n\t\t\t\t/>\n\t\t\t</div>\n\t\t</div>\n\t);\n}\n\nexport default ForecastDashboard;\n"
+    }
+  ]
+}

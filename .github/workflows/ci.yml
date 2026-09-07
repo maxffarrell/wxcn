@@ -21,6 +21,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm test
+      - run: pnpm test:react
+      - run: pnpm build:react
+      - run: pnpm test:consumer:react
       - run: pnpm lint
       - run: pnpm build
       - run: pnpm test:consumer

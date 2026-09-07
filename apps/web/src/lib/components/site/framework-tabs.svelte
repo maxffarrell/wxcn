@@ -19,6 +19,14 @@
 			>Svelte</span
 		></button
 	>
+	<a
+		href="/react"
+		class="flex size-6 items-center justify-center rounded-md text-xs text-muted-foreground hover:text-foreground sm:h-auto sm:w-auto sm:px-3 sm:py-1"
+		title="React"
+		><IconBrandReact class="size-4 sm:hidden" aria-hidden="true" /><span
+			class="sr-only sm:not-sr-only">React</span
+		></a
+	>
 	{#each Object.values(frameworks).filter((framework) => framework.status === 'planned') as entry}
 		{@const framework = entry.label}
 		<Tooltip.Root

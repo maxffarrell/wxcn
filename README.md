@@ -69,7 +69,7 @@ Explore a wide canvas of mixed cards, or open a component collection to compare 
 - **Motion with restraint.** Atmospheric backgrounds sit behind readable information. Rain and snow respect reduced motion; offscreen animations pause.
 - **Location-aware previews.** Browser location loads local US weather and coastal tides. Tides automatically use the nearest coastal station, including for inland visitors. Unavailable data stays clearly labeled.
 
-Svelte is available today. **React and Vue are looking for contributors!**
+Svelte and [React](https://wxcn.dev/react) are available today. **Vue is looking for contributors!**
 
 ## Build with wxcn
 
@@ -162,7 +162,7 @@ Presets use the native `shadcn-svelte/preset` encoder and settings, so the same 
 
 ## Contributing & credits
 
-Contributions are welcome, especially React and Vue implementations that preserve the same theme and data contracts.
+Contributions are welcome, especially Vue implementations that preserve the same theme and data contracts.
 
 Built with [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) and [LayerChart](https://github.com/techniq/layerchart). The playground layout and controls are adapted from [shadcn-svelte PR #2755](https://github.com/huntabyte/shadcn-svelte/pull/2755). See [third-party notices](THIRD_PARTY_NOTICES.md) for attribution.
 
@@ -170,7 +170,7 @@ Built with [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) and [Laye
 
 ## Contributing across frameworks
 
-The pnpm workspace separates the SvelteKit website (`apps/web`), native Svelte components (`packages/svelte`), and shared TypeScript logic (`packages/core`). React and Vue package and preview directories are reserved for future contributions; neither framework has an implementation yet.
+The pnpm workspace separates the Astro website (`apps/web`), native Svelte and React components (`packages/svelte`, `packages/react`), and shared TypeScript logic (`packages/core`). Run `pnpm dev:react` for the native React preview. Vue directories remain reserved for contributions.
 
 Svelte registry items are available at `/r/svelte/<component>.json`. Existing `/r/<component>.json` URLs remain compatible. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, framework adapters, parity requirements, and deployment configuration.
 

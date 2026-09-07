@@ -10,6 +10,7 @@
 		days,
 		title,
 		summary,
+		daySummary,
 		actionLabel = 'View week',
 		showWeek = true,
 		iconType,
@@ -23,6 +24,7 @@
 		density: string;
 		sourceLabel: string;
 		summary?: Snippet<[number]>;
+		daySummary?: Snippet<[ForecastDay]>;
 		actionLabel?: string;
 		showWeek?: boolean;
 		iconType?: IconSet;
@@ -132,7 +134,7 @@
 		role="group"
 		aria-label={screen === 'day'
 			? `${selected?.label} ${title.toLowerCase()} forecast`
-			: `${title} week`}
+			: `${title} • Week`}
 		data-slot="forecast-screen"
 		class={`absolute inset-0 z-10 flex min-h-0 flex-col overflow-hidden rounded-[inherit] bg-card text-card-foreground outline-none ${screen === 'day' && flush ? 'gap-0' : screen === 'week' ? 'gap-2 py-3' : 'gap-(--card-spacing) py-(--card-spacing)'}`}
 	>
@@ -140,7 +142,7 @@
 			{@render detail(selected, backAction)}
 		{:else}
 			<Card.Header class="shrink-0">
-				<Card.Title class="truncate">{summary ? 'Upcoming tides' : `${title} week`}</Card.Title>
+				<Card.Title class="truncate">{summary ? 'Upcoming tides' : `${title} • Week`}</Card.Title>
 				{@render backAction(false)}
 			</Card.Header>
 			<Card.Content class="min-h-0 min-w-0 flex-1">
@@ -148,23 +150,25 @@
 					{#if summary}{@render summary(availableHeight)}
 					{:else}
 						<div
-							class={`grid h-full content-start gap-x-3 ${availableHeight < days.length * 28 ? 'grid-cols-2' : 'grid-cols-1'}`}
+							class={`grid h-full content-start gap-x-3 ${!daySummary && availableHeight < days.length * 28 ? 'grid-cols-2' : 'grid-cols-1'}`}
 						>
 							{#each days as day}
 								<button
 									type="button"
 									data-forecast-day={day.key}
-									style:height={`${Math.min(28, availableHeight / (availableHeight < days.length * 28 ? Math.ceil(days.length / 2) : days.length))}px`}
+									style:height={`${Math.min(28, availableHeight / (!daySummary && availableHeight < days.length * 28 ? Math.ceil(days.length / 2) : days.length))}px`}
 									class="flex min-h-0 min-w-0 items-center justify-between gap-2 border-b text-left text-[11px] hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-ring"
 									aria-label={`View details for ${day.label}`}
 									onclick={(event) => open('day', event.currentTarget, day.key)}
 								>
-									<span class="shrink-0 font-medium">{day.label}</span>
-									<span
-										class="truncate text-muted-foreground"
-										title={day.entries.map((entry) => entry.summary).join(' · ')}
-										>{day.entries.map((entry) => entry.summary).join(' · ')}</span
-									>
+									{#if daySummary}{@render daySummary(day)}{:else}
+										<span class="shrink-0 font-medium">{day.label}</span>
+										<span
+											class="truncate text-muted-foreground"
+											title={day.entries.map((entry) => entry.summary).join(' · ')}
+											>{day.entries.map((entry) => entry.summary).join(' · ')}</span
+										>
+									{/if}
 								</button>
 							{/each}
 						</div>

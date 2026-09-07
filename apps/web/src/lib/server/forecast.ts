@@ -1,4 +1,5 @@
 import { tideState } from '@wxcn/core/tide-state.js';
+import { isDaylight } from './daylight.ts';
 import { loadCurrentWeather } from './current-weather.ts';
 import type { LocationInput, TidePrediction, WeatherPeriod } from '@wxcn/core/types.js';
 export function coordinates(url: URL) {
@@ -17,7 +18,11 @@ export function coordinates(url: URL) {
 		throw new Error('Invalid location coordinates.');
 	return { latitude, longitude };
 }
-export async function loadForecast(location: LocationInput, fetcher: typeof fetch = fetch) {
+export async function loadForecast(
+	location: LocationInput,
+	fetcher: typeof fetch = fetch,
+	at = Date.now()
+) {
 	const headers = {
 		Accept: 'application/geo+json',
 		'User-Agent': 'wxcn (https://github.com/maxffarrell/wxcn-svelte)'
@@ -57,7 +62,8 @@ export async function loadForecast(location: LocationInput, fetcher: typeof fetc
 		throw new Error('No forecast periods were returned.');
 	const relative = data.properties.relativeLocation?.properties;
 	const currentWeather = await observationRequest;
-	if (currentWeather) currentWeather.isDaytime = forecast.properties.periods[0].isDaytime;
+	if (currentWeather)
+		currentWeather.isDaytime = isDaylight(location.latitude, location.longitude, at);
 	return {
 		location: {
 			...location,

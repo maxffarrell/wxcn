@@ -1,23 +1,16 @@
 <script lang="ts">
 	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
 	import { cn } from '@wxcn/svelte/utils';
-	import { preservePickerScroll } from './picker-scroll.js';
 
 	let {
 		ref = $bindable(null),
 		class: className,
 		submenu = false,
 		children,
-		onpointerdown,
-		onclick,
-		onfocus,
 		...restProps
 	}: DropdownMenuPrimitive.TriggerProps & {
 		submenu?: boolean;
 	} = $props();
-
-	const preserveTriggerScroll = (target?: EventTarget | null) =>
-		preservePickerScroll(target ?? ref);
 </script>
 
 {#if submenu}
@@ -41,17 +34,7 @@
 			className
 		)}
 		disabled={restProps.disabled}
-		onpointerdown={(event) => {
-			onpointerdown?.(event);
-		}}
-		onclick={(event) => {
-			preserveTriggerScroll(event.currentTarget);
-			onclick?.(event);
-		}}
-		onfocus={(event) => {
-			preserveTriggerScroll(event.currentTarget);
-			onfocus?.(event);
-		}}
+		{...restProps}
 	>
 		{@render children?.()}
 	</DropdownMenuPrimitive.Trigger>

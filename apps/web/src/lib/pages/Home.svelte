@@ -540,7 +540,7 @@
 			>
 			<Card.Content
 				data-slot="picker-scroll"
-				class="no-scrollbar min-h-0 flex-1 overflow-x-auto overflow-y-hidden md:overflow-y-auto"
+				class="no-scrollbar min-h-0 flex-1 touch-pan-x overflow-x-auto overflow-y-hidden overscroll-x-contain md:touch-pan-y md:overflow-x-hidden md:overflow-y-auto"
 			>
 				<div class="flex flex-row gap-2.5 py-px md:flex-col md:gap-3.25">
 					<Picker label="Style" bind:value={style} options={options(PRESET_STYLES)} />

@@ -21,7 +21,7 @@
 			><ChevronDown class="size-3.5 shrink-0 text-muted-foreground" /></span
 		>
 	</PickerTrigger>
-	<PickerContent sideOffset={20} preventScroll={false}>
+	<PickerContent sideOffset={8} preventScroll={false}>
 		<Menu.RadioGroup bind:value
 			>{#each options as option}<Menu.RadioItem value={option.value}>{option.label}</Menu.RadioItem
 				>{/each}</Menu.RadioGroup

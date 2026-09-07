@@ -39,6 +39,6 @@ Preserve the exact shadcn-svelte preset codec for Svelte. New frameworks need ex
 
 ## Hosting
 
-The Vercel project should use `apps/web` as its Root Directory, with access to files outside that directory enabled. Its build command should run `pnpm --dir ../.. build` so registries are generated before the web app builds. Its install command should run `pnpm install --frozen-lockfile`. Framework preview apps can be deployed independently once implemented; use their native builds for interactive previews.
+Production runs on Cloudflare Workers at `https://wxcn.dev`. Run `pnpm run deploy` from the repository root after `wrangler whoami` confirms the intended account. `apps/web/wrangler.jsonc` owns the Worker, static assets, and custom domain configuration. The Cloudflare adapter writes `.svelte-kit/cloudflare`. Documentation source transforms and syntax highlighting run at build time to keep Node-only tooling out of the Worker. `pnpm dev`, `pnpm check`, and `pnpm build` generate that data automatically.
 
 The root workspace is private, and framework/core packages are private while their npm distribution contracts are being established. Registry installation remains the supported distribution path.

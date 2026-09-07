@@ -30,3 +30,6 @@ apps/web/registry.json
 apps/web/src/lib/components/component-source.svelte
 apps/web/src/lib/components/component-code-viewer
 apps/web/src/lib/components/icons
+
+.wrangler
+apps/web/src/lib/server/generated

@@ -2,5 +2,6 @@ packages:
   - apps/*
   - packages/*
 allowBuilds:
+  workerd: true
   esbuild: true
   '@hugeicons/svelte': false

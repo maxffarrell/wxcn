@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-vercel';
+import adapter from '@sveltejs/adapter-cloudflare';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { mdsx } from 'mdsx';
 import rehypeSlug from 'rehype-slug';
@@ -26,9 +26,7 @@ const config = {
 		})
 	],
 	kit: {
-		adapter: adapter({
-			runtime: 'nodejs24.x'
-		}),
+		adapter: adapter(),
 		alias: {
 			$components: 'src/lib/components',
 			$frameworks: '../../tooling/contracts/frameworks.json',

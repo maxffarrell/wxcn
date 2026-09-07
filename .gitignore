@@ -7,3 +7,6 @@ build
 .DS_Store
 
 .pnpm-store
+
+.wrangler
+apps/web/src/lib/server/generated

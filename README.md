@@ -161,3 +161,5 @@ Svelte registry items are available at `/r/svelte/<component>.json`. Existing `/
 Every public page has a Markdown version: use `/index.md`, `/docs/components.md`, `/docs/endpoints.md`, `/registry.md`, or `/shader-preview.md`, or request the normal URL with `Accept: text/markdown`. `/llms.txt` lists these pages. Component Markdown includes usage, installation steps, and the same source files as the manual code viewer.
 
 The [wxcn skill](skills/wxcn/SKILL.md) provides registry installation, data-prop, theming, and contribution guidance. Install it with `npx skills add maxffarrell/wxcn-svelte --skill wxcn`.
+
+Production site: [wxcn.dev](https://wxcn.dev). Deploy to Cloudflare Workers with `pnpm run deploy`.

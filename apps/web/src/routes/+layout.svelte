@@ -31,7 +31,7 @@
 		class="sr-only fixed top-2 left-2 z-50 rounded bg-primary p-3 text-primary-foreground focus:not-sr-only"
 		>Skip to content</a
 	>
-	<header class="absolute inset-x-0 top-0 z-50 w-full bg-background">
+	<header class="fixed inset-x-0 top-0 z-50 w-full bg-background">
 		<div class="flex h-16 items-center gap-6 px-4 md:px-6">
 			<MobileNav class="flex lg:hidden" />
 			<a

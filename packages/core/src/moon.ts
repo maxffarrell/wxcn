@@ -1,43 +1,30 @@
+import { Body, Illumination, MoonPhase, SearchMoonPhase } from 'astronomy-engine';
 import type { MoonForecast } from './types.js';
 
-const synodicMonth = 29.530588853;
-const knownNewMoon = Date.UTC(2000, 0, 6, 18, 14);
-const dayMs = 86_400_000;
-
-function phaseName(age: number) {
-	if (age < 1.84566) return 'New Moon';
-	if (age < 5.53699) return 'Waxing Crescent';
-	if (age < 9.22831) return 'First Quarter';
-	if (age < 12.91963) return 'Waxing Gibbous';
-	if (age < 16.61096) return 'Full Moon';
-	if (age < 20.30228) return 'Waning Gibbous';
-	if (age < 23.99361) return 'Last Quarter';
-	if (age < 27.68493) return 'Waning Crescent';
-	return 'New Moon';
-}
-
-function addDays(date: Date, days: number) {
-	const next = new Date(date);
-	next.setUTCDate(next.getUTCDate() + days);
-	return next;
-}
+const phaseNames = [
+	'New Moon',
+	'Waxing Crescent',
+	'First Quarter',
+	'Waxing Gibbous',
+	'Full Moon',
+	'Waning Gibbous',
+	'Last Quarter',
+	'Waning Crescent'
+];
 
 export function getMoonForecast(date = new Date()): MoonForecast {
-	const daysSince = (date.getTime() - knownNewMoon) / dayMs;
-	const cycles = daysSince / synodicMonth;
-	const age = (cycles - Math.floor(cycles)) * synodicMonth;
-	const angle = (age / synodicMonth) * Math.PI * 2;
-	const illumination = Math.round(((1 - Math.cos(angle)) / 2) * 100);
-	const daysToNew = synodicMonth - age;
-	const daysToFull = age < synodicMonth / 2 ? synodicMonth / 2 - age : synodicMonth * 1.5 - age;
-
+	const phase = MoonPhase(date) / 360;
+	const previousNew = SearchMoonPhase(0, date, -40)!;
+	const nextNew = SearchMoonPhase(0, date, 40)!;
+	const nextFull = SearchMoonPhase(180, date, 40)!;
 	return {
 		date: date.toISOString(),
-		phaseName: phaseName(age),
-		illumination,
-		age: Number(age.toFixed(1)),
-		nextFullMoon: addDays(date, Math.ceil(daysToFull)).toISOString(),
-		nextNewMoon: addDays(date, Math.ceil(daysToNew)).toISOString()
+		phase,
+		phaseName: phaseNames[Math.round(phase * 8) % 8],
+		illumination: Math.round(Illumination(Body.Moon, date).phase_fraction * 100),
+		age: Number(((date.getTime() - previousNew.date.getTime()) / 86400000).toFixed(1)),
+		nextFullMoon: nextFull.date.toISOString(),
+		nextNewMoon: nextNew.date.toISOString()
 	};
 }
 

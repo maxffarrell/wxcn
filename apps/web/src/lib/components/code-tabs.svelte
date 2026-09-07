@@ -11,7 +11,7 @@
 
 <Tabs.Root
 	value={userConfig.current.installationType}
-	onValueChange={(v) => userConfig.setConfig({ installationType: v as InstallationType })}
+	onValueChange={(v: string) => userConfig.setConfig({ installationType: v as InstallationType })}
 	class="relative mt-6 w-full"
 >
 	{@render children?.()}

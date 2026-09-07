@@ -26,4 +26,5 @@ jobs:
       - run: pnpm test:consumer:react
       - run: pnpm lint
       - run: pnpm build
+      - run: npx --no-install wrangler versions upload --dry-run
       - run: pnpm test:consumer

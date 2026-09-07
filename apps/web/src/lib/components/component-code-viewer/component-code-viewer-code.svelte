@@ -2,9 +2,12 @@
 	import ComponentCodeViewerCodeTitle from "./component-code-viewer-code-title.svelte";
 	import ComponentCodeViewerFileTree from "./component-code-viewer-file-tree.svelte";
 	import { ComponentCodeViewerContext } from "./component-code-viewer.svelte";
+	import type { HighlightedBlock } from "$lib/docs/highlighted-block.js";
 
 	const ctx = ComponentCodeViewerContext.get();
-	const file = $derived(ctx.highlightedFiles?.find((f) => f.target === ctx.activeFile));
+	const file = $derived(
+		ctx.highlightedFiles?.find((f: HighlightedBlock["files"][number]) => f.target === ctx.activeFile)
+	);
 	const showFileTree = $derived(ctx.allowSidebar !== false);
 	let codeContainer = $state<HTMLElement | null>(null);
 

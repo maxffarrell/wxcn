@@ -23,7 +23,7 @@ test('Agent Skills discovery index lists the published wxcn skill with a valid d
 	assert.equal(skill.type, 'skill-md');
 	assert.equal(
 		skill.description,
-		'Install, compose, and contribute weather, moon, and tide cards from the wxcn registry. Use for wxcn component integration, data props, native shadcn theming, and framework contributions.',
+		'Install, compose, and contribute weather, moon, and tide cards from the wxcn registry. Use for wxcn component integration, data props, native shadcn theming, and framework contributions.'
 	);
 	assert.equal(skill.url, '/.well-known/agent-skills/wxcn/SKILL.md');
 	assert.match(skill.digest, /^sha256:[a-f0-9]{64}$/);

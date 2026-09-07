@@ -113,7 +113,7 @@
 				</div>
 			</dl>{/if}
 
-		{#if sourceLabel}<p class="text-[10px] text-muted-foreground">
+		{#if !day && sourceLabel}<p class="text-[10px] text-muted-foreground">
 				{sourceLabel} · {date(view.date)}
 			</p>{/if}
 	</Card.Content>

@@ -29,6 +29,18 @@ export async function loadForecast(location: LocationInput, fetcher: typeof fetc
 	if (!point.ok)
 		throw new Error('Weather is unavailable here. NWS forecasts cover the United States.');
 	const data = await point.json();
+	const hourlyRequest = (async (): Promise<WeatherPeriod[]> => {
+		try {
+			const url = new URL(data.properties.forecastHourly);
+			if (url.origin !== 'https://api.weather.gov') return [];
+			const response = await fetcher(url, { headers, signal: AbortSignal.timeout(12000) });
+			if (!response.ok) return [];
+			const hourly = await response.json();
+			return Array.isArray(hourly.properties?.periods) ? hourly.properties.periods : [];
+		} catch {
+			return [];
+		}
+	})();
 	const observationRequest = loadCurrentWeather(
 		data.properties.observationStations,
 		data.properties.timeZone ?? 'UTC',
@@ -54,6 +66,7 @@ export async function loadForecast(location: LocationInput, fetcher: typeof fetc
 		},
 		forecast: forecast.properties.periods as WeatherPeriod[],
 		currentWeather,
+		hourlyForecast: await hourlyRequest,
 		updatedAt: forecast.properties.updated ?? new Date().toISOString(),
 		timeZone: data.properties.timeZone as string | undefined
 	};

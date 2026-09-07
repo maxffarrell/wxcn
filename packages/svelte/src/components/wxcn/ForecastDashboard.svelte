@@ -24,6 +24,7 @@
 		showTemperatureTrend = false,
 		showHighLow = false,
 		currentWeather,
+		hourlyForecast,
 		tideLocation,
 		location = {
 			label: 'Austin, TX',
@@ -44,6 +45,7 @@
 		animatedWeatherBackground?: boolean;
 		showTemperatureTrend?: boolean;
 		showHighLow?: boolean;
+		hourlyForecast?: import('@wxcn/core/types.js').WeatherPeriod[];
 		currentWeather?: import('@wxcn/core/types.js').CurrentWeather | null;
 		location?: LocationInput;
 		tideLocation?: LocationInput;
@@ -69,6 +71,7 @@
 				{showTemperatureTrend}
 				{showHighLow}
 				{currentWeather}
+				{hourlyForecast}
 			/>
 		</div>
 		<TideForecast

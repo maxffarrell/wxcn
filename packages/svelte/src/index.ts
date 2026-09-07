@@ -12,6 +12,7 @@ export type {
 	IconSet,
 	LocationInput,
 	WeatherPeriod,
+	WeatherBackground,
 	CurrentWeather,
 	TidePrediction,
 	TidePoint,

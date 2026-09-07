@@ -7,7 +7,8 @@
 		IconSet,
 		LocationInput,
 		TideUnit,
-		WeatherUnit
+		WeatherUnit,
+		WeatherBackground
 	} from '@wxcn/core/types.js';
 
 	let {
@@ -20,10 +21,11 @@
 		windUnit = 'mph',
 		tideUnit = 'ft',
 		iconType,
-		animatedWeatherBackground = false,
+		background = 'none',
 		showTemperatureTrend = false,
 		showHighLow = false,
 		currentWeather,
+		hourlyForecast,
 		tideLocation,
 		location = {
 			label: 'Austin, TX',
@@ -41,9 +43,10 @@
 		windUnit?: 'mph' | 'km/h' | 'm/s' | 'knots';
 		tideUnit?: TideUnit;
 		iconType?: IconSet;
-		animatedWeatherBackground?: boolean;
+		background?: WeatherBackground;
 		showTemperatureTrend?: boolean;
 		showHighLow?: boolean;
+		hourlyForecast?: import('@wxcn/core/types.js').WeatherPeriod[];
 		currentWeather?: import('@wxcn/core/types.js').CurrentWeather | null;
 		location?: LocationInput;
 		tideLocation?: LocationInput;
@@ -65,10 +68,11 @@
 				{windUnit}
 				{iconType}
 				{location}
-				animatedBackground={animatedWeatherBackground}
+				{background}
 				{showTemperatureTrend}
 				{showHighLow}
 				{currentWeather}
+				{hourlyForecast}
 			/>
 		</div>
 		<TideForecast

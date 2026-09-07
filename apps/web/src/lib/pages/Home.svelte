@@ -49,6 +49,7 @@
 		TidePoint,
 		TideReading,
 		WeatherUnit,
+		WeatherBackground,
 		TideUnit,
 		CardDensity,
 		ForecastType
@@ -58,7 +59,7 @@
 		radius = $state('default'),
 		density = $state<CardDensity>('comfortable'),
 		unit = $state<WeatherUnit>('fahrenheit'),
-		animation = $state('on');
+		background = $state('realistic');
 	let scene = $state('live');
 	let tideUnit = $state<TideUnit>('ft'),
 		windUnit = $state<'mph' | 'km/h' | 'm/s' | 'knots'>('mph');
@@ -153,6 +154,7 @@
 		longitude: -97.7431,
 		timeZone: 'America/Chicago'
 	});
+	let hourlyForecast = $state<WeatherPeriod[]>([]);
 	let forecast = $state<WeatherPeriod[]>(sampleWeather),
 		moon = $state(sampleMoon),
 		tides = $state<TidePrediction[]>(sampleTides);
@@ -241,7 +243,7 @@
 		unit = 'fahrenheit';
 		tideUnit = 'ft';
 		windUnit = 'mph';
-		animation = 'on';
+		background = 'realistic';
 		interaction = 'on';
 		scene = 'live';
 		showTemperatureTrend = true;
@@ -267,6 +269,7 @@
 			if (request !== locationRequest) return;
 			location = { ...data.location, label: coords.label ?? data.location.label };
 			forecast = data.forecast;
+			hourlyForecast = data.hourlyForecast ?? [];
 			currentWeather = data.currentWeather ?? null;
 			moon = getMoonForecast(new Date());
 			status = 'live';
@@ -325,6 +328,7 @@
 			timeZone: 'America/Chicago'
 		};
 		forecast = sampleWeather;
+		hourlyForecast = [];
 		currentWeather = sampleCurrentWeather;
 		tides = sampleTides;
 		tideSeries = undefined;
@@ -451,6 +455,7 @@
 			{windUnit}
 			iconType={icons.value}
 			forecast={displayedForecast}
+			{hourlyForecast}
 			currentWeather={scene === 'live'
 				? currentWeather
 				: {
@@ -466,7 +471,7 @@
 				: Date.parse(sampleCurrentWeather.observedAt)}
 			{location}
 			sourceLabel={weatherSource}
-			animatedBackground={animation === 'on'}
+			background={background as WeatherBackground}
 		/>
 	{:else if collection === 'moon'}<MoonForecast
 			{size}
@@ -671,10 +676,12 @@
 					/>
 					<Picker
 						label="Background"
-						bind:value={animation}
+						bind:value={background}
 						options={[
-							{ value: 'on', label: 'Animated' },
-							{ value: 'off', label: 'Plain' }
+							{ value: 'realistic', label: 'Realistic' },
+							{ value: 'dithered', label: 'Dithered' },
+							{ value: 'gradient', label: 'Gradient' },
+							{ value: 'none', label: 'None' }
 						]}
 					/>
 					<Picker

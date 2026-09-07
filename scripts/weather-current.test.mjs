@@ -65,6 +65,7 @@ test('weather endpoint keeps observations separate and preserves forecasts when 
 			return Response.json({
 				properties: {
 					forecast: 'https://api.weather.gov/forecast',
+					forecastHourly: 'https://api.weather.gov/hourly',
 					observationStations: 'https://api.weather.gov/stations',
 					timeZone: 'America/Chicago'
 				}
@@ -72,6 +73,8 @@ test('weather endpoint keeps observations separate and preserves forecasts when 
 		if (url.pathname === '/forecast')
 			return Response.json({ properties: { periods: sampleWeather } });
 		if (unavailable) return new Response('', { status: 503 });
+		if (url.pathname === '/hourly')
+			return Response.json({ properties: { periods: [sampleWeather[0]] } });
 		if (url.pathname === '/stations')
 			return Response.json({ features: [{ id: 'https://api.weather.gov/stations/KAUS' }] });
 		assert.equal(url.pathname, '/stations/KAUS/observations');
@@ -88,11 +91,13 @@ test('weather endpoint keeps observations separate and preserves forecasts when 
 		});
 	};
 	const result = await loadForecast({ latitude: 30.2672, longitude: -97.7431 }, fetcher);
+	assert.deepEqual(result.hourlyForecast, [sampleWeather[0]]);
 	assert.equal(result.currentWeather.temperature, 30);
 	assert.equal(result.currentWeather.isDaytime, true);
 	assert.equal(result.forecast[0].temperature, 92);
 	unavailable = true;
 	const fallback = await loadForecast({ latitude: 30.2672, longitude: -97.7431 }, fetcher);
+	assert.deepEqual(fallback.hourlyForecast, []);
 	assert.equal(fallback.currentWeather, null);
 	assert.deepEqual(fallback.forecast, sampleWeather);
 });

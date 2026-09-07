@@ -116,7 +116,7 @@ try {
 	);
 	await file(
 		'src/App.svelte',
-		'<script>import ForecastDashboard from "$lib/components/wxcn/ForecastDashboard.svelte";</script><ForecastDashboard animatedWeatherBackground />'
+		'<script>import ForecastDashboard from "$lib/components/wxcn/ForecastDashboard.svelte";</script><ForecastDashboard background="realistic" />'
 	);
 	await file('src/vite-env.d.ts', '/// <reference types="vite/client" />');
 	await file('src/app.css', '@import "tailwindcss";');

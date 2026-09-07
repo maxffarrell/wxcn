@@ -5,6 +5,7 @@
 	import { Chart, Svg, Area } from 'layerchart';
 	import { curveMonotoneX } from 'd3-shape';
 	import * as Card from '../ui/card/index.js';
+	import ForecastIcon from '../../icons/forecast-icons.svelte';
 	import ForecastScreens from './ForecastScreens.svelte';
 	import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 	import type {
@@ -329,7 +330,7 @@
 						.slice(0, type === 'detailed' ? 6 : density === 'compact' ? 2 : 4) as event}<div
 							class={`flex justify-between gap-2 text-xs ${density === 'compact' ? 'py-2' : 'py-3'}`}
 						>
-							{#if interactive && !day}<button
+							{#if interactive && size !== 'lg' && !day}<button
 									type="button"
 									class="min-h-8 text-left underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
 									aria-label={`View tide details for ${dateTime(event)}`}
@@ -345,7 +346,7 @@
 		{:else}<p role="status" class="py-8 text-center text-sm text-muted-foreground">
 				No tide predictions available.
 			</p>{/if}
-		{#if sourceLabel}<p class="text-[10px] text-muted-foreground">{sourceLabel}</p>{/if}
+		{#if !day && sourceLabel}<p class="text-[10px] text-muted-foreground">{sourceLabel}</p>{/if}
 	</Card.Content>
 {/snippet}
 
@@ -357,14 +358,34 @@
 	class={`relative isolate min-w-0 overflow-hidden ${className}`}
 >
 	<ForecastScreens
-		{interactive}
+		interactive={interactive && size !== 'lg'}
 		{days}
 		title="Tide"
 		{density}
 		{sourceLabel}
 		{iconType}
-		showWeek={size === 'sm' || type === 'simple'}
+		showWeek
+		actionLabel="Upcoming tides"
 	>
+		{#snippet summary(availableHeight)}
+			<div class="divide-y" data-slot="upcoming-tides">
+				{#each tide.events
+					.filter((event) => tideTimestamp(event.time) >= now)
+					.slice(0, Math.max(1, Math.floor(availableHeight / 32))) as event}
+					<div class="flex h-8 items-center justify-between gap-2 text-xs">
+						<span class="flex shrink-0 items-center gap-1"
+							><ForecastIcon
+								name={event.type === 'H' ? 'arrowUp' : 'arrowDown'}
+								iconSet={iconType}
+								class="size-3"
+							/>{event.type === 'H' ? 'High' : 'Low'}</span
+						>
+						<span class="truncate text-muted-foreground">{time(event.time)}</span>
+						<span class="shrink-0 tabular-nums">{height(Number(event.height))} {symbol}</span>
+					</div>
+				{/each}
+			</div>
+		{/snippet}
 		{#snippet children(openDay, action, visible)}
 			{@render cardView(undefined, action, openDay)}
 		{/snippet}

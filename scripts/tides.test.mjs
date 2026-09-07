@@ -188,3 +188,112 @@ test('subordinate fallback follows NOAA reference relationships instead of unrel
 	assert.equal(tideStation(location, [local, unrelated]).id, 'local');
 	assert.equal(tideStation(location, [local, unrelated, { ...reference, lat: 46 }]).id, 'local');
 });
+
+test('demos expand beyond 100 km and select the nearest station with complete live data', async () => {
+	const { loadTides } = await import('../apps/web/src/lib/server/forecast.ts');
+	const checked = [];
+	const candidates = [
+		{ id: 'lake', name: 'Lake gauge', lat: 41.88, lng: -87.63, type: 'R' },
+		{ id: 'stale', name: 'Stale reading', lat: 41, lng: -84, type: 'R' },
+		{ id: 'partial', name: 'Incomplete predictions', lat: 40, lng: -81, type: 'R' },
+		{ id: 'nearest-good', name: 'Nearest working station', lat: 39, lng: -78, type: 'R' },
+		{ id: 'farther-good', name: 'Farther working station', lat: 38, lng: -75, type: 'R' }
+	];
+	const stamp = (offset) =>
+		new Date(Date.now() + offset * 60000).toISOString().slice(0, 16).replace('T', ' ');
+	const fetcher = async (input) => {
+		const url = new URL(input);
+		if (url.pathname.includes('stations'))
+			return Response.json({
+				stations: candidates.map((s) => ({
+					...s,
+					tidal: s.id !== 'lake',
+					greatlakes: s.id === 'lake'
+				}))
+			});
+		const id = url.searchParams.get('station');
+		checked.push(id);
+		if (id === 'nearest-good') await new Promise((resolve) => setTimeout(resolve, 10));
+		if (url.searchParams.get('product') === 'water_level')
+			return Response.json({ data: [{ t: stamp(id === 'stale' ? -90 : -6), v: '1.2' }] });
+		if (url.searchParams.get('interval') === '6')
+			return Response.json({
+				predictions:
+					id === 'partial'
+						? [{ t: stamp(-10), v: '.5' }]
+						: [
+								{ t: stamp(-6), v: '.5' },
+								{ t: stamp(6), v: '.7' }
+							]
+			});
+		return Response.json({
+			predictions: [
+				{ t: stamp(-180), v: '.2', type: 'L' },
+				{ t: stamp(180), v: '1.5', type: 'H' }
+			]
+		});
+	};
+	const result = await loadTides({ latitude: 41.88, longitude: -87.63 }, fetcher, {
+		nearestUsable: true
+	});
+	assert.equal(result.station.station, 'nearest-good');
+	assert.ok(result.station.distanceKm > 100);
+	assert.ok(!checked.includes('lake'));
+	assert.ok(!checked.includes('farther-good'));
+	assert.ok(tideState(result.predictions, result.series, result.reading, Date.now()).observed);
+});
+
+test('demo selection skips provider errors and does not prefer the fastest response', async () => {
+	const { loadTides } = await import('../apps/web/src/lib/server/forecast.ts');
+	const stamp = (offset) =>
+		new Date(Date.now() + offset * 60000).toISOString().slice(0, 16).replace('T', ' ');
+	const result = await loadTides(
+		{ latitude: 0, longitude: 0 },
+		async (input) => {
+			const url = new URL(input);
+			if (url.pathname.includes('stations'))
+				return Response.json({
+					stations: [1, 2, 3].map((n) => ({
+						id: String(n),
+						name: String(n),
+						lat: n,
+						lng: 0,
+						type: 'R',
+						tidal: true
+					}))
+				});
+			const id = url.searchParams.get('station');
+			if (id === '1') return new Response('unavailable', { status: 503 });
+			if (id === '2') await new Promise((resolve) => setTimeout(resolve, 10));
+			if (url.searchParams.get('product') === 'water_level')
+				return Response.json({ data: [{ t: stamp(-6), v: '1' }] });
+			return Response.json({
+				predictions: [
+					{ t: stamp(-6), v: '.5', type: 'L' },
+					{ t: stamp(6), v: '1.5', type: 'H' }
+				]
+			});
+		},
+		{ nearestUsable: true }
+	);
+	assert.equal(result.station.station, '2');
+});
+
+test('demo selection rejects stations when every reading is unavailable', async () => {
+	const { loadTides } = await import('../apps/web/src/lib/server/forecast.ts');
+	await assert.rejects(
+		loadTides(
+			{ latitude: 0, longitude: 0 },
+			async (input) => {
+				const url = new URL(input);
+				if (url.pathname.includes('stations'))
+					return Response.json({
+						stations: [{ id: '1', name: 'Unavailable', lat: 1, lng: 0, type: 'R', tidal: true }]
+					});
+				return Response.json({ error: { message: 'No data' } });
+			},
+			{ nearestUsable: true }
+		),
+		/No station returned a fresh reading/
+	);
+});

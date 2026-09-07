@@ -268,8 +268,8 @@
 		tides = [];
 		tideSeries = [];
 		tideReading = null;
-		tideLocation = { ...coords, label: 'Checking nearby tide stations' };
-		tideSource = 'Finding a coastal station…';
+		tideLocation = { ...coords, label: 'Finding the nearest station with live tides' };
+		tideSource = 'Checking station readings and predictions…';
 		try {
 			const response = await fetch(`/api/tides?${query}`, { signal: AbortSignal.timeout(26000) });
 			const data = await response.json();
@@ -285,8 +285,8 @@
 					}
 				: { ...coords, label: 'No nearby coastal station' };
 			tideSource = data.station
-				? `NOAA station · ${data.station.distanceKm} km from ${coords.label ?? 'selected coordinates'} · Station predictions, not exact-location tides`
-				: 'No NOAA tide prediction station within 100 km of this location';
+				? `Nearest available NOAA station · ${data.station.distanceKm} km from ${coords.label ?? 'selected coordinates'}`
+				: 'No station with usable tide data returned';
 		} catch {
 			if (request !== tideRequest) return;
 			tideLocation = { ...coords, label: 'Tide service unavailable' };

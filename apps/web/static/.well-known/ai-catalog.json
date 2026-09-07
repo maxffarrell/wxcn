@@ -1,0 +1,94 @@
+{
+	"specVersion": "1.0",
+	"host": {
+		"displayName": "wxcn.dev",
+		"identifier": "wxcn.dev",
+		"documentationUrl": "https://wxcn.dev/docs/components"
+	},
+	"entries": [
+		{
+			"identifier": "urn:air:wxcn.dev:component:weather-forecast",
+			"displayName": "Weather Forecast",
+			"type": "application/json",
+			"url": "https://wxcn.dev/r/svelte/weather-forecast.json",
+			"description": "A theme-aware Svelte weather forecast card with current observations, forecast periods, wind, units, and optional atmospheric backgrounds.",
+			"representativeQueries": [
+				"add a weather forecast card to my shadcn-svelte app",
+				"show current conditions and the upcoming forecast with wind",
+				"display a weather card with an animated rain or snow background"
+			]
+		},
+		{
+			"identifier": "urn:air:wxcn.dev:component:moon-forecast",
+			"displayName": "Moon Forecast",
+			"type": "application/json",
+			"url": "https://wxcn.dev/r/svelte/moon-forecast.json",
+			"description": "A Svelte lunar phase card with illumination, moon age, and estimated next full and new moon dates.",
+			"representativeQueries": [
+				"add a moon phase card to my shadcn-svelte app",
+				"show the current lunar phase and illumination",
+				"display the next full moon and new moon dates"
+			]
+		},
+		{
+			"identifier": "urn:air:wxcn.dev:component:tide-forecast",
+			"displayName": "Tide Forecast",
+			"type": "application/json",
+			"url": "https://wxcn.dev/r/svelte/tide-forecast.json",
+			"description": "A Svelte tide card with NOAA predictions, a tide chart, station context, and an optional current reading.",
+			"representativeQueries": [
+				"add a tide forecast card to my shadcn-svelte app",
+				"show the next high and low tides for a coastal location",
+				"display NOAA tide predictions with a chart in feet or meters"
+			]
+		},
+		{
+			"identifier": "urn:air:wxcn.dev:component:forecast-dashboard",
+			"displayName": "Forecast Dashboard",
+			"type": "application/json",
+			"url": "https://wxcn.dev/r/svelte/forecast-dashboard.json",
+			"description": "A composed Svelte dashboard combining weather, moon phase, and tide forecast cards.",
+			"representativeQueries": [
+				"add a weather moon and tide dashboard to my shadcn-svelte app",
+				"show weather lunar phase and coastal tide information together",
+				"install a complete forecast dashboard with theme-aware cards"
+			]
+		},
+		{
+			"identifier": "urn:air:wxcn.dev:api:forecast",
+			"displayName": "Weather Forecast API",
+			"type": "application/json",
+			"url": "https://wxcn.dev/api/forecast",
+			"description": "A JSON weather endpoint for United States coordinates that returns location, current observations, and National Weather Service forecast periods.",
+			"representativeQueries": [
+				"get the weather forecast for latitude 30.2672 longitude -97.7431",
+				"retrieve current observations and forecast periods for a US location",
+				"fetch a National Weather Service forecast as JSON"
+			]
+		},
+		{
+			"identifier": "urn:air:wxcn.dev:api:tides",
+			"displayName": "Tide Forecast API",
+			"type": "application/json",
+			"url": "https://wxcn.dev/api/tides",
+			"description": "A JSON tide endpoint that selects the nearest coastal NOAA station and returns predictions, a series, and a current reading when available.",
+			"representativeQueries": [
+				"get tide predictions near latitude 40.5795 longitude -73.8370",
+				"find the nearest coastal NOAA tide station for these coordinates",
+				"retrieve high and low tide times and water levels as JSON"
+			]
+		},
+		{
+			"identifier": "urn:air:wxcn.dev:api:locations",
+			"displayName": "Location Search API",
+			"type": "application/json",
+			"url": "https://wxcn.dev/api/locations",
+			"description": "A JSON location search endpoint for US places that returns matching names and coordinates for forecast lookup.",
+			"representativeQueries": [
+				"find the coordinates for Austin Texas",
+				"search US places by city and state for a weather lookup",
+				"look up a place name and latitude longitude as JSON"
+			]
+		}
+	]
+}

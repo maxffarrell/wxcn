@@ -17,7 +17,7 @@
 		"deploy": "pnpm build && pnpm --filter @wxcn/web exec wrangler deploy"
 	},
 	"devDependencies": {
-		"@types/node": "^26.4.1",
+		"@types/node": "^26.5.0",
 		"prettier": "^3.9.6",
 		"prettier-plugin-astro": "^0.14.1",
 		"prettier-plugin-svelte": "^4.1.1",

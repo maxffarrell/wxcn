@@ -1,0 +1,7 @@
+# Public pages are available for search and agent discovery.
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /registry.json
+
+Sitemap: https://wxcn.dev/sitemap.xml

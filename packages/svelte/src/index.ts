@@ -19,3 +19,6 @@ export type {
 	TideReading,
 	MoonForecast as MoonForecastData
 } from '@wxcn/core/types.js';
+
+export { getSkyState } from '@wxcn/core/sky.js';
+export type { SkyState, SkyBody, SkyPeriod } from '@wxcn/core/sky.js';

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, type Snippet } from 'svelte';
 	import * as Card from '../ui/card/index.js';
+	import { getSkyState } from '@wxcn/core/sky.js';
 	import WeatherGradientBackground from './WeatherGradientBackground.svelte';
 	import ForecastScreens from './ForecastScreens.svelte';
 	import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
@@ -78,7 +79,12 @@
 	const effectiveTime = $derived(
 		at ?? (forecast === sampleWeather ? Date.parse(sampleCurrentWeather.observedAt) : clock)
 	);
-	const current = $derived(currentWeather);
+	const currentSky = $derived(getSkyState(location.latitude, location.longitude, effectiveTime));
+	const current = $derived(
+		currentWeather && currentSky
+			? { ...currentWeather, isDaytime: currentSky.isDaytime }
+			: currentWeather
+	);
 	const outlook = $derived(weatherOutlook(current, forecast, unit, displayTimeZone, effectiveTime));
 	const periods = $derived(
 		forecast.slice(0, type === 'detailed' ? 8 : density === 'compact' ? 3 : 5)
@@ -163,16 +169,21 @@
 )}
 	{@const view = day ? heroPeriod(day) : current}
 	{@const displayedPeriods = day ? dayPeriods(day) : periods}
+	{@const sky =
+		day && view
+			? getSkyState(location.latitude, location.longitude, Date.parse(view.startTime))
+			: currentSky}
 	<div
 		class={`${day ? 'contents' : 'relative isolate overflow-hidden'} ${background !== 'none' && view ? 'text-white' : 'text-card-foreground'}`}
 	>
 		{#if background !== 'none' && view}
 			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
 				{#if background === 'gradient'}
-					<WeatherGradientBackground mode={condition(view)} />
+					<WeatherGradientBackground mode={condition(view)} {sky} />
 				{:else}
 					<WeatherShaderBackground
 						mode={condition(view)}
+						{sky}
 						paused={!overviewVisible}
 						dithered={background === 'dithered'}
 					/>

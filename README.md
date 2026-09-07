@@ -136,7 +136,7 @@ All unit props are optional. Defaults are Fahrenheit, mph, and feet. The dashboa
 
 Weather keeps the latest station observation separate from NWS forecast highs and lows. Tides use NOAA MLLW heights and offset-aware timestamps; a fresh observation takes precedence, while readings older than 30 minutes fall back to a labeled prediction. Extrema alone never fabricate a current reading. Display times default to the visitor’s browser time zone; override with the optional `timeZone` prop.
 
-Moon phases use a mean lunar-cycle estimate. Full/new moon dates are approximate; moonrise and moonset are not calculated. The playground does not save location coordinates in browser storage.
+Sun and Moon positions, lunar illumination, and full/new moon dates are calculated locally with [Astronomy Engine](https://github.com/cosinekitty/astronomy). Weather skies follow the location and timestamp through sunrise, midday, sunset, and night. The fixed sky panorama uses calculated azimuth and altitude; discs are enlarged, and clouds are illustrative. The Sky time picker previews real rise/set and solar transit times. The playground does not save location coordinates in browser storage.
 
 ### Work locally
 

@@ -84,6 +84,7 @@ for (const [name, component, data, description, registryDependencies] of definit
 				'registry:component',
 				'wxcn/WeatherGradientBackground.svelte'
 			),
+			await file('packages/core/src/sky.ts', 'registry:lib', 'data/sky.ts'),
 			await file('packages/core/src/weather-outlook.ts', 'registry:lib', 'data/weather-outlook.ts'),
 			await file(
 				'packages/svelte/src/components/wxcn/WeatherShaderBackground.svelte',
@@ -107,6 +108,9 @@ for (const [name, component, data, description, registryDependencies] of definit
 		type: 'registry:component',
 		description,
 		registryDependencies,
+		...(name === 'weather-forecast' || name === 'moon-forecast'
+			? { dependencies: ['astronomy-engine@2.1.19'] }
+			: {}),
 		...(name === 'tide-forecast'
 			? {
 					dependencies: ['@number-flow/svelte@^0.4.2', 'layerchart@^2.4.0', 'd3-shape@^3.2.0'],

@@ -41,15 +41,13 @@ Preserve the exact shadcn-svelte preset codec for Svelte. New frameworks need ex
 
 ## Hosting
 
-Production runs on Cloudflare Workers at `https://wxcn.dev`. Run `pnpm run deploy` from the repository root after `wrangler whoami` confirms the intended account. `apps/web/wrangler.jsonc` owns the Worker, static assets, and custom domain configuration. The Astro Cloudflare adapter writes `apps/web/dist/server/wrangler.json` and `apps/web/dist/client`. The root build also writes Wrangler’s supported `.wrangler/deploy/config.json` redirect, so Cloudflare Builds can run its default `npx wrangler deploy` from the workspace root. Use root directory `/` and build command `pnpm build`. Documentation source transforms and syntax highlighting run at build time to keep Node-only tooling out of the Worker. `pnpm dev`, `pnpm check`, and `pnpm build` generate that data automatically.
+Production runs on Cloudflare Workers at `https://wxcn.dev`. Cloudflare Workers Builds is the authoritative deployment system for this repository. Its root directory is `/` and its build command is `pnpm build`; the build writes Wrangler’s supported `.wrangler/deploy/config.json` redirect so Workers Builds can run its default `npx wrangler deploy` from the workspace root. `apps/web/wrangler.jsonc` owns the Worker, static assets, and custom domain configuration. The Astro Cloudflare adapter writes `apps/web/dist/server/wrangler.json` and `apps/web/dist/client`. Documentation source transforms and syntax highlighting run at build time to keep Node-only tooling out of the Worker. `pnpm dev`, `pnpm check`, and `pnpm build` generate that data automatically.
 
 The root workspace is private, and framework/core packages are private while their npm distribution contracts are being established. Registry installation remains the supported distribution path.
 
-### GitHub deployments
+### GitHub checks
 
-CI uses the latest verified action releases. Automatic GitHub deployment is skipped with a notice when `CLOUDFLARE_API_TOKEN` is absent; validation still runs, and Cloudflare Workers Builds is configured independently. Manual deployment fails explicitly without that secret. When credentials are configured, after validation, pushes to `main` deploy to the GitHub `production` environment at `https://wxcn.dev`. Same-repository pull requests deploy isolated `wxcn-pr-<number>` Workers to the `preview` environment; closing the PR removes that Worker. Fork pull requests run checks without deployment credentials. The manual workflow defaults to a separate preview; production is restricted to `main`.
-
-Set the repository secret `CLOUDFLARE_API_TOKEN` to a durable Cloudflare API token with Workers Scripts: Edit and Workers Routes: Edit for the deployment account, and Zone: Read for `wxcn.dev`. The local Wrangler OAuth login is not a CI credential. GitHub environments record deployment status and URLs. Preview configuration has no custom-domain routes, so it cannot replace `wxcn.dev`.
+GitHub Actions runs validation only. Deployment credentials, GitHub deployment environments, PR preview Workers, and preview cleanup are intentionally not configured here; those concerns belong to the linked Cloudflare Workers Builds project.
 
 ### Website framework integrations
 

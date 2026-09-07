@@ -13,8 +13,7 @@
 		"dns-aid:check": "node scripts/dns-aid-check.mjs",
 		"test": "pnpm registry:build && node --conditions=svelte --test scripts/*.test.mjs",
 		"test:consumer": "pnpm registry:build && node scripts/consumer.test-build.mjs",
-		"docs:build": "pnpm registry:build && pnpm --filter @wxcn/web exec node scripts/build-docs.ts",
-		"deploy": "pnpm build && pnpm --filter @wxcn/web exec wrangler deploy"
+		"docs:build": "pnpm registry:build && pnpm --filter @wxcn/web exec node scripts/build-docs.ts"
 	},
 	"devDependencies": {
 		"@types/node": "^26.5.0",

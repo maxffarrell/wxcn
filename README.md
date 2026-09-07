@@ -180,4 +180,4 @@ Every public page has a Markdown version: use `/index.md`, `/docs/components.md`
 
 The [wxcn skill](skills/wxcn/SKILL.md) provides registry installation, data-prop, theming, and contribution guidance. Install it with `npx skills add maxffarrell/wxcn-svelte --skill wxcn`.
 
-Production site: [wxcn.dev](https://wxcn.dev). The site runs on Astro with Svelte preview islands. Deploy to Cloudflare Workers with `pnpm run deploy`.
+Production site: [wxcn.dev](https://wxcn.dev). The site runs on Astro with Svelte preview islands. Production deployment is handled by the linked Cloudflare Workers Builds project.

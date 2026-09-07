@@ -1,4 +1,4 @@
-import { chromium } from '@playwright/test';
+import { chromium, expect } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { encodePreset, PRESET_STYLES } from 'shadcn-svelte/preset';
 const browser = await chromium.launch();
@@ -91,7 +91,9 @@ try {
 	}
 	await page.setViewportSize({ width: 375, height: 900 });
 	await page.locator('[data-react-forecast="weather"]').first().waitFor();
-	assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false);
+	await expect
+		.poll(() => page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
+		.toBe(false);
 	await page.screenshot({ path: '/tmp/wxcn-react-site-mobile.png', fullPage: true });
 	await page.goto(base + '/react');
 	await page.getByRole('link', { name: 'Svelte', exact: true }).click();

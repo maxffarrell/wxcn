@@ -169,7 +169,8 @@ void main(){
  color+=(hash(vec3(gl_FragCoord.xy,0.))-.5)/255.;
  if(dithered>.5){
   vec2 cell=floor(gl_FragCoord.xy/(2.*pixelRatio));
-  color=floor(clamp(color,0.,1.)*7.+bayer4(cell))/7.;
+  float luminance=dot(clamp(color,0.,1.),vec3(.2126,.7152,.0722));
+  color=vec3(mix(.18,1.,step(bayer4(cell),luminance)));
  }
  gl_FragColor=vec4(color,1.);
 }`
@@ -350,6 +351,28 @@ void main(){
 	}
 	.wxcn-sky.night {
 		background: linear-gradient(160deg, #101c32, #405269);
+	}
+	/* Multiply grayscale ink by the base swatch. CSS keeps palette changes live,
+       including while the shader is paused for reduced motion. */
+	.wxcn-sky[data-background-style='dithered'] {
+		isolation: isolate;
+		background: var(--weather-base-color, var(--muted-foreground, #737373));
+	}
+	.wxcn-sky[data-background-style='dithered'] canvas {
+		mix-blend-mode: multiply;
+	}
+	.wxcn-sky[data-background-style='dithered'] .wxcn-precipitation {
+		color: color-mix(
+			in srgb,
+			var(--weather-base-color, var(--muted-foreground, #737373)) 25%,
+			white
+		);
+	}
+	.wxcn-sky[data-background-style='dithered'] .wxcn-rain i {
+		background: linear-gradient(transparent, currentColor);
+	}
+	.wxcn-sky[data-background-style='dithered'] .wxcn-snow i {
+		background: currentColor;
 	}
 	.wxcn-sky canvas {
 		display: block;

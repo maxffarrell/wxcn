@@ -325,6 +325,43 @@
 		showWeek={size === 'sm' || type === 'simple'}
 		flush
 	>
+		{#snippet daySummary(day)}
+			{@const values = dayPeriods(day)}
+			{@const daytime = values.find((period) => period.isDaytime)}
+			{@const overnight = values.find((period) => !period.isDaytime)}
+			{@const representative = daytime ?? overnight}
+			<span
+				class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_1.25rem_3rem_3rem] items-center gap-2"
+			>
+				<span class="truncate font-medium">{day.label}</span>
+				{#if representative}<span
+						class="flex justify-center"
+						title={representative.shortForecast}
+						aria-label={representative.shortForecast}
+						><ForecastIcon
+							name={icon(representative)}
+							iconSet={iconType}
+							class="size-4 text-muted-foreground"
+						/></span
+					>{:else}<span></span>{/if}
+				<span
+					class="flex items-center justify-end gap-1 tabular-nums"
+					aria-label={daytime ? `High ${temperature(daytime)} degrees` : 'High unavailable'}
+					><ForecastIcon
+						name="arrowUp"
+						iconSet={iconType}
+						class="size-3 text-muted-foreground"
+					/>{daytime ? `${temperature(daytime)}°` : '—'}</span
+				>
+				<span
+					class="flex items-center justify-end gap-1 text-muted-foreground tabular-nums"
+					aria-label={overnight ? `Low ${temperature(overnight)} degrees` : 'Low unavailable'}
+					><ForecastIcon name="arrowDown" iconSet={iconType} class="size-3" />{overnight
+						? `${temperature(overnight)}°`
+						: '—'}</span
+				>
+			</span>
+		{/snippet}
 		{#snippet children(openDay, action, visible)}
 			{@render cardView(undefined, action, visible, openDay)}
 		{/snippet}

@@ -5,3 +5,14 @@ allowBuilds:
   workerd: true
   esbuild: true
   '@hugeicons/svelte': false
+minimumReleaseAgeExclude:
+  - '@cloudflare/workerd-darwin-64@1.20260907.1'
+  - '@cloudflare/workerd-darwin-arm64@1.20260907.1'
+  - '@cloudflare/workerd-linux-64@1.20260907.1'
+  - '@cloudflare/workerd-linux-arm64@1.20260907.1'
+  - '@cloudflare/workerd-windows-64@1.20260907.1'
+  - '@lucide/svelte@1.42.0'
+  - '@types/node@26.5.0'
+  - miniflare@5.20260907.0-alpha
+  - workerd@1.20260907.1
+  - wrangler@4.129.1

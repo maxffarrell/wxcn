@@ -1,3 +1,4 @@
+import { isDaylight } from '../apps/web/src/lib/server/daylight.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { weatherOutlook } from '../packages/core/src/weather-outlook.ts';
@@ -71,7 +72,11 @@ test('weather endpoint keeps observations separate and preserves forecasts when 
 				}
 			});
 		if (url.pathname === '/forecast')
-			return Response.json({ properties: { periods: sampleWeather } });
+			return Response.json({
+				properties: {
+					periods: [{ ...sampleWeather[0], isDaytime: false }, ...sampleWeather.slice(1)]
+				}
+			});
 		if (unavailable) return new Response('', { status: 503 });
 		if (url.pathname === '/hourly')
 			return Response.json({ properties: { periods: [sampleWeather[0]] } });
@@ -90,7 +95,7 @@ test('weather endpoint keeps observations separate and preserves forecasts when 
 			]
 		});
 	};
-	const result = await loadForecast({ latitude: 30.2672, longitude: -97.7431 }, fetcher);
+	const result = await loadForecast({ latitude: 30.2672, longitude: -97.7431 }, fetcher, at);
 	assert.deepEqual(result.hourlyForecast, [sampleWeather[0]]);
 	assert.equal(result.currentWeather.temperature, 30);
 	assert.equal(result.currentWeather.isDaytime, true);
@@ -99,5 +104,20 @@ test('weather endpoint keeps observations separate and preserves forecasts when 
 	const fallback = await loadForecast({ latitude: 30.2672, longitude: -97.7431 }, fetcher);
 	assert.deepEqual(fallback.hourlyForecast, []);
 	assert.equal(fallback.currentWeather, null);
-	assert.deepEqual(fallback.forecast, sampleWeather);
+	assert.deepEqual(fallback.forecast, [
+		{ ...sampleWeather[0], isDaytime: false },
+		...sampleWeather.slice(1)
+	]);
+});
+
+test('Austin remains daytime at 6:19pm, and becomes night after sunset', () => {
+	assert.equal(isDaylight(30.2672, -97.7431, Date.parse('2026-09-07T18:19:00-05:00')), true);
+	assert.equal(isDaylight(30.2672, -97.7431, Date.parse('2026-09-07T21:00:00-05:00')), false);
+	assert.equal(isDaylight(30.2672, -97.7431, Date.parse('2026-12-07T18:19:00-06:00')), false);
+});
+test('solar daylight handles longitude, UTC date boundaries, and polar seasons', () => {
+	assert.equal(isDaylight(-33.87, 151.21, Date.parse('2026-09-08T12:00:00+10:00')), true);
+	assert.equal(isDaylight(-33.87, 151.21, Date.parse('2026-09-08T00:00:00+10:00')), false);
+	assert.equal(isDaylight(78.22, 15.65, Date.parse('2026-06-21T00:00:00Z')), true);
+	assert.equal(isDaylight(78.22, 15.65, Date.parse('2026-12-21T12:00:00Z')), false);
 });

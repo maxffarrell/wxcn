@@ -23,6 +23,11 @@ export function buildRegistryTheme(config: DesignSystemConfig) {
 	};
 	const themeVars: Record<string, string> = {};
 
+	// Keep weather ink tied to the base selection, even when a full theme
+	// overrides the semantic foreground colors.
+	lightVars['weather-base-color'] = baseColor.cssVars.light['muted-foreground'];
+	darkVars['weather-base-color'] = baseColor.cssVars.dark['muted-foreground'];
+
 	// Apply chart color override.
 	const chartTheme = getTheme(config.chartColor);
 	if (chartTheme) {

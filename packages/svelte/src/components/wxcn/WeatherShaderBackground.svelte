@@ -160,7 +160,9 @@ void main(){
  color+=(hash(vec3(gl_FragCoord.xy,0.))-.5)/255.;
  if(dithered>.5){
   vec2 cell=floor(gl_FragCoord.xy/(2.*pixelRatio));
-  color=floor(clamp(color,0.,1.)*7.+bayer4(cell))/7.;
+  // Quantize luminance, not individual RGB channels, into two ink tones.
+  float luminance=dot(clamp(color,0.,1.),vec3(.2126,.7152,.0722));
+  color=vec3(mix(.18,1.,step(bayer4(cell),luminance)));
  }
  gl_FragColor=vec4(color,1.);
 }`
@@ -356,6 +358,28 @@ void main(){
 	}
 	.sky.night {
 		background: linear-gradient(160deg, #101c32, #405269);
+	}
+	/* Multiply grayscale ink by the base swatch. CSS keeps palette changes live,
+       including while the shader is paused for reduced motion. */
+	.sky[data-background-style='dithered'] {
+		isolation: isolate;
+		background: var(--weather-base-color, var(--muted-foreground, #737373));
+	}
+	.sky[data-background-style='dithered'] canvas {
+		mix-blend-mode: multiply;
+	}
+	.sky[data-background-style='dithered'] .precipitation {
+		color: color-mix(
+			in srgb,
+			var(--weather-base-color, var(--muted-foreground, #737373)) 25%,
+			white
+		);
+	}
+	.sky[data-background-style='dithered'] .rain i {
+		background: linear-gradient(transparent, currentColor);
+	}
+	.sky[data-background-style='dithered'] .snow i {
+		background: currentColor;
 	}
 	canvas {
 		display: block;

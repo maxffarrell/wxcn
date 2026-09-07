@@ -55,7 +55,7 @@
 			preventScroll={false}
 			updatePositionStrategy="always"
 			class={cn(
-				'z-50 max-h-[min(var(--picker-height),var(--bits-dropdown-menu-content-available-height))] w-(--bits-dropdown-menu-anchor-width) max-w-[calc(100vw-2rem)] min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain rounded-md bg-popover/90 p-1 text-popover-foreground shadow-lg ring-1 ring-foreground/10 backdrop-blur-xs',
+				'z-50 max-h-[min(var(--picker-height),var(--bits-dropdown-menu-content-available-height))] w-(--bits-dropdown-menu-anchor-width) max-w-[calc(100vw-2rem)] min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain rounded-md bg-popover/90 p-1 text-popover-foreground shadow-lg ring-1 ring-foreground/10 backdrop-blur-xs duration-150 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95',
 				className
 			)}
 			{...restProps}
@@ -78,7 +78,7 @@
 			updatePositionStrategy="always"
 			collisionPadding={16}
 			class={cn(
-				'cn-menu-target z-50 max-h-[min(var(--picker-height),var(--bits-dropdown-menu-content-available-height))] w-(--bits-dropdown-menu-anchor-width) max-w-[calc(100vw-2rem)] min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain rounded-xl border-0 bg-neutral-950/95 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl outline-none dark:bg-neutral-800/95 dark:ring-neutral-700/50',
+				'cn-menu-target z-50 max-h-[min(var(--picker-height),var(--bits-dropdown-menu-content-available-height))] w-(--bits-dropdown-menu-anchor-width) max-w-[calc(100vw-2rem)] min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain rounded-xl border-0 bg-neutral-950/95 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl duration-150 outline-none data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 dark:bg-neutral-800/95 dark:ring-neutral-700/50',
 				className
 			)}
 			{...restProps}

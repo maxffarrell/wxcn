@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { getPage } from '$lib/page.svelte.js';
+	const page = getPage();
 	import * as Popover from '@wxcn/svelte/components/ui/popover/index.js';
 	import { mainNavItems, PAGES_NEW, sidebarNavItems } from '$lib/navigation.js';
 	import { Button, type ButtonProps } from '@wxcn/svelte/components/ui/button/index.js';
@@ -23,7 +25,7 @@
 
 {#snippet MobileLink({ href, content, class: className, ...props }: MobileLinkProps)}
 	<a
-		{href}
+		href={href ? page.href(href) : href}
 		onclick={() => {
 			open = false;
 		}}

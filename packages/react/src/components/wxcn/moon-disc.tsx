@@ -7,7 +7,12 @@ export type MoonDiscProps = React.SVGProps<SVGSVGElement> & {
 	label?: string;
 };
 
-export function MoonDisc({ phase = 0.5, label = 'Full moon', className, ...props }: MoonDiscProps) {
+export function MoonDisc({
+	phase = 0.5,
+	label = 'Full moon',
+	className = 'size-24',
+	...props
+}: MoonDiscProps) {
 	const id = React.useId().replace(/:/g, '');
 	const p = ((phase % 1) + 1) % 1;
 	const waxing = p <= 0.5;

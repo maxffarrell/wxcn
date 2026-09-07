@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const workspaces = ['apps/web', 'packages/svelte'];
+const workspaces = ['apps/web', 'packages/svelte', 'packages/react'];
 const overlay = `${root}node_modules/.cache/svelte-check-native/svelte`;
 
 // Preserve each pnpm package's dependency resolution inside native TS overlays.

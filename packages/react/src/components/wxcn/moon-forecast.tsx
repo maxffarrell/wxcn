@@ -51,16 +51,31 @@ export function MoonForecast({
 
 	return (
 		<Card
-			style={{ containerType: 'inline-size' }}
 			data-density={density}
+			style={
+				{
+					containerType: 'inline-size',
+					'--wxcn-spacing': size === 'sm' ? '1rem' : '1.5rem'
+				} as import('react').CSSProperties
+			}
 			data-card-size={size}
-			className={cn('min-w-0 overflow-hidden', className)}
+			data-size={size === 'sm' ? 'sm' : 'default'}
+			className={cn(
+				'min-w-0 overflow-hidden',
+
+				className
+			)}
 		>
-			<CardHeader>
+			<CardHeader className="px-[var(--card-spacing,var(--wxcn-spacing))]">
 				<CardTitle>Moon phase</CardTitle>
 				<CardDescription>{location.label}</CardDescription>
 			</CardHeader>
-			<CardContent className={cn('grid', density === 'compact' ? 'gap-3' : 'gap-5')}>
+			<CardContent
+				className={cn(
+					'grid px-[var(--card-spacing,var(--wxcn-spacing))]',
+					density === 'compact' ? 'gap-3' : 'gap-5'
+				)}
+			>
 				<div
 					className={cn(
 						'flex items-center gap-4',
@@ -92,15 +107,30 @@ export function MoonForecast({
 				</div>
 				{type !== 'simple' && (
 					<dl className="moon-data divide-y text-sm">
-						<div className="flex justify-between gap-4 pb-3">
+						<div
+							className={cn(
+								'flex justify-between gap-4 pb-3',
+								density === 'compact' && 'py-[0.4rem]'
+							)}
+						>
 							<dt className="text-muted-foreground">Moon age</dt>
 							<dd>{forecast.age} days</dd>
 						</div>
-						<div className="flex justify-between gap-4 py-3">
+						<div
+							className={cn(
+								'flex justify-between gap-4 py-3',
+								density === 'compact' && 'py-[0.4rem]'
+							)}
+						>
 							<dt className="text-muted-foreground">Next full moon</dt>
 							<dd>{date(forecast.nextFullMoon)}</dd>
 						</div>
-						<div className="flex justify-between gap-4 pt-3">
+						<div
+							className={cn(
+								'flex justify-between gap-4 pt-3',
+								density === 'compact' && 'py-[0.4rem]'
+							)}
+						>
 							<dt className="text-muted-foreground">Next new moon</dt>
 							<dd>{date(forecast.nextNewMoon)}</dd>
 						</div>

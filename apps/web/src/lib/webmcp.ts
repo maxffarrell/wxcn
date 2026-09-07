@@ -18,9 +18,34 @@ type ModelContext = {
 	provideContext: (context: { tools: WebMCPTool[] }) => void;
 };
 
+const frameworkProperty = {
+	type: 'string',
+	enum: ['svelte', 'react'],
+	description: 'Framework to navigate or list. Defaults to the current framework.'
+};
+
+function frameworkPrefix(input: unknown): string {
+	const framework =
+		input && typeof input === 'object' && 'framework' in input ? input.framework : undefined;
+	if (framework !== undefined && framework !== 'svelte' && framework !== 'react') {
+		throw new Error('Choose Svelte or React.');
+	}
+	const current =
+		typeof window !== 'undefined' &&
+		(window.location.pathname === '/react' || window.location.pathname.startsWith('/react/'))
+			? 'react'
+			: 'svelte';
+	return (framework ?? current) === 'react' ? '/react' : '';
+}
+
+function pageHref(href: string, prefix: string) {
+	return prefix + (href === '/' ? (prefix ? '' : '/') : href);
+}
+
 const navigationSchema = {
 	type: 'object',
 	properties: {
+		framework: frameworkProperty,
 		page: {
 			type: 'string',
 			enum: Object.keys(pages),
@@ -39,11 +64,11 @@ export const webmcpTools: WebMCPTool[] = [
 		annotations: { readOnlyHint: true, destructiveHint: false },
 		async execute(input) {
 			const page = (input as { page?: PageName }).page;
-			if (!page || !(page in pages)) {
+			if (!page || !Object.hasOwn(pages, page)) {
 				throw new Error('Choose a valid wxcn page.');
 			}
 
-			window.location.assign(pages[page].href);
+			window.location.assign(pageHref(pages[page].href, frameworkPrefix(input)));
 			return `Opening ${pages[page].title}.`;
 		}
 	},
@@ -52,12 +77,17 @@ export const webmcpTools: WebMCPTool[] = [
 		description: 'List the public pages available on wxcn.',
 		inputSchema: {
 			type: 'object',
-			properties: {},
+			properties: { framework: frameworkProperty },
 			additionalProperties: false
 		},
 		annotations: { readOnlyHint: true, destructiveHint: false },
-		async execute() {
-			return Object.entries(pages).map(([id, page]) => ({ id, ...page }));
+		async execute(input) {
+			const prefix = frameworkPrefix(input);
+			return Object.entries(pages).map(([id, page]) => ({
+				id,
+				...page,
+				href: pageHref(page.href, prefix)
+			}));
 		}
 	}
 ];

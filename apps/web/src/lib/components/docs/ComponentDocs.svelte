@@ -12,8 +12,17 @@
 	import TideForecast from '$lib/components/docs/examples/tide-forecast.svelte';
 	import MoonForecast from '$lib/components/docs/examples/moon-forecast.svelte';
 	import ForecastDashboard from '$lib/components/docs/examples/forecast-dashboard.svelte';
+	import ReactForecast from '$lib/components/react-forecast.svelte';
 	import { getPage } from '$lib/page.svelte.js';
 	const page = getPage();
+	const framework = $derived(page.url.pathname.startsWith('/react') ? 'react' : 'svelte');
+	const installer = $derived(framework === 'react' ? 'shadcn@latest' : 'shadcn-svelte@latest');
+	const reactKinds = {
+		'weather-forecast': 'weather',
+		'tide-forecast': 'tides',
+		'moon-forecast': 'moon',
+		'forecast-dashboard': 'dashboard'
+	} as const;
 	let { data }: { data: Awaited<ReturnType<typeof import('$lib/server/component-docs.js').load>> } =
 		$props();
 	const demos: Record<string, typeof WeatherForecast> = {
@@ -28,7 +37,31 @@
 	<section class="mt-12">
 		<H2 id={item.name}>{item.title}</H2>
 		<p>{item.description}</p>
-		<ComponentPreview name={item.name} component={demos[item.name]}>
+		<ComponentPreview name={item.name}>
+			{#snippet example()}
+				{#if framework === 'react'}
+					<div class={item.name === 'forecast-dashboard' ? 'w-full' : 'w-full max-w-sm'}>
+						<ReactForecast
+							kind={reactKinds[item.name as keyof typeof reactKinds]}
+							props={item.name === 'weather-forecast'
+								? {
+										unit: 'celsius',
+										animatedBackground: true,
+										showTemperatureTrend: true,
+										showHighLow: true
+									}
+								: item.name === 'tide-forecast'
+									? { unit: 'meter' }
+									: item.name === 'forecast-dashboard'
+										? { animatedWeatherBackground: true }
+										: {}}
+						/>
+					</div>
+				{:else}
+					{@const Demo = demos[item.name]}
+					<Demo />
+				{/if}
+			{/snippet}
 			<SourceCode code={item.code} html={item.html} />
 		</ComponentPreview>
 		{#if item.name === 'weather-forecast'}
@@ -54,12 +87,12 @@
 		<InstallTabs>
 			{#snippet cli()}<PMBlock
 					type="execute"
-					command={['shadcn-svelte@latest', 'add', `${page.url.origin}/r/svelte/${item.name}.json`]}
+					command={[installer, 'add', `${page.url.origin}/r/${framework}/${item.name}.json`]}
 				/>{/snippet}
 			{#snippet manual()}
 				<Steps>
 					<Step>Install the required base components.</Step>
-					<PMBlock type="execute" command={['shadcn-svelte@latest', 'add', ...item.primitives]} />
+					<PMBlock type="execute" command={[installer, 'add', ...item.primitives]} />
 					{#if item.dependencies.length}<Step>Install the following dependencies.</Step><PMBlock
 							type="add"
 							command={item.dependencies}

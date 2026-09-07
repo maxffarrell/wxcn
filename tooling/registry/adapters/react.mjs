@@ -1,10 +1,31 @@
 import { readFile } from 'node:fs/promises';
 const root = new URL('../../../', import.meta.url);
+import { icons } from './svelte-icons.mjs';
+const iconSource = `import { IconPlaceholder } from '@/components/icon-placeholder';
+export type IconName = ${Object.keys(icons)
+	.map((n) => `'${n}'`)
+	.join(' | ')};
+export type IconSet = 'lucide' | 'tabler' | 'phosphor' | 'hugeicons' | 'remixicon';
+export type ForecastIconProps = { name: IconName; iconSet?: IconSet; className?: string };
+export function ForecastIcon({ name, className = 'size-5' }: ForecastIconProps) {
+ switch (name) {
+ ${Object.entries(icons)
+		.map(
+			([name, libs]) =>
+				`case '${name}': return <IconPlaceholder ${Object.entries(libs)
+					.map(([lib, icon]) => `${lib}="${icon}"`)
+					.join(' ')} className={className} aria-hidden="true" />;`
+		)
+		.join('\n')}
+ }
+}
+`;
 async function file(path, type, target) {
-	const content = (await readFile(new URL(path, root), 'utf8')).replaceAll(
-		'@wxcn/core/',
-		'@/lib/wxcn/'
-	);
+	const content = path.endsWith('forecast-icons.tsx')
+		? iconSource
+		: (await readFile(new URL(path, root), 'utf8'))
+				.replaceAll('@wxcn/core/', '@/lib/wxcn/')
+				.replaceAll('../../icons/forecast-icons', './forecast-icons');
 	return { path, type, target, content };
 }
 const definitions = [
@@ -40,6 +61,11 @@ for (const [name, description, helpers, components, registryDependencies] of def
 				`@components/wxcn/${name}.tsx`
 			)
 		),
+		file(
+			'packages/react/src/icons/forecast-icons.tsx',
+			'registry:component',
+			'@components/wxcn/forecast-icons.tsx'
+		),
 		...['types', ...helpers].map((name) =>
 			file(`packages/core/src/${name}.ts`, 'registry:lib', `@lib/wxcn/${name}.ts`)
 		)
@@ -50,7 +76,8 @@ for (const [name, description, helpers, components, registryDependencies] of def
 		type: 'registry:component',
 		description,
 		registryDependencies,
-		dependencies: ['lucide-react'],
+		dependencies:
+			name === 'tide-forecast' ? ['lucide-react', '@number-flow/react@^0.5.8'] : ['lucide-react'],
 		files
 	});
 }

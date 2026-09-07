@@ -2,14 +2,14 @@
   <img src="apps/web/static/favicon.svg" width="48" height="48" alt="" />
   <h1>wxcn</h1>
   <p><strong>A little atmosphere for your interface.</strong></p>
-  <p>Weather, moon, and tide components for Svelte.<br />Built on shadcn-svelte. Shaped by your theme. Yours to customize.</p>
+  <p>Weather, moon, and tide components for Svelte and React.<br />Built on native shadcn primitives. Shaped by your theme. Yours to customize.</p>
   <p>
     <a href="#the-components">Components</a> ·
     <a href="#make-it-yours">Playground</a> ·
     <a href="#build-with-wxcn">Developer experience</a> ·
     <a href="LICENSE">MIT license</a>
   </p>
-  <p><strong>Svelte 5</strong> &nbsp; / &nbsp; <strong>Tailwind CSS 4</strong> &nbsp; / &nbsp; <strong>LayerChart 2</strong></p>
+  <p><strong>Svelte 5</strong> &nbsp; / &nbsp; <strong>React 19</strong> &nbsp; / &nbsp; <strong>Tailwind CSS 4</strong> &nbsp; / &nbsp; <strong>LayerChart 2</strong></p>
 </div>
 
 <picture>
@@ -84,6 +84,8 @@ Run the playground locally and open **Get code**, or visit its **Registry** page
 | `/r/tide-forecast.json`      | Tide card, LayerChart dependencies, and data helpers |
 | `/r/forecast-dashboard.json` | All three cards and a composed dashboard             |
 
+React items use the `/r/react/<component>.json` endpoints and the same component names. The React registry installs native React components, Recharts, and the configured shadcn primitives. Its icon adapter supports Lucide, Tabler, Phosphor, Hugeicons, and Remixicon through the consumer's configured icon library.
+
 The CLI resolves the required `card` and `badge` primitives from your configuration. Icon selection happens **at installation time**; the playground's icon picker lets you preview those choices.
 
 ### Compose a forecast
@@ -102,6 +104,20 @@ After installing the registry components:
 	<MoonForecast type="simple" />
 	<TideForecast unit="meter" density="compact" />
 </div>
+```
+
+For React, install the React endpoint and compose the native components in TSX:
+
+```tsx
+import WeatherForecast from '@/components/wxcn/weather-forecast';
+import MoonForecast from '@/components/wxcn/moon-forecast';
+import TideForecast from '@/components/wxcn/tide-forecast';
+
+<div className="grid items-start gap-4 md:grid-cols-3">
+	<WeatherForecast unit="celsius" windUnit="km/h" />
+	<MoonForecast type="simple" />
+	<TideForecast unit="meter" density="compact" />
+</div>;
 ```
 
 These defaults render example data. Supply your own `currentWeather` observation and `forecast`, tide `predictions`, `series`, and `reading` for a live interface; set `sourceLabel` to identify the data.
@@ -149,9 +165,12 @@ Use the pnpm version pinned in [`package.json`](package.json) to install depende
 | `pnpm test`           | Verify registry transforms, data handling, and presets |
 | `pnpm lint`           | Check formatting                                       |
 | `pnpm build`          | Regenerate the registry and build the site             |
-| `pnpm registry:build` | Generate installable Svelte registry files             |
+| `pnpm registry:build` | Generate installable Svelte and React registry files   |
+| `pnpm dev:react`      | Start the standalone React/Vite preview harness        |
+| `pnpm test:react`     | Run React SSR and semantic component tests             |
+| `pnpm build:react`    | Typecheck and build the React preview                  |
 
-Component source lives in [`packages/svelte/src/components/wxcn`](packages/svelte/src/components/wxcn), with shared data and calculations in [`packages/core`](packages/core). [`tooling/registry/build.mjs`](tooling/registry/build.mjs) generates the installable registry from that source. For registry-only iteration, use the `registry:build` package script before testing an install.
+Component source lives in [`packages/svelte/src/components/wxcn`](packages/svelte/src/components/wxcn) and [`packages/react/src/components/wxcn`](packages/react/src/components/wxcn), with shared data and calculations in [`packages/core`](packages/core). [`tooling/registry/build.mjs`](tooling/registry/build.mjs) generates both installable registries from that source. For registry-only iteration, use the `registry:build` package script before testing an install.
 
 <details>
 <summary>About playground presets</summary>
@@ -180,4 +199,4 @@ Every public page has a Markdown version: use `/index.md`, `/docs/components.md`
 
 The [wxcn skill](skills/wxcn/SKILL.md) provides registry installation, data-prop, theming, and contribution guidance. Install it with `npx skills add maxffarrell/wxcn-svelte --skill wxcn`.
 
-Production site: [wxcn.dev](https://wxcn.dev). The site runs on Astro with Svelte preview islands. Production deployment is handled by the linked Cloudflare Workers Builds project.
+Production site: [wxcn.dev](https://wxcn.dev). The site runs on Astro with native Svelte and React preview islands; the standalone React Vite app remains the local harness. Production deployment is handled by the linked Cloudflare Workers Builds project.

@@ -5,6 +5,15 @@ class Page {
 	constructor(url: string) {
 		this.url = new URL(url);
 	}
+	get framework() {
+		return this.url.pathname.startsWith('/react') ? 'react' : 'svelte';
+	}
+	get path() {
+		return this.url.pathname.replace(/^\/react(?=\/|$)/, '') || '/';
+	}
+	href(path: string) {
+		return this.framework === 'react' ? '/react' + (path === '/' ? '' : path) : path;
+	}
 	replace(url: URL) {
 		history.replaceState(null, '', url);
 		this.url = new URL(url);

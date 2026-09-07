@@ -19,8 +19,10 @@ import { WeatherForecast } from '@/components/wxcn/weather-forecast';
 />;
 ```
 
-Props retain the Svelte meanings for size (`sm`, `default`, `lg`), density (`compact`, `comfortable`), detail (`simple`, `summary`, `detailed`), units, timezone, and provider data; use React `className`. Components use Lucide icons. Svelte icon sets and preset codes are not supported. Atmospheric backgrounds respect reduced motion and pause when hidden.
+Props retain the Svelte meanings for size (`sm`, `default`, `lg`), density (`compact`, `comfortable`), detail (`simple`, `summary`, `detailed`), units, timezone, and provider data; use React `className`. The native icon adapter supports Lucide, Tabler, Phosphor, Hugeicons, and Remixicon using React-local icon names. Atmospheric backgrounds respect reduced motion and pause when hidden.
 
 Defaults are fixtures, not live data. For live tides, provide `predictions`, `series`, `reading`, and a source label; `example={false}` disables sample interpolation. Missing or stale observations never appear as fresh observations. `at` accepts an explicit timestamp for server-rendered live data and tests. Without `at`, live data displays a stable loading state until the client clock is available. Provide an explicit `timeZone` for consistent server/client display.
+
+The standalone Vite preview in `apps/preview-react` is a validation harness; the same native React cards are rendered by the Astro site at `/react`, with component documentation at `/react/docs/components` and React registry endpoints at `/r/react/<component>.json`.
 
 Validation: `pnpm test:react`, `pnpm build:react`, `pnpm test:consumer:react`.

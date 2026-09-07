@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@import '../../web/src/lib/upstream/cards.css';
 @source '../../../packages/react/src';
 @custom-variant dark (&:is(.dark *));
 

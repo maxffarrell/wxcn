@@ -11,12 +11,18 @@
 		"check": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@hugeicons/core-free-icons": "^4.3.0",
+		"@hugeicons/react": "^1.1.10",
+		"@number-flow/react": "^0.5.8",
+		"@phosphor-icons/react": "^2.1.10",
+		"@remixicon/react": "^4.9.0",
+		"@tabler/icons-react": "^3.46.0",
 		"@wxcn/core": "workspace:*",
-		"lucide-react": "^0.577.0",
-		"recharts": "^3.8.0",
-		"cn": "^0.2.5",
 		"class-variance-authority": "^0.7.1",
-		"radix-ui": "^1.4.3"
+		"cn": "^0.2.5",
+		"lucide-react": "^0.577.0",
+		"radix-ui": "^1.4.3",
+		"recharts": "^3.8.0"
 	},
 	"peerDependencies": {
 		"react": "^19.2.0",

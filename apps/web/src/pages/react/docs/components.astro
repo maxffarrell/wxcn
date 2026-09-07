@@ -1,0 +1,9 @@
+---
+import Site from '../../../layouts/Site.astro';
+import Page from '$lib/pages/ComponentsPage.svelte';
+import { load } from '$lib/server/component-docs.js';
+---
+
+<Site title="Components — wxcn"
+	><Page url={Astro.url.href} data={await load('react')} client:load /></Site
+>

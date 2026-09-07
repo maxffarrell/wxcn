@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState, type ComponentProps } from 'react';
+import NumberFlow from '@number-flow/react';
 import {
 	Area,
 	AreaChart,
@@ -10,7 +11,7 @@ import {
 	XAxis,
 	YAxis
 } from 'recharts';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { ForecastIcon, type IconSet } from '../../icons/forecast-icons';
 import type {
 	ForecastType,
 	LocationInput,
@@ -26,6 +27,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 
 export type TideForecastProps = {
+	iconType?: IconSet;
 	timeZone?: string;
 	type?: ForecastType;
 	size?: 'sm' | 'default' | 'lg';
@@ -104,6 +106,7 @@ function TideTooltipContent({
 }
 
 export function TideForecast({
+	iconType,
 	timeZone,
 	type = 'summary',
 	size = 'default',
@@ -162,6 +165,11 @@ export function TideForecast({
 	const displayedTime = hovered?.time ?? (tide.observed ? tideTimestamp(tide.observed.time) : now);
 	const indicatorTime = hovered?.time ?? now;
 	const indicatorLevel = hovered?.height ?? tide.predicted;
+	const timeParts = new Intl.DateTimeFormat('en-US', {
+		hour: 'numeric',
+		minute: '2-digit',
+		timeZone: displayTimeZone
+	}).formatToParts(displayedTime);
 	const chartHeight = size === 'sm' ? 80 : size === 'lg' ? 144 : 112;
 	const handleHover = useCallback((point: ChartPoint | null) => setHovered(point), []);
 	if (
@@ -175,6 +183,7 @@ export function TideForecast({
 				style={{ containerType: 'inline-size' }}
 				data-density={density}
 				data-card-size={size}
+				data-size={size === 'sm' ? 'sm' : 'default'}
 				className={`min-w-0 overflow-hidden ${className}`}
 			>
 				<CardHeader>
@@ -195,13 +204,14 @@ export function TideForecast({
 			style={{ containerType: 'inline-size' }}
 			data-density={density}
 			data-card-size={size}
+			data-size={size === 'sm' ? 'sm' : 'default'}
 			className={`min-w-0 overflow-hidden ${className}`}
 		>
 			<CardHeader>
 				<CardTitle>Tides</CardTitle>
 				<CardDescription>{location.label}</CardDescription>
 			</CardHeader>
-			<CardContent className={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}>
+			<CardContent className={`${density === 'compact' ? 'grid gap-3' : 'grid gap-5'}`}>
 				{tide.events.length || tide.points.length ? (
 					<>
 						<div className="flex flex-wrap items-end justify-between gap-3">
@@ -221,7 +231,14 @@ export function TideForecast({
 									style={{ fontSize: 'clamp(1.5rem, 12cqw, 2.5rem)' }}
 									className={`${size === 'sm' ? 'text-3xl' : 'text-4xl'} font-medium tracking-tight tabular-nums`}
 								>
-									{displayedLevel === null ? '—' : height(displayedLevel)}
+									{displayedLevel === null ? (
+										'—'
+									) : (
+										<NumberFlow
+											value={Number(height(displayedLevel))}
+											format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
+										/>
+									)}
 									<span className="ml-1 text-sm text-muted-foreground">{symbol}</span>
 								</p>
 							</div>
@@ -237,7 +254,22 @@ export function TideForecast({
 								</p>
 								<p className="mt-1 tabular-nums" data-slot="tide-time">
 									<span className="sr-only">{formatTime(displayedTime, displayTimeZone)}</span>
-									<span aria-hidden="true">{formatTime(displayedTime, displayTimeZone)}</span>
+									<span aria-hidden="true">
+										{timeParts.map((part, index) =>
+											part.type === 'hour' || part.type === 'minute' ? (
+												<NumberFlow
+													key={`${part.type}-${index}`}
+													value={Number(part.value)}
+													format={{
+														minimumIntegerDigits: part.type === 'minute' ? 2 : 1,
+														useGrouping: false
+													}}
+												/>
+											) : (
+												part.value
+											)
+										)}
+									</span>
 								</p>
 							</div>
 						</div>
@@ -354,9 +386,19 @@ export function TideForecast({
 										>
 											<span className="flex items-center gap-1">
 												{event.type === 'H' ? (
-													<ArrowUp className="size-3" aria-hidden="true" />
+													<ForecastIcon
+														name="arrowUp"
+														iconSet={iconType}
+														className="size-3"
+														aria-hidden="true"
+													/>
 												) : (
-													<ArrowDown className="size-3" aria-hidden="true" />
+													<ForecastIcon
+														name="arrowDown"
+														iconSet={iconType}
+														className="size-3"
+														aria-hidden="true"
+													/>
 												)}
 												{event.type === 'H' ? 'High tide' : 'Low tide'}
 											</span>

@@ -28,7 +28,20 @@ export default defineConfig({
 				}
 			}
 		},
-		plugins: [tailwindcss()],
+		plugins: [
+			tailwindcss(),
+			{
+				name: 'wxcn-worker-browser-flag',
+				enforce: 'pre',
+				resolveId(source) {
+					if (source === 'esm-env/browser' && ['ssr', 'prerender'].includes(this.environment.name))
+						return '\0wxcn-worker-browser-flag';
+				},
+				load(id) {
+					if (id === '\0wxcn-worker-browser-flag') return 'export default false';
+				}
+			}
+		],
 		resolve: {
 			dedupe: ['svelte', 'bits-ui', 'react', 'react-dom'],
 			alias: {

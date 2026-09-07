@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowDown, ArrowUp, CloudRain, CloudSun, Moon, Snowflake, Sun, Wind } from 'lucide-react';
+import { ForecastIcon, type IconSet, type IconName } from '../../icons/forecast-icons';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { WeatherShaderBackground, type WeatherShaderMode } from './weather-shader-background';
@@ -16,6 +16,7 @@ import { sampleWeather, sampleCurrentWeather, convertWindSpeed } from '@wxcn/cor
 import { weatherOutlook } from '@wxcn/core/weather-outlook.js';
 
 export interface WeatherForecastProps {
+	iconType?: IconSet;
 	timeZone?: string;
 	type?: ForecastType;
 	size?: 'sm' | 'default' | 'lg';
@@ -47,20 +48,21 @@ function condition(p: WeatherPeriod): WeatherShaderMode {
 	if (/wind|breezy/.test(s)) return 'wind';
 	return p.isDaytime ? 'clear' : 'clear-night';
 }
-function periodIcon(p: WeatherPeriod) {
+function periodIcon(p: WeatherPeriod): IconName {
 	const c = condition(p);
 	return c.includes('rain') || c.includes('drizzle') || c === 'thunderstorm'
-		? CloudRain
+		? 'rain'
 		: c.includes('snow') || c === 'wintry-mix'
-			? Snowflake
+			? 'snow'
 			: c.includes('night')
-				? Moon
+				? 'moon'
 				: c === 'clear'
-					? Sun
-					: CloudSun;
+					? 'sun'
+					: 'weather';
 }
 
 export function WeatherForecast({
+	iconType,
 	timeZone,
 	type = 'summary',
 	size = 'default',
@@ -129,12 +131,18 @@ export function WeatherForecast({
 	}
 	return (
 		<Card
-			style={{ containerType: 'inline-size' }}
 			data-density={density}
+			style={
+				{
+					containerType: 'inline-size',
+					'--wxcn-spacing': size === 'sm' ? '1rem' : '1.5rem'
+				} as import('react').CSSProperties
+			}
 			data-card-size={size}
+			data-size={size === 'sm' ? 'sm' : 'default'}
 			className={cn(
 				'relative isolate min-w-0 gap-0 overflow-hidden py-0',
-				size === 'sm' ? '[--card-spacing:--spacing(4)]' : '[--card-spacing:--spacing(6)]',
+
 				className
 			)}
 		>
@@ -155,13 +163,13 @@ export function WeatherForecast({
 						/>
 					</>
 				)}
-				<CardHeader className="relative px-(--card-spacing) pt-(--card-spacing)">
+				<CardHeader className="relative px-[var(--card-spacing,var(--wxcn-spacing))] pt-[var(--card-spacing,var(--wxcn-spacing))]">
 					<CardTitle>Weather</CardTitle>
 					<CardDescription className={animatedBackground && current ? 'text-white/80' : ''}>
 						{location.label ?? 'Local forecast'}
 					</CardDescription>
 				</CardHeader>
-				<CardContent className="relative grid gap-5 px-(--card-spacing) py-(--card-spacing)">
+				<CardContent className="relative grid gap-5 px-[var(--card-spacing,var(--wxcn-spacing))] py-[var(--card-spacing,var(--wxcn-spacing))]">
 					{current ? (
 						<>
 							<div>
@@ -193,12 +201,22 @@ export function WeatherForecast({
 									>
 										{outlook.high !== null && (
 											<span aria-label={`High ${outlook.high} degrees`}>
-												<ArrowUp aria-hidden="true" className="inline size-3.5" /> {outlook.high}°
+												<ForecastIcon
+													name="arrowUp"
+													iconSet={iconType}
+													className="inline size-3.5"
+												/>{' '}
+												{outlook.high}°
 											</span>
 										)}
 										{outlook.low !== null && (
 											<span aria-label={`Low ${outlook.low} degrees`}>
-												<ArrowDown aria-hidden="true" className="inline size-3.5" /> {outlook.low}°
+												<ForecastIcon
+													name="arrowDown"
+													iconSet={iconType}
+													className="inline size-3.5"
+												/>{' '}
+												{outlook.low}°
 											</span>
 										)}
 									</div>
@@ -206,7 +224,7 @@ export function WeatherForecast({
 							</div>
 							<div className="flex flex-wrap items-center justify-between gap-3 text-xs">
 								<span className="flex items-center gap-2 opacity-80">
-									<Wind aria-hidden="true" className="size-4" />
+									<ForecastIcon name="wind" iconSet={iconType} className="size-4" />
 									Wind
 								</span>
 								<span className="tabular-nums">
@@ -232,11 +250,11 @@ export function WeatherForecast({
 				</CardContent>
 			</div>
 			{type !== 'simple' && (
-				<CardContent className="px-(--card-spacing) pb-(--card-spacing)">
+				<CardContent className="px-[var(--card-spacing,var(--wxcn-spacing))] pb-[var(--card-spacing,var(--wxcn-spacing))]">
 					{periods.length > 0 && (
 						<div className="divide-y">
 							{periods.map((period, index) => {
-								const Icon = periodIcon(period);
+								const icon = periodIcon(period);
 								return (
 									<div
 										key={`${period.startTime}-${index}`}
@@ -253,7 +271,11 @@ export function WeatherForecast({
 												</p>
 											)}
 										</div>
-										<Icon aria-hidden="true" className="size-4 text-muted-foreground" />
+										<ForecastIcon
+											name={icon}
+											iconSet={iconType}
+											className="size-4 text-muted-foreground"
+										/>
 										<span className="min-w-9 text-right tabular-nums">{temperature(period)}°</span>
 									</div>
 								);

@@ -30,6 +30,7 @@
 		"shadcn-svelte": "^1.6.1",
 		"svelte": "^5.57.0",
 		"tsx": "^4.23.13",
-		"typescript": "^7.0.2"
+		"typescript": "^7.0.2",
+		"wrangler": "^4.129.1"
 	}
 }

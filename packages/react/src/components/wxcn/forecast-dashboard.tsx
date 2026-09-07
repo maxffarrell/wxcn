@@ -1,3 +1,4 @@
+import type { IconSet } from '../../icons/forecast-icons';
 import type {
 	ForecastType,
 	LocationInput,
@@ -10,6 +11,7 @@ import { TideForecast } from './tide-forecast';
 import { MoonForecast } from './moon-forecast';
 
 export type ForecastDashboardProps = {
+	iconType?: IconSet;
 	timeZone?: string;
 	type?: ForecastType;
 	size?: 'sm' | 'default' | 'lg';
@@ -26,6 +28,7 @@ export type ForecastDashboardProps = {
 };
 
 export function ForecastDashboard({
+	iconType,
 	timeZone,
 	type = 'summary',
 	size = 'default',
@@ -45,6 +48,7 @@ export function ForecastDashboard({
 			<div className="grid items-start gap-4 @min-[38rem]/dashboard:grid-cols-2 @min-[52rem]/dashboard:grid-cols-3">
 				<div className="min-w-0 @min-[38rem]/dashboard:col-span-2 @min-[52rem]/dashboard:col-span-1">
 					<WeatherForecast
+						iconType={iconType}
 						timeZone={timeZone}
 						type={type}
 						size={size}
@@ -59,6 +63,7 @@ export function ForecastDashboard({
 					/>
 				</div>
 				<TideForecast
+					iconType={iconType}
 					timeZone={timeZone}
 					type={type}
 					size={size}

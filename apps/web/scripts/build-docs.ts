@@ -1,6 +1,8 @@
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import registry from '../registry.json' with { type: 'json' };
+import reactRegistry from '../../../packages/react/registry.json' with { type: 'json' };
 import { codeToHtml } from 'shiki';
+import { reactManualIcons } from './react-docs-icons.mjs';
 import { transformImports } from 'shadcn-svelte/transformers/imports';
 import { transformIcons } from 'shadcn-svelte/transformers/icons';
 const overviewExample = readFileSync(
@@ -141,7 +143,82 @@ export async function load() {
 	};
 }
 
+async function loadReact() {
+	const descriptions = [
+		['forecast-dashboard', 'ForecastDashboard', 'All three components, composed into a dashboard.'],
+		[
+			'weather-forecast',
+			'WeatherForecast',
+			'Forecast periods with optional atmospheric backgrounds.'
+		],
+		[
+			'tide-forecast',
+			'TideForecast',
+			'Nearest coastal tides, with a current reading and interactive prediction curve.'
+		],
+		['moon-forecast', 'MoonForecast', 'Lunar phase, illumination, and estimated cycle dates.']
+	];
+	return {
+		examples: await Promise.all(
+			descriptions.map(async ([name, title, description]) => {
+				const code = readFileSync(
+					new URL(`../src/lib/components/docs/examples/react/${name}.tsx`, import.meta.url),
+					'utf8'
+				);
+				const items =
+					name === 'forecast-dashboard'
+						? [
+								...reactRegistry.items.filter((item) => item.name === name),
+								...reactRegistry.items.filter((item) => item.name !== name)
+							]
+						: reactRegistry.items.filter((item) => item.name === name);
+				const files = [
+					...new Map(
+						items.flatMap((item) => item.files).map((file) => [file.target, file])
+					).values()
+				];
+				return {
+					name,
+					title,
+					description,
+					code,
+					html: await highlight(code, 'tsx'),
+					primitives: [
+						...new Set(
+							items
+								.flatMap((item) => item.registryDependencies)
+								.filter(
+									(dependency) => !dependency.startsWith('https://') && !dependency.startsWith('.')
+								)
+						)
+					],
+					dependencies: [
+						...new Set(
+							items.flatMap((item) => ('dependencies' in item ? (item.dependencies ?? []) : []))
+						)
+					],
+					files: await Promise.all(
+						files.map(async (file) => {
+							const content = file.target.endsWith('/forecast-icons.tsx')
+								? reactManualIcons(file.content)
+								: file.content;
+							return {
+								path: file.target
+									.replace(/^@components\//, 'src/components/')
+									.replace(/^@lib\//, 'src/lib/'),
+								code: content,
+								html: await highlight(content, file.target.endsWith('.tsx') ? 'tsx' : 'typescript')
+							};
+						})
+					)
+				};
+			})
+		)
+	};
+}
+
 const destination = new URL('../src/lib/server/generated/', import.meta.url);
 mkdirSync(destination, { recursive: true });
 writeFileSync(new URL('component-docs.json', destination), JSON.stringify(await load()));
+writeFileSync(new URL('component-docs-react.json', destination), JSON.stringify(await loadReact()));
 console.log('Generated component documentation and syntax highlighting.');

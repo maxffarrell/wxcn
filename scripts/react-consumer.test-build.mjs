@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -58,6 +59,19 @@ try {
 			'class-variance-authority': '^0.7.1',
 			cn: '^0.2.5',
 			react: preview.dependencies.react,
+			...Object.fromEntries(
+				{
+					lucide: ['lucide-react'],
+					tabler: ['@tabler/icons-react'],
+					phosphor: ['@phosphor-icons/react'],
+					hugeicons: ['@hugeicons/react', '@hugeicons/core-free-icons'],
+					remixicon: ['@remixicon/react']
+				}[process.env.WXCN_ICON_LIBRARY ?? 'lucide'].map((name) => [
+					name,
+					JSON.parse(readFileSync(new URL('packages/react/package.json', root), 'utf8'))
+						.dependencies[name]
+				])
+			),
 			'react-dom': preview.dependencies['react-dom']
 		},
 		devDependencies: preview.devDependencies
@@ -90,12 +104,15 @@ try {
 			lib: '~/helpers',
 			hooks: '~/hooks'
 		},
-		iconLibrary: 'lucide'
+		iconLibrary: process.env.WXCN_ICON_LIBRARY ?? 'lucide'
 	});
 	await file('src/helpers/cn.ts', "export { cn } from 'cn';\n");
 	await file(
 		'src/styles.css',
-		await readFile(new URL('apps/preview-react/src/styles.css', root), 'utf8')
+		(await readFile(new URL('apps/preview-react/src/styles.css', root), 'utf8')).replace(
+			"@import '../../web/src/lib/upstream/cards.css';",
+			''
+		)
 	);
 	await file('src/vite-env.d.ts', '/// <reference types="vite/client" />\n');
 	await file(

@@ -6,7 +6,7 @@
 			"type": "skill-md",
 			"description": "Install, compose, and contribute weather, moon, and tide cards from the wxcn registry. Use for wxcn component integration, data props, native shadcn theming, and framework contributions.",
 			"url": "/.well-known/agent-skills/wxcn/SKILL.md",
-			"digest": "sha256:5748a247aecd0ca6438c158579e708b1f9a5c99a0a81dcf10f255c549bb5e772"
+			"digest": "sha256:7bc7b3ea37de943228f24da79a445e25294471541b642938f17297c2058ac8e4"
 		}
 	]
 }

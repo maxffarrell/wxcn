@@ -1,28 +1,57 @@
+// Font-face CSS is included once; browsers fetch only the fonts actually selected.
+// Static imports avoid dangling CSS-only dynamic chunks in the Worker build.
+import '@fontsource-variable/geist';
+import '@fontsource-variable/inter';
+import '@fontsource-variable/noto-sans';
+import '@fontsource-variable/nunito-sans';
+import '@fontsource-variable/figtree';
+import '@fontsource-variable/roboto';
+import '@fontsource-variable/raleway';
+import '@fontsource-variable/dm-sans';
+import '@fontsource-variable/public-sans';
+import '@fontsource-variable/outfit';
+import '@fontsource-variable/oxanium';
+import '@fontsource-variable/manrope';
+import '@fontsource-variable/space-grotesk';
+import '@fontsource-variable/montserrat';
+import '@fontsource-variable/ibm-plex-sans';
+import '@fontsource-variable/source-sans-3';
+import '@fontsource-variable/instrument-sans';
+import '@fontsource-variable/jetbrains-mono';
+import '@fontsource-variable/geist-mono';
+import '@fontsource-variable/noto-serif';
+import '@fontsource-variable/roboto-slab';
+import '@fontsource-variable/merriweather';
+import '@fontsource-variable/lora';
+import '@fontsource-variable/playfair-display';
+import '@fontsource-variable/eb-garamond';
+import '@fontsource/instrument-serif';
+
 export const fontLoaders = {
-	'@fontsource-variable/geist': () => import('@fontsource-variable/geist'),
-	'@fontsource-variable/inter': () => import('@fontsource-variable/inter'),
-	'@fontsource-variable/noto-sans': () => import('@fontsource-variable/noto-sans'),
-	'@fontsource-variable/nunito-sans': () => import('@fontsource-variable/nunito-sans'),
-	'@fontsource-variable/figtree': () => import('@fontsource-variable/figtree'),
-	'@fontsource-variable/roboto': () => import('@fontsource-variable/roboto'),
-	'@fontsource-variable/raleway': () => import('@fontsource-variable/raleway'),
-	'@fontsource-variable/dm-sans': () => import('@fontsource-variable/dm-sans'),
-	'@fontsource-variable/public-sans': () => import('@fontsource-variable/public-sans'),
-	'@fontsource-variable/outfit': () => import('@fontsource-variable/outfit'),
-	'@fontsource-variable/oxanium': () => import('@fontsource-variable/oxanium'),
-	'@fontsource-variable/manrope': () => import('@fontsource-variable/manrope'),
-	'@fontsource-variable/space-grotesk': () => import('@fontsource-variable/space-grotesk'),
-	'@fontsource-variable/montserrat': () => import('@fontsource-variable/montserrat'),
-	'@fontsource-variable/ibm-plex-sans': () => import('@fontsource-variable/ibm-plex-sans'),
-	'@fontsource-variable/source-sans-3': () => import('@fontsource-variable/source-sans-3'),
-	'@fontsource-variable/instrument-sans': () => import('@fontsource-variable/instrument-sans'),
-	'@fontsource-variable/jetbrains-mono': () => import('@fontsource-variable/jetbrains-mono'),
-	'@fontsource-variable/geist-mono': () => import('@fontsource-variable/geist-mono'),
-	'@fontsource-variable/noto-serif': () => import('@fontsource-variable/noto-serif'),
-	'@fontsource-variable/roboto-slab': () => import('@fontsource-variable/roboto-slab'),
-	'@fontsource-variable/merriweather': () => import('@fontsource-variable/merriweather'),
-	'@fontsource-variable/lora': () => import('@fontsource-variable/lora'),
-	'@fontsource-variable/playfair-display': () => import('@fontsource-variable/playfair-display'),
-	'@fontsource-variable/eb-garamond': () => import('@fontsource-variable/eb-garamond'),
-	'@fontsource/instrument-serif': () => import('@fontsource/instrument-serif')
+	'@fontsource-variable/geist': () => Promise.resolve(),
+	'@fontsource-variable/inter': () => Promise.resolve(),
+	'@fontsource-variable/noto-sans': () => Promise.resolve(),
+	'@fontsource-variable/nunito-sans': () => Promise.resolve(),
+	'@fontsource-variable/figtree': () => Promise.resolve(),
+	'@fontsource-variable/roboto': () => Promise.resolve(),
+	'@fontsource-variable/raleway': () => Promise.resolve(),
+	'@fontsource-variable/dm-sans': () => Promise.resolve(),
+	'@fontsource-variable/public-sans': () => Promise.resolve(),
+	'@fontsource-variable/outfit': () => Promise.resolve(),
+	'@fontsource-variable/oxanium': () => Promise.resolve(),
+	'@fontsource-variable/manrope': () => Promise.resolve(),
+	'@fontsource-variable/space-grotesk': () => Promise.resolve(),
+	'@fontsource-variable/montserrat': () => Promise.resolve(),
+	'@fontsource-variable/ibm-plex-sans': () => Promise.resolve(),
+	'@fontsource-variable/source-sans-3': () => Promise.resolve(),
+	'@fontsource-variable/instrument-sans': () => Promise.resolve(),
+	'@fontsource-variable/jetbrains-mono': () => Promise.resolve(),
+	'@fontsource-variable/geist-mono': () => Promise.resolve(),
+	'@fontsource-variable/noto-serif': () => Promise.resolve(),
+	'@fontsource-variable/roboto-slab': () => Promise.resolve(),
+	'@fontsource-variable/merriweather': () => Promise.resolve(),
+	'@fontsource-variable/lora': () => Promise.resolve(),
+	'@fontsource-variable/playfair-display': () => Promise.resolve(),
+	'@fontsource-variable/eb-garamond': () => Promise.resolve(),
+	'@fontsource/instrument-serif': () => Promise.resolve()
 };

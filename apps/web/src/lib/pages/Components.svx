@@ -1,6 +1,9 @@
 <script lang="ts">
   import FrameworkTabs from '$lib/components/site/framework-tabs.svelte';
   import ComponentDocs from '$lib/components/docs/ComponentDocs.svelte';
+  import { getPage } from '$lib/page.svelte.js';
+  const page = getPage();
+  const framework = $derived(page.url.pathname.startsWith('/react') ? 'React' : 'Svelte');
   let { data } = $props();
 </script>
 
@@ -8,7 +11,7 @@
 
 <FrameworkTabs />
 
-Weather, moon, and tide components that inherit your shadcn-svelte theme, base components, and icon library.
+Weather, moon, and tide components for {framework} that inherit your {framework === 'React' ? 'shadcn/ui' : 'shadcn-svelte'} theme, base components, and icon library.
 
 ## Time zones
 

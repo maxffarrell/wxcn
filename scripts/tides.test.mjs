@@ -38,15 +38,20 @@ test('NOAA uses UTC and fetches past/future extrema, continuous predictions, and
 	const { loadTides } = await import('../apps/web/src/lib/server/forecast.ts');
 	const requests = [];
 	const result = await loadTides(
-		{ latitude: 30.2672, longitude: -97.7431, timeZone: 'America/Chicago' },
+		{ latitude: 40.7128, longitude: -74.006, timeZone: 'America/New_York' },
 		async (input) => {
 			const url = new URL(input);
 			requests.push(url);
 			if (url.pathname.includes('stations'))
 				return Response.json({
-					stations: [{ id: '8771450', name: 'Galveston', lat: 29.31, lng: -94.79 }]
+					stations:
+						url.searchParams.get('type') === 'waterlevels'
+							? [{ id: '8518750', name: 'The Battery', lat: 40.7006, lng: -74.0142 }]
+							: [{ id: '8517847', name: 'Brooklyn Bridge', lat: 40.7033, lng: -73.995 }]
 				});
 			const product = url.searchParams.get('product');
+			if (url.searchParams.get('station') !== '8518750')
+				return Response.json({ error: { message: 'No continuous data' } });
 			if (product === 'water_level')
 				return Response.json({ data: [{ t: '2026-09-06 16:00', v: '1.1' }] });
 			return Response.json({
@@ -57,11 +62,12 @@ test('NOAA uses UTC and fetches past/future extrema, continuous predictions, and
 			});
 		}
 	);
+	assert.equal(requests[0].searchParams.get('type'), 'waterlevels');
 	assert.equal(result.reading.time, '2026-09-06T16:00Z');
-	assert.equal(result.station.timeZone, 'America/Chicago');
+	assert.equal(result.station.timeZone, 'America/New_York');
 	assert.equal(result.series.length, 2);
-	assert.equal(result.station.station, '8771450');
-	assert.ok(result.station.distanceKm > 100);
+	assert.equal(result.station.station, '8518750');
+	assert.ok(result.station.distanceKm < 5);
 	for (const url of requests.slice(1)) assert.equal(url.searchParams.get('time_zone'), 'gmt');
 	assert.ok(requests.some((url) => url.searchParams.get('interval') === '6'));
 	const start = requests

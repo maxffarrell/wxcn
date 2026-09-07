@@ -83,7 +83,7 @@ export async function loadTides(
 ) {
 	if (!stationsCache || stationsCache.expires < Date.now()) {
 		const response = await fetcher(
-			'https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=tidepredictions',
+			'https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=waterlevels',
 			{ signal: AbortSignal.timeout(12000) }
 		);
 		if (!response.ok) throw new Error('The tide station service is unavailable.');

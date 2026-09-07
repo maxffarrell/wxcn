@@ -69,19 +69,29 @@
 	const tide = $derived(
 		tideState(predictions, series ?? (isSample ? sampleTideSeries : []), reading, now)
 	);
-	const chartData = $derived(
+	const curveData = $derived(
 		(tide.points.length
 			? tide.points
 			: tide.events.map((p) => ({ time: tideTimestamp(p.time), height: Number(p.height) }))
 		).filter((p) => p.time >= now - 12 * 3600000 && p.time <= now + 18 * 3600000)
 	);
-	const markerTime = $derived(tide.observed ? tideTimestamp(tide.observed.time) : now);
+	// The curve is predicted; observations remain in the headline only.
+	const markerTime = $derived(now);
+	const chartData = $derived(
+		tide.predicted !== null && !curveData.some((p) => p.time === now)
+			? [...curveData, { time: now, height: tide.predicted }].toSorted((a, b) => a.time - b.time)
+			: curveData
+	);
 	let chartContext = $state<ComponentProps<typeof Chart>['context']>();
 	const hovered = $derived(
 		chartContext?.tooltip.data as { time: number; height: number } | null | undefined
 	);
 	const displayedLevel = $derived(hovered?.height ?? tide.level);
-	const displayedTime = $derived(hovered?.time ?? markerTime);
+	const displayedTime = $derived(
+		hovered?.time ?? (tide.observed ? tideTimestamp(tide.observed.time) : now)
+	);
+	const indicatorTime = $derived(hovered?.time ?? markerTime);
+	const indicatorLevel = $derived(hovered?.height ?? tide.predicted);
 	const timeParts = $derived(
 		new Intl.DateTimeFormat('en-US', {
 			hour: 'numeric',
@@ -178,7 +188,7 @@
 					config={{ height: { label: 'Tide level', color: 'var(--chart-1)' } }}
 					class={`aspect-auto w-full ${size === 'sm' ? 'h-20' : size === 'lg' ? 'h-36' : 'h-28'}`}
 					role="img"
-					aria-label="Tide prediction curve with current water level marker"
+					aria-label="Tide prediction curve with predicted water level marker"
 				>
 					<Chart
 						bind:context={chartContext}
@@ -203,10 +213,10 @@
 									}}
 									motion={{ type: 'tween', duration: 0 }}
 								/>
-								{#if tide.level !== null && displayedTime >= chartData[0].time && displayedTime <= chartData[chartData.length - 1].time}
+								{#if indicatorLevel !== null && indicatorTime >= chartData[0].time && indicatorTime <= chartData[chartData.length - 1].time}
 									<line
-										x1={context.xScale(displayedTime)}
-										x2={context.xScale(displayedTime)}
+										x1={context.xScale(indicatorTime)}
+										x2={context.xScale(indicatorTime)}
 										y1={0}
 										y2={context.height}
 										stroke="var(--muted-foreground)"
@@ -214,8 +224,8 @@
 									/>
 									<circle
 										data-slot="current-tide-marker"
-										cx={context.xScale(displayedTime)}
-										cy={context.yScale(displayedLevel ?? tide.level)}
+										cx={context.xScale(indicatorTime)}
+										cy={context.yScale(indicatorLevel)}
 										r={4.5}
 										fill="var(--chart-1, var(--primary))"
 										stroke="var(--card)"

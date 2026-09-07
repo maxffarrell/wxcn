@@ -70,10 +70,7 @@
 		tideState(predictions, series ?? (isSample ? sampleTideSeries : []), reading, now)
 	);
 	const curveData = $derived(
-		(tide.points.length
-			? tide.points
-			: tide.events.map((p) => ({ time: tideTimestamp(p.time), height: Number(p.height) }))
-		).filter((p) => p.time >= now - 12 * 3600000 && p.time <= now + 18 * 3600000)
+		tide.points.filter((p) => p.time >= now - 12 * 3600000 && p.time <= now + 18 * 3600000)
 	);
 	// The curve is predicted; observations remain in the headline only.
 	const markerTime = $derived(now);
@@ -148,7 +145,7 @@
 									? 'Current water level'
 									: tide.predicted !== null
 										? 'Predicted water level'
-										: 'Current reading unavailable'}
+										: 'High/low predictions only'}
 					</p>
 					<p
 						style="font-size:clamp(1.5rem,12cqw,2.5rem)"

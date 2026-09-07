@@ -9,7 +9,7 @@ export const GET: APIRoute = async ({ url }) => {
 		return json({ message: 'A valid latitude and longitude are required.' }, { status: 400 });
 	}
 	try {
-		return json(await loadTides(location, fetch, true), {
+		return json(await loadTides(location, fetch), {
 			headers: { 'Cache-Control': 'private, max-age=300' }
 		});
 	} catch (error) {

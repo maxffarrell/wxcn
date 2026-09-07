@@ -45,8 +45,8 @@ test('NOAA uses UTC and fetches past/future extrema, continuous predictions, and
 			if (url.pathname.includes('stations'))
 				return Response.json({
 					stations:
-						url.searchParams.get('type') === 'waterlevels'
-							? [{ id: '8518750', name: 'The Battery', lat: 40.7006, lng: -74.0142 }]
+						url.searchParams.get('type') === 'tidepredictions'
+							? [{ id: '8518750', name: 'The Battery', lat: 40.7006, lng: -74.0142, type: 'R' }]
 							: [{ id: '8517847', name: 'Brooklyn Bridge', lat: 40.7033, lng: -73.995 }]
 				});
 			const product = url.searchParams.get('product');
@@ -62,7 +62,7 @@ test('NOAA uses UTC and fetches past/future extrema, continuous predictions, and
 			});
 		}
 	);
-	assert.equal(requests[0].searchParams.get('type'), 'waterlevels');
+	assert.equal(requests[0].searchParams.get('type'), 'tidepredictions');
 	assert.equal(result.reading.time, '2026-09-06T16:00Z');
 	assert.equal(result.station.timeZone, 'America/New_York');
 	assert.equal(result.series.length, 2);
@@ -74,4 +74,117 @@ test('NOAA uses UTC and fetches past/future extrema, continuous predictions, and
 		.find((url) => url.searchParams.has('begin_date'))
 		.searchParams.get('begin_date');
 	assert.notEqual(start.slice(0, 8), new Date().toISOString().slice(0, 10).replaceAll('-', ''));
+});
+
+test('station selection uses capabilities and distance across coastal regions', async () => {
+	const { tideStation } = await import('../apps/web/src/lib/server/forecast.ts');
+	const stations = [
+		{ id: 'ny', name: 'New York', lat: 40.7, lng: -74.01, type: 'R' },
+		{ id: 'sf', name: 'San Francisco', lat: 37.81, lng: -122.47, type: 'R' },
+		{ id: 'hi', name: 'Honolulu', lat: 21.3, lng: -157.87, type: 'R' },
+		{ id: 'ak', name: 'Juneau', lat: 58.3, lng: -134.41, type: 'R' },
+		{ id: 'pr', name: 'San Juan', lat: 18.46, lng: -66.12, type: 'R' },
+		{ id: 'sub', name: 'Local high/low station', lat: 44, lng: -68, type: 'S' },
+		{ id: 'invalid', name: 'Invalid coordinates', lat: NaN, lng: 0, type: 'R' }
+	];
+	for (const station of stations.slice(0, 6)) {
+		assert.equal(
+			tideStation({ latitude: station.lat, longitude: station.lng }, stations).id,
+			station.id
+		);
+	}
+	for (const location of [
+		{ latitude: 30.2672, longitude: -97.7431 },
+		{ latitude: 41.88, longitude: -87.63 },
+		{ latitude: 39.74, longitude: -104.99 },
+		{ latitude: 51.5, longitude: -0.12 }
+	])
+		assert.equal(tideStation(location, stations), null);
+	assert.equal(
+		tideStation({ latitude: 40.7, longitude: -74.01 }, [
+			{
+				id: 'sub',
+				name: 'Nearby subordinate',
+				lat: 40.7,
+				lng: -74.01,
+				type: 'S',
+				reference_id: 'ny'
+			},
+			stations[0]
+		]).id,
+		'ny'
+	);
+});
+
+test('loader preserves prediction-only and high/low-only stations without inventing observations', async () => {
+	const { loadTides } = await import('../apps/web/src/lib/server/forecast.ts');
+	for (const continuous of [true, false]) {
+		const result = await loadTides({ latitude: 44, longitude: -68 }, async (input) => {
+			const url = new URL(input);
+			if (url.pathname.includes('stations'))
+				return Response.json({
+					stations: [
+						{ id: 'local', name: 'Local station', lat: 44, lng: -68, type: continuous ? 'R' : 'S' }
+					]
+				});
+			if (url.searchParams.get('product') === 'water_level')
+				return Response.json({ error: { message: 'No observations' } });
+			if (url.searchParams.get('interval') === '6')
+				return Response.json(
+					continuous
+						? {
+								predictions: [
+									{ t: '2026-09-06 15:54', v: '.8' },
+									{ t: '2026-09-06 16:06', v: '1.0' },
+									{ t: 'bad', v: '' }
+								]
+							}
+						: { error: { message: 'High/low only' } }
+				);
+			return Response.json({
+				predictions: [
+					{ t: '2026-09-06 13:00', v: '.3', type: 'L' },
+					{ t: '2026-09-06 19:00', v: '1.5', type: 'H' }
+				]
+			});
+		});
+		assert.equal(result.reading, null);
+		assert.equal(result.predictions.length, 2);
+		assert.equal(result.series.length, continuous ? 2 : 0);
+		assert.equal(
+			tideState(result.predictions, result.series, result.reading, now).level,
+			continuous ? 0.9 : null
+		);
+	}
+});
+
+test('loader returns explicit no coverage without querying a distant station', async () => {
+	const { loadTides } = await import('../apps/web/src/lib/server/forecast.ts');
+	let calls = 0;
+	const result = await loadTides({ latitude: 41.88, longitude: -87.63 }, async () => {
+		calls++;
+		return Response.json({
+			stations: [{ id: 'ny', name: 'New York', lat: 40.7, lng: -74.01, type: 'R' }]
+		});
+	});
+	assert.equal(calls, 1);
+	assert.deepEqual(result, { station: null, predictions: [], series: [], reading: null });
+});
+
+test('subordinate fallback follows NOAA reference relationships instead of unrelated nearby water', async () => {
+	const { tideStation } = await import('../apps/web/src/lib/server/forecast.ts');
+	const location = { latitude: 44, longitude: -68 };
+	const local = {
+		id: 'local',
+		name: 'Local inlet',
+		lat: 44,
+		lng: -68,
+		type: 'S',
+		reference_id: 'reference'
+	};
+	const unrelated = { id: 'other', name: 'Other inlet', lat: 44.01, lng: -68, type: 'R' };
+	const reference = { id: 'reference', name: 'NOAA reference', lat: 44.1, lng: -68, type: 'R' };
+	assert.equal(tideStation(location, [local, unrelated, reference]).id, 'reference');
+	assert.equal(tideStation(location, [local, unrelated]).id, 'local');
+	assert.equal(tideStation(location, [local, unrelated, { ...reference, lat: 46 }]).id, 'local');
 });

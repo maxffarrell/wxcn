@@ -57,7 +57,14 @@ export async function loadForecast(location: LocationInput, fetcher: typeof fetc
 		timeZone: data.properties.timeZone as string | undefined
 	};
 }
-export type Station = { id: string; name: string; lat: number; lng: number };
+export type Station = {
+	id: string;
+	name: string;
+	lat: number;
+	lng: number;
+	type?: string;
+	reference_id?: string;
+};
 export function nearestStation(location: LocationInput, stations: Station[], maxKm = 100) {
 	const rad = (n: number) => (n * Math.PI) / 180;
 	const distance = (s: Station) => {
@@ -75,24 +82,36 @@ export function nearestStation(location: LocationInput, stations: Station[], max
 			.sort((a, b) => a.distance - b.distance)[0] ?? null
 	);
 }
-let stationsCache: { expires: number; stations: Station[] } | undefined;
-export async function loadTides(
-	location: LocationInput,
-	fetcher: typeof fetch = fetch,
-	useNearest = true
-) {
+// For high/low-only stations, NOAA identifies the harmonic reference used to
+// produce their predictions. Use that related station only when it is nearby;
+// otherwise preserve the local extrema instead of choosing an unrelated coast.
+export function tideStation(location: LocationInput, stations: Station[]) {
+	const valid = stations.filter((s) => Number.isFinite(s.lat) && Number.isFinite(s.lng));
+	const closest = nearestStation(location, valid);
+	if (closest?.type !== 'S' || !closest.reference_id) return closest;
+	return (
+		nearestStation(
+			location,
+			valid.filter((s) => s.id === closest.reference_id && s.type === 'R')
+		) ?? closest
+	);
+}
+const stationCaches = new WeakMap<typeof fetch, { expires: number; stations: Station[] }>();
+export async function loadTides(location: LocationInput, fetcher: typeof fetch = fetch) {
+	let stationsCache = stationCaches.get(fetcher);
 	if (!stationsCache || stationsCache.expires < Date.now()) {
 		const response = await fetcher(
-			'https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=waterlevels',
+			'https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=tidepredictions',
 			{ signal: AbortSignal.timeout(12000) }
 		);
 		if (!response.ok) throw new Error('The tide station service is unavailable.');
 		const data = await response.json();
 		if (!Array.isArray(data.stations)) throw new Error('No tide stations were returned.');
 		stationsCache = { stations: data.stations, expires: Date.now() + 86400000 };
+		stationCaches.set(fetcher, stationsCache);
 	}
-	const station = nearestStation(location, stationsCache.stations, useNearest ? Infinity : 100);
-	if (!station) return { station: null, predictions: [] };
+	const station = tideStation(location, stationsCache.stations);
+	if (!station) return { station: null, predictions: [], series: [], reading: null };
 
 	const date = new Date();
 	const begin = new Date(date.getTime() - 24 * 3600000)
@@ -116,21 +135,37 @@ export async function loadTides(
 		return response.json();
 	}
 	const [extrema, continuous, observed] = await Promise.all([
-		request({ product: 'predictions', begin_date: begin, range: '72', interval: 'hilo' }),
+		request({ product: 'predictions', begin_date: begin, range: '72', interval: 'hilo' }).catch(
+			() => null
+		),
 		request({ product: 'predictions', begin_date: begin, range: '72', interval: '6' }).catch(
 			() => null
 		),
 		request({ product: 'water_level', date: 'latest' }).catch(() => null)
 	]);
-	if (!Array.isArray(extrema.predictions))
-		throw new Error('This station has no high/low predictions available.');
+
 	const point = (p: { t: string; v: string }) => ({
 		time: p.t.replace(' ', 'T') + 'Z',
 		height: p.v
 	});
-	const latest = observed?.data
-		?.filter((p: { v: string }) => p.v.trim() && Number.isFinite(Number(p.v)))
-		.at(-1);
+	const validPoint = (p: { t?: unknown; v?: unknown }) =>
+		typeof p?.t === 'string' &&
+		Number.isFinite(Date.parse(p.t.replace(' ', 'T') + 'Z')) &&
+		typeof p.v === 'string' &&
+		p.v.trim() !== '' &&
+		Number.isFinite(Number(p.v));
+	const predictions = Array.isArray(extrema?.predictions)
+		? extrema.predictions.filter(
+				(p: { t: string; v: string; type: string }) =>
+					validPoint(p) && (p.type === 'H' || p.type === 'L')
+			)
+		: [];
+	const series = Array.isArray(continuous?.predictions)
+		? continuous.predictions.filter(validPoint).map(point)
+		: [];
+	if (!predictions.length && !series.length)
+		throw new Error('Tide predictions are temporarily unavailable at the nearby station.');
+	const latest = (Array.isArray(observed?.data) ? observed.data : []).filter(validPoint).at(-1);
 	return {
 		station: {
 			label: station.name,
@@ -140,11 +175,11 @@ export async function loadTides(
 			distanceKm: Math.round(station.distance),
 			timeZone: location.timeZone ?? 'UTC'
 		},
-		predictions: extrema.predictions.map((p: { t: string; v: string; type: 'H' | 'L' }) => ({
+		predictions: predictions.map((p: { t: string; v: string; type: 'H' | 'L' }) => ({
 			...point(p),
 			type: p.type
 		})) as TidePrediction[],
-		series: Array.isArray(continuous?.predictions) ? continuous.predictions.map(point) : [],
+		series,
 		reading: latest ? point(latest) : null
 	};
 }

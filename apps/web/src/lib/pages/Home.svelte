@@ -31,6 +31,10 @@
 	import MoonForecast from '@wxcn/svelte/components/wxcn/MoonForecast.svelte';
 	import TideForecast from '@wxcn/svelte/components/wxcn/TideForecast.svelte';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
+	import LayoutGrid from '@lucide/svelte/icons/layout-grid';
+	import CloudSun from '@lucide/svelte/icons/cloud-sun';
+	import Moon from '@lucide/svelte/icons/moon';
+	import Waves from '@lucide/svelte/icons/waves';
 	import { sampleWeather, sampleCurrentWeather } from '@wxcn/core/weather.js';
 	import { sampleTides } from '@wxcn/core/tides.js';
 	import { getMoonForecast, sampleMoon } from '@wxcn/core/moon.js';
@@ -432,13 +436,20 @@
 			class={`preview-surface style-${style} relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl ring ring-foreground/10`}
 			style={previewStyle}
 		>
-			<div class="flex shrink-0 flex-nowrap items-center gap-2 border-b bg-background px-3 py-2">
+			<div
+				class="flex shrink-0 flex-nowrap items-center gap-1 border-b bg-background px-2 py-2 sm:gap-2 sm:px-3"
+			>
 				<nav class="flex min-w-0 flex-1 gap-1 overflow-x-auto" aria-label="Card collection">
-					{#each [{ value: 'all', label: 'All cards' }, { value: 'weather', label: 'Weather' }, { value: 'moon', label: 'Moon' }, { value: 'tides', label: 'Tides' }] as entry}<Button
+					{#each [{ value: 'all', label: 'All cards', icon: LayoutGrid }, { value: 'weather', label: 'Weather', icon: CloudSun }, { value: 'moon', label: 'Moon', icon: Moon }, { value: 'tides', label: 'Tides', icon: Waves }] as entry}<Button
 							size="sm"
 							variant={item === entry.value ? 'secondary' : 'ghost'}
 							aria-pressed={item === entry.value}
-							onclick={() => selectItem(entry.value)}>{entry.label}</Button
+							class="size-8 shrink-0 px-0 sm:w-auto sm:px-3"
+							title={entry.label}
+							onclick={() => selectItem(entry.value)}
+							><entry.icon class="size-4 sm:hidden" aria-hidden="true" /><span
+								class="sr-only sm:not-sr-only">{entry.label}</span
+							></Button
 						>{/each}
 				</nav>
 				<LocationSearch

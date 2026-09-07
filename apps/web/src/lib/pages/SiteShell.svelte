@@ -8,6 +8,7 @@
 	import { ModeWatcher } from 'mode-watcher';
 	import { setPage } from '$lib/page.svelte.js';
 	import { onMount, setContext, untrack, type Snippet } from 'svelte';
+	import { registerWebMCP } from '$lib/webmcp.js';
 	import { UserConfigContext } from '$lib/user-config.svelte.js';
 	import type { IconSet } from '@wxcn/core/types.js';
 	import { mainNavItems } from '$lib/navigation.js';
@@ -22,6 +23,7 @@
 			if (pm) userConfig.setConfig({ packageManager: pm });
 		} catch {}
 	});
+	onMount(registerWebMCP);
 </script>
 
 <ModeWatcher themeColors={{ light: '#ffffff', dark: '#171717' }} />

@@ -233,6 +233,7 @@
 	) {
 		status = 'loading';
 		message = 'Loading your local forecast…';
+		void updateTides(coords);
 		const query = new URLSearchParams({
 			latitude: coords.latitude.toFixed(4),
 			longitude: coords.longitude.toFixed(4)
@@ -254,17 +255,14 @@
 			if (request !== locationRequest) return;
 			status = 'error';
 			message = `${error instanceof Error ? error.message : 'Could not load weather.'} Showing the Austin example.`;
-			await updateTides(coords);
 			return;
 		}
-		await updateTides(coords);
 	}
-	async function updateTides(coords: { latitude: number; longitude: number }) {
+	async function updateTides(coords: { latitude: number; longitude: number; label?: string }) {
 		const request = ++tideRequest;
 		const query = new URLSearchParams({
 			latitude: String(coords.latitude),
-			longitude: String(coords.longitude),
-			nearest: 'true'
+			longitude: String(coords.longitude)
 		});
 		tideLoading = true;
 		tides = [];
@@ -287,8 +285,8 @@
 					}
 				: { ...coords, label: 'No nearby coastal station' };
 			tideSource = data.station
-				? `NOAA · ${data.station.distanceKm} km from ${coords.latitude === location.latitude && coords.longitude === location.longitude ? (location.label ?? 'your location') : 'your location'}`
-				: 'No coastal tide station available';
+				? `NOAA station · ${data.station.distanceKm} km from ${coords.label ?? 'selected coordinates'} · Station predictions, not exact-location tides`
+				: 'No NOAA tide prediction station within 100 km of this location';
 		} catch {
 			if (request !== tideRequest) return;
 			tideLocation = { ...coords, label: 'Tide service unavailable' };

@@ -29,9 +29,27 @@ A forecast at a glance, a view of the lunar cycle, or the next turn of the tide.
     <th align="left" width="33%">Tides</th>
   </tr>
   <tr>
-    <td valign="top"><img src="docs/images/weather.png" alt="Weather card with current temperature, high and low, and wind over animated clouds, followed by upcoming forecast periods." /></td>
-    <td valign="top"><img src="docs/images/moon.png" alt="Moon card with a waning crescent, illumination, moon age, and estimated full and new moon dates." /></td>
-    <td valign="top"><img src="docs/images/tides.png" alt="Tide card with a water-level marker on a curve and previous and next high or low tide times." /></td>
+    <td valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/images/weather-dark.png" />
+        <source media="(prefers-color-scheme: light)" srcset="docs/images/weather.png" />
+        <img src="docs/images/weather.png" alt="Weather card with current temperature, high and low, and wind over animated clouds, followed by upcoming forecast periods." />
+      </picture>
+    </td>
+    <td valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/images/moon-dark.png" />
+        <source media="(prefers-color-scheme: light)" srcset="docs/images/moon.png" />
+        <img src="docs/images/moon.png" alt="Moon card with a waning crescent, illumination, moon age, and estimated full and new moon dates." />
+      </picture>
+    </td>
+    <td valign="top">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="docs/images/tides-dark.png" />
+        <source media="(prefers-color-scheme: light)" srcset="docs/images/tides.png" />
+        <img src="docs/images/tides.png" alt="Tide card with a water-level marker on a curve and previous and next high or low tide times." />
+      </picture>
+    </td>
   </tr>
   <tr>
     <td valign="top">Temperature, wind, and forecast periods with optional cloud, rain, and snow backgrounds.</td>

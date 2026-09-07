@@ -30,9 +30,6 @@ export const onRequest: MiddlewareHandler = async (event, next) => {
 		);
 	}
 	const response = await next();
-	if (pathname === '/.well-known/ai-catalog.json') {
-		response.headers.set('Access-Control-Allow-Origin', '*');
-	}
 	if (read && page) {
 		response.headers.append('Vary', 'Accept');
 		response.headers.append('Link', `<${page.markdown}>; rel="alternate"; type="text/markdown"`);

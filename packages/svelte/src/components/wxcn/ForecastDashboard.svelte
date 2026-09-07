@@ -7,7 +7,8 @@
 		IconSet,
 		LocationInput,
 		TideUnit,
-		WeatherUnit
+		WeatherUnit,
+		WeatherBackground
 	} from '@wxcn/core/types.js';
 
 	let {
@@ -20,7 +21,7 @@
 		windUnit = 'mph',
 		tideUnit = 'ft',
 		iconType,
-		animatedWeatherBackground = false,
+		background = 'none',
 		showTemperatureTrend = false,
 		showHighLow = false,
 		currentWeather,
@@ -41,7 +42,7 @@
 		windUnit?: 'mph' | 'km/h' | 'm/s' | 'knots';
 		tideUnit?: TideUnit;
 		iconType?: IconSet;
-		animatedWeatherBackground?: boolean;
+		background?: WeatherBackground;
 		showTemperatureTrend?: boolean;
 		showHighLow?: boolean;
 		currentWeather?: import('@wxcn/core/types.js').CurrentWeather | null;
@@ -65,7 +66,7 @@
 				{windUnit}
 				{iconType}
 				{location}
-				animatedBackground={animatedWeatherBackground}
+				{background}
 				{showTemperatureTrend}
 				{showHighLow}
 				{currentWeather}

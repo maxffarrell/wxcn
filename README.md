@@ -98,7 +98,7 @@ After installing the registry components:
 </script>
 
 <div class="grid items-start gap-4 md:grid-cols-3">
-	<WeatherForecast unit="celsius" windUnit="km/h" animatedBackground />
+	<WeatherForecast unit="celsius" windUnit="km/h" background="realistic" />
 	<MoonForecast type="simple" />
 	<TideForecast unit="meter" density="compact" />
 </div>

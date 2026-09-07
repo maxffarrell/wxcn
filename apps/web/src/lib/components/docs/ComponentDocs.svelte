@@ -32,6 +32,13 @@
 			<SourceCode code={item.code} html={item.html} />
 		</ComponentPreview>
 		{#if item.name === 'weather-forecast'}
+			<p>
+				Use <code>background</code> on WeatherForecast or ForecastDashboard:
+				<code>"none"</code> (default) keeps the plain card, <code>"realistic"</code>
+				animates the sky, <code>"dithered"</code> adds a fixed retro pixel pattern, and
+				<code>"gradient"</code> uses a still, condition-aware color gradient. Animated styles respect
+				reduced motion and pause offscreen.
+			</p>
 			<H3 id="weather-temperature-outlook">Current conditions and temperature outlook</H3>
 			<p>
 				Pass a <code>currentWeather</code> observation separately from <code>forecast</code>
@@ -61,10 +68,9 @@
 			Day details reuse the original card layout with the selected day's data, preserving its
 			dimensions without an internal scroll area. Week tables page through the available days when
 			the card is too small to show them all. Back and Escape return to the previous screen and
-			restore focus. Weather details use the selected day's animated background when <code
-				>animatedBackground</code
-			>
-			is enabled. ForecastDashboard forwards
+			restore focus. Weather details use the selected day's conditions for the chosen <code
+				>background</code
+			>. ForecastDashboard forwards
 			<code>interactive</code> to all three cards.
 		</p>
 		<p>

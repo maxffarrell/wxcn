@@ -3,5 +3,11 @@
 </script>
 
 <div class="w-full max-w-sm">
-	<WeatherForecast interactive unit="celsius" animatedBackground showTemperatureTrend showHighLow />
+	<WeatherForecast
+		interactive
+		unit="celsius"
+		background="realistic"
+		showTemperatureTrend
+		showHighLow
+	/>
 </div>

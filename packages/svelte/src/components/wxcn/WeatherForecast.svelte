@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount, type Snippet } from 'svelte';
 	import * as Card from '../ui/card/index.js';
+	import WeatherGradientBackground from './WeatherGradientBackground.svelte';
 	import ForecastScreens from './ForecastScreens.svelte';
 	import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 	import ForecastIcon from '../../icons/forecast-icons.svelte';
@@ -13,7 +14,8 @@
 		LocationInput,
 		WeatherPeriod,
 		CurrentWeather,
-		WeatherUnit
+		WeatherUnit,
+		WeatherBackground
 	} from '@wxcn/core/types.js';
 	import { sampleWeather, sampleCurrentWeather, convertWindSpeed } from '@wxcn/core/weather.js';
 	import { weatherOutlook } from '@wxcn/core/weather-outlook.js';
@@ -39,7 +41,7 @@
 		at,
 		sourceLabel = forecast === sampleWeather ? 'Sample forecast' : '',
 		windUnit = 'mph',
-		animatedBackground = false
+		background = 'none'
 	}: {
 		interactive?: boolean;
 		timeZone?: string;
@@ -57,7 +59,7 @@
 		at?: number;
 		sourceLabel?: string;
 		windUnit?: 'mph' | 'km/h' | 'm/s' | 'knots';
-		animatedBackground?: boolean;
+		background?: WeatherBackground;
 	} = $props();
 	let visitorTimeZone = $state('UTC');
 	onMount(() => {
@@ -146,11 +148,19 @@
 	{@const view = day ? heroPeriod(day) : current}
 	{@const displayedPeriods = day ? dayPeriods(day) : periods}
 	<div
-		class={`relative isolate overflow-hidden ${animatedBackground && view ? 'text-white' : 'text-card-foreground'}`}
+		class={`relative isolate overflow-hidden ${background !== 'none' && view ? 'text-white' : 'text-card-foreground'}`}
 	>
-		{#if animatedBackground && view}
+		{#if background !== 'none' && view}
 			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-				<WeatherShaderBackground mode={condition(view)} paused={!overviewVisible} />
+				{#if background === 'gradient'}
+					<WeatherGradientBackground mode={condition(view)} />
+				{:else}
+					<WeatherShaderBackground
+						mode={condition(view)}
+						paused={!overviewVisible}
+						dithered={background === 'dithered'}
+					/>
+				{/if}
 			</div>
 			<div
 				class="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-black/35 via-black/15 to-black/55"
@@ -159,16 +169,16 @@
 		{/if}
 		<Card.Header class="relative pt-(--card-spacing)">
 			<Card.Title>{day?.label ?? 'Weather'}</Card.Title>
-			<Card.Description class={animatedBackground && view ? 'text-white/80' : ''}
+			<Card.Description class={background !== 'none' && view ? 'text-white/80' : ''}
 				>{location.label ?? 'Local forecast'}</Card.Description
 			>
-			{@render action(animatedBackground && !!view)}
+			{@render action(background !== 'none' && !!view)}
 		</Card.Header>
 		<Card.Content class="relative grid gap-5 py-(--card-spacing)">
 			{#if view}
 				<div>
 					<p
-						class={`mb-2 text-xs ${animatedBackground ? 'text-white/75' : 'text-muted-foreground'}`}
+						class={`mb-2 text-xs ${background !== 'none' ? 'text-white/75' : 'text-muted-foreground'}`}
 					>
 						{day ? (view.isDaytime ? 'Daytime' : 'Overnight') : 'Now'}
 					</p>
@@ -216,7 +226,7 @@
 					Current conditions unavailable.
 				</p>{/if}
 			{#if type === 'simple' && sourceLabel}<p
-					class={`text-[10px] ${animatedBackground && view ? 'text-white/70' : 'text-muted-foreground'}`}
+					class={`text-[10px] ${background !== 'none' && view ? 'text-white/70' : 'text-muted-foreground'}`}
 				>
 					{sourceLabel}
 				</p>{/if}

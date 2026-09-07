@@ -46,6 +46,7 @@
 		TidePoint,
 		TideReading,
 		WeatherUnit,
+		WeatherBackground,
 		TideUnit,
 		CardDensity,
 		ForecastType
@@ -55,7 +56,7 @@
 		radius = $state('default'),
 		density = $state<CardDensity>('comfortable'),
 		unit = $state<WeatherUnit>('fahrenheit'),
-		animation = $state('on');
+		background = $state('realistic');
 	let scene = $state('live');
 	let tideUnit = $state<TideUnit>('ft'),
 		windUnit = $state<'mph' | 'km/h' | 'm/s' | 'knots'>('mph');
@@ -223,7 +224,7 @@
 		unit = 'fahrenheit';
 		tideUnit = 'ft';
 		windUnit = 'mph';
-		animation = 'on';
+		background = 'realistic';
 		interaction = 'on';
 		scene = 'live';
 		showTemperatureTrend = true;
@@ -403,7 +404,7 @@
 				: Date.parse(sampleCurrentWeather.observedAt)}
 			{location}
 			sourceLabel={weatherSource}
-			animatedBackground={animation === 'on'}
+			background={background as WeatherBackground}
 		/>
 	{:else if collection === 'moon'}<MoonForecast
 			{size}
@@ -608,10 +609,12 @@
 					/>
 					<Picker
 						label="Background"
-						bind:value={animation}
+						bind:value={background}
 						options={[
-							{ value: 'on', label: 'Animated' },
-							{ value: 'off', label: 'Plain' }
+							{ value: 'realistic', label: 'Realistic' },
+							{ value: 'dithered', label: 'Dithered' },
+							{ value: 'gradient', label: 'Gradient' },
+							{ value: 'none', label: 'None' }
 						]}
 					/>
 					<Picker

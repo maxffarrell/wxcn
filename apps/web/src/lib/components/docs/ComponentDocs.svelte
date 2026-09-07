@@ -12,7 +12,8 @@
 	import TideForecast from '$lib/components/docs/examples/tide-forecast.svelte';
 	import MoonForecast from '$lib/components/docs/examples/moon-forecast.svelte';
 	import ForecastDashboard from '$lib/components/docs/examples/forecast-dashboard.svelte';
-	import { page } from '$app/state';
+	import { getPage } from '$lib/page.svelte.js';
+	const page = getPage();
 	let { data }: { data: Awaited<ReturnType<typeof import('$lib/server/component-docs.js').load>> } =
 		$props();
 	const demos: Record<string, typeof WeatherForecast> = {

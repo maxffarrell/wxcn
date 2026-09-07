@@ -1,7 +1,7 @@
-import type { RequestHandler } from './$types';
-import { json } from '@sveltejs/kit';
+import type { APIRoute } from 'astro';
+const json = Response.json;
 import { coordinates, loadTides } from '$lib/server/forecast.js';
-export const GET: RequestHandler = async ({ url, fetch }) => {
+export const GET: APIRoute = async ({ url }) => {
 	let location;
 	try {
 		location = coordinates(url);

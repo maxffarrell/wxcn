@@ -2,7 +2,8 @@
 	import WeatherShaderBackground, {
 		type WeatherShaderMode
 	} from '@wxcn/svelte/components/wxcn/WeatherShaderBackground.svelte';
-	import { page } from '$app/state';
+	import { getPage } from '$lib/page.svelte.js';
+	const page = getPage();
 
 	const modes: WeatherShaderMode[] = [
 		'sunrise',

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import '../app.css';
 	import { Button } from '@wxcn/svelte/components/ui/button/index.js';
 	import * as Tooltip from '@wxcn/svelte/components/ui/tooltip/index.js';
 	import MobileNav from '$lib/components/site/mobile-nav.svelte';
@@ -7,12 +6,13 @@
 	import GithubLink from '$lib/components/site/github-link.svelte';
 	import Logo from '$lib/components/site/logo.svelte';
 	import { ModeWatcher } from 'mode-watcher';
-	import { page } from '$app/state';
-	import { onMount, setContext, type Snippet } from 'svelte';
+	import { setPage } from '$lib/page.svelte.js';
+	import { onMount, setContext, untrack, type Snippet } from 'svelte';
 	import { UserConfigContext } from '$lib/user-config.svelte.js';
 	import type { IconSet } from '@wxcn/core/types.js';
 	import { mainNavItems } from '$lib/navigation.js';
-	let { children }: { children: Snippet } = $props();
+	let { children, url }: { children: Snippet; url: string } = $props();
+	const page = setPage(untrack(() => url));
 	const icons = $state<{ value: IconSet }>({ value: 'lucide' });
 	setContext('wxcn-icons', icons);
 	const userConfig = UserConfigContext.set();

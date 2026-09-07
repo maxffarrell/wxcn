@@ -1,4 +1,3 @@
-import adapter from '@sveltejs/adapter-cloudflare';
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 import { mdsx } from 'mdsx';
 import rehypeSlug from 'rehype-slug';
@@ -6,10 +5,11 @@ import remarkGfm from 'remark-gfm';
 import rehypePrettyCode from 'rehype-pretty-code';
 
 const config = {
-	extensions: ['.svelte', '.md'],
+	extensions: ['.svelte', '.svx'],
 	preprocess: [
 		vitePreprocess(),
 		mdsx({
+			extensions: ['.svx'],
 			remarkPlugins: [remarkGfm],
 			rehypePlugins: [
 				rehypeSlug,
@@ -24,15 +24,7 @@ const config = {
 				}
 			}
 		})
-	],
-	kit: {
-		adapter: adapter(),
-		alias: {
-			$components: 'src/lib/components',
-			$frameworks: '../../tooling/contracts/frameworks.json',
-			$wxcn: '../../packages/svelte/src/components/wxcn'
-		}
-	}
+	]
 };
 
 export default config;

@@ -6,7 +6,7 @@ wxcn distributes editable source through each framework's native shadcn registry
 
 | Directory                                | Responsibility                                                            |
 | ---------------------------------------- | ------------------------------------------------------------------------- |
-| `apps/web`                               | SvelteKit website, documentation, preview shell, and NWS/NOAA endpoints   |
+| `apps/web`                               | Astro website, documentation, preview shell, and NWS/NOAA endpoints       |
 | `packages/core`                          | Framework-independent data types, conversions, calculations, and fixtures |
 | `packages/svelte`                        | Native Svelte components, icons, and shadcn primitives used by previews   |
 | `packages/react`, `packages/vue`         | Reserved implementation workspaces                                        |
@@ -39,7 +39,7 @@ Preserve the exact shadcn-svelte preset codec for Svelte. New frameworks need ex
 
 ## Hosting
 
-Production runs on Cloudflare Workers at `https://wxcn.dev`. Run `pnpm run deploy` from the repository root after `wrangler whoami` confirms the intended account. `apps/web/wrangler.jsonc` owns the Worker, static assets, and custom domain configuration. The Cloudflare adapter writes `.svelte-kit/cloudflare`. Documentation source transforms and syntax highlighting run at build time to keep Node-only tooling out of the Worker. `pnpm dev`, `pnpm check`, and `pnpm build` generate that data automatically.
+Production runs on Cloudflare Workers at `https://wxcn.dev`. Run `pnpm run deploy` from the repository root after `wrangler whoami` confirms the intended account. `apps/web/wrangler.jsonc` owns the Worker, static assets, and custom domain configuration. The Astro Cloudflare adapter writes `apps/web/dist/server/wrangler.json` and `apps/web/dist/client`. The root build also writes Wrangler’s supported `.wrangler/deploy/config.json` redirect, so Cloudflare Builds can run its default `npx wrangler deploy` from the workspace root. Use root directory `/` and build command `pnpm build`. Documentation source transforms and syntax highlighting run at build time to keep Node-only tooling out of the Worker. `pnpm dev`, `pnpm check`, and `pnpm build` generate that data automatically.
 
 The root workspace is private, and framework/core packages are private while their npm distribution contracts are being established. Registry installation remains the supported distribution path.
 
@@ -48,3 +48,9 @@ The root workspace is private, and framework/core packages are private while the
 CI uses the latest verified action releases. After validation, pushes to `main` deploy to the GitHub `production` environment at `https://wxcn.dev`. Same-repository pull requests deploy isolated `wxcn-pr-<number>` Workers to the `preview` environment; closing the PR removes that Worker. Fork pull requests run checks without deployment credentials. The manual workflow defaults to a separate preview; production is restricted to `main`.
 
 Set the repository secret `CLOUDFLARE_API_TOKEN` to a durable Cloudflare API token with Workers Scripts: Edit and Workers Routes: Edit for the deployment account, and Zone: Read for `wxcn.dev`. The local Wrangler OAuth login is not a CI credential. GitHub environments record deployment status and URLs. Preview configuration has no custom-domain routes, so it cannot replace `wxcn.dev`.
+
+### Website framework integrations
+
+Astro owns routes in `apps/web/src/pages`, API endpoints, and Markdown content negotiation in `src/middleware.ts`. Interactive Svelte pages live in `src/lib/pages`; the shared shell provides their theme, tooltip, icon, and page-URL context. MDSX documentation uses `.svx` to avoid conflicting with Astro’s native Markdown renderer.
+
+Future React and Vue contributions should add their Astro integration and separate preview islands alongside the Svelte previews. Keep implementations in `packages/react` and `packages/vue` and register their framework adapters; do not import Svelte primitives into those packages. Full-page navigation crosses islands, while playground query changes update the local Svelte page context and browser history.

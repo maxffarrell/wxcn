@@ -1,8 +1,9 @@
 <script lang="ts">
 	import LocationSearch from '$lib/components/site/location-search.svelte';
 	import { getContext, onMount } from 'svelte';
-	import { page } from '$app/state';
-	import { goto } from '$app/navigation';
+	import { getPage } from '$lib/page.svelte.js';
+	const page = getPage();
+
 	import * as Card from '@wxcn/svelte/components/ui/card/index.js';
 	import FrameworkTabs from '$lib/components/site/framework-tabs.svelte';
 	import {
@@ -208,7 +209,7 @@
 		const url = new URL(page.url);
 		if (value === 'all') url.searchParams.delete('item');
 		else url.searchParams.set('item', value);
-		void goto(url, { replaceState: true, noScroll: true, keepFocus: true });
+		page.replace(url);
 	}
 	function reset() {
 		applyPreset(DEFAULT_PRESET_CONFIG);

@@ -15,7 +15,8 @@
 
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import { page } from '$app/state';
+	import { getPage } from '$lib/page.svelte.js';
+	const page = getPage();
 	let { children }: { children: Snippet } = $props();
 </script>
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import PMBlock from '$lib/components/site/pm-block.svelte';
-	import { page } from '$app/state';
+	import { getPage } from '$lib/page.svelte.js';
+	const page = getPage();
 	import * as Card from '@wxcn/svelte/components/ui/card/index.js';
 	import { Button } from '@wxcn/svelte/components/ui/button/index.js';
 	import { Badge } from '@wxcn/svelte/components/ui/badge/index.js';

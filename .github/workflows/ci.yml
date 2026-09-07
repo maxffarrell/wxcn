@@ -61,7 +61,6 @@ jobs:
             exit 1
           fi
       - run: pnpm install --frozen-lockfile
-      - run: pnpm build
       - name: Select deployment target
         id: target
         env:
@@ -76,8 +75,11 @@ jobs:
             fi
             echo 'command=deploy' >> "$GITHUB_OUTPUT"
           else
-            echo "command=deploy --env preview --name wxcn-pr-${PR_NUMBER:-manual}" >> "$GITHUB_OUTPUT"
+            echo "command=deploy --name wxcn-pr-${PR_NUMBER:-manual}" >> "$GITHUB_OUTPUT"
           fi
+      - run: pnpm build
+        env:
+          CLOUDFLARE_ENV: ${{ steps.target.outputs.environment == 'preview' && 'preview' || '' }}
       - uses: cloudflare/wrangler-action@v4.0.0
         id: cloudflare
         with:

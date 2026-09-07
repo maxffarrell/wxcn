@@ -1,4 +1,4 @@
-import endpoints from '../../routes/docs/endpoints/+page.md?raw';
+import endpoints from '../pages/Endpoints.svx?raw';
 import { load } from './component-docs.js';
 import registry from '../../../registry.json';
 

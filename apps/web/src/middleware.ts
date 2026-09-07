@@ -1,8 +1,8 @@
-import type { Handle } from '@sveltejs/kit';
+import type { MiddlewareHandler } from 'astro';
 import { markdownPages, pageMarkdown } from '$lib/server/markdown.js';
 import { prefersMarkdown } from '$lib/server/markdown-request.js';
 
-export const handle: Handle = async ({ event, resolve }) => {
+export const onRequest: MiddlewareHandler = async (event, next) => {
 	const { pathname, origin } = event.url;
 	const read = event.request.method === 'GET' || event.request.method === 'HEAD';
 	const explicit = markdownPages.find((page) => page.markdown === pathname);
@@ -29,7 +29,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 			}
 		);
 	}
-	const response = await resolve(event);
+	const response = await next();
 	if (read && page) {
 		response.headers.append('Vary', 'Accept');
 		response.headers.append('Link', `<${page.markdown}>; rel="alternate"; type="text/markdown"`);

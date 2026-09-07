@@ -1,4 +1,4 @@
-import { json } from '@sveltejs/kit';
+const json = Response.json;
 import { searchLocations } from '$lib/server/location-search.js';
 export const GET = ({ url }: { url: URL }) =>
 	json(

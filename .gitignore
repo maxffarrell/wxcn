@@ -10,3 +10,5 @@ build
 
 .wrangler
 apps/web/src/lib/server/generated
+
+.astro

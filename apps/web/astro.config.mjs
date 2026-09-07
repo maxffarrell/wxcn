@@ -23,12 +23,7 @@ export default defineConfig({
 						'react',
 						'react/jsx-runtime',
 						'react/jsx-dev-runtime',
-						'react-dom/server',
-						'lucide-react',
-						'recharts',
-						'cn',
-						'class-variance-authority',
-						'radix-ui'
+						'react-dom/server'
 					]
 				}
 			}

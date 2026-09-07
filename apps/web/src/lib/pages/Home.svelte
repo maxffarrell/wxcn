@@ -433,6 +433,7 @@
 	<h1 class="sr-only">wxcn — weather, moon, and tide components</h1>
 	<section class="flex min-h-0 min-w-0 flex-1 flex-col gap-3" aria-label="Forecast previews">
 		<div
+			data-slot="preview-frame"
 			class={`preview-surface style-${style} relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl ring ring-foreground/10`}
 			style={previewStyle}
 		>

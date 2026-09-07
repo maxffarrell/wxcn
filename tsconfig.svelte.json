@@ -1,0 +1,21 @@
+{
+	"extends": "./apps/web/tsconfig.json",
+	"compilerOptions": {
+		"paths": {
+			"$lib/*": ["./apps/web/src/lib/*"],
+			"$components/*": ["./apps/web/src/lib/components/*"],
+			"$frameworks": ["./tooling/contracts/frameworks.json"],
+			"$wxcn/*": ["./packages/svelte/src/components/wxcn/*"],
+			"@wxcn/svelte/components/*": ["./packages/svelte/src/components/*"],
+			"@wxcn/svelte/icons/*": ["./packages/svelte/src/icons/*"],
+			"@wxcn/svelte/utils": ["./packages/svelte/src/utils.ts"]
+		}
+	},
+	"include": [
+		"apps/web/src/**/*.ts",
+		"apps/web/src/**/*.svelte",
+		"packages/svelte/src/**/*.ts",
+		"packages/svelte/src/**/*.svelte"
+	],
+	"exclude": ["node_modules", "apps/web/dist", "apps/web/src/routes", "src", "**/* 2.*"]
+}

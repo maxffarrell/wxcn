@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 const root = new URL('../', import.meta.url);
+const workspace = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));
 const web = JSON.parse(await readFile(new URL('apps/web/package.json', root), 'utf8'));
 const directory = await mkdtemp(join(tmpdir(), 'wxcn-install-'));
 const run = (args) =>
@@ -50,18 +51,21 @@ try {
 		name: 'wxcn-clean-consumer',
 		private: true,
 		type: 'module',
-		scripts: { check: 'svelte-check --tsconfig ./tsconfig.json', build: 'vite build' },
+		scripts: { check: 'svelte-check-native --tsconfig ./tsconfig.json', build: 'vite build' },
 		devDependencies: Object.fromEntries(
 			[
 				'svelte',
-				'svelte-check',
+				'svelte-check-native',
 				'typescript',
 				'vite',
 				'@sveltejs/vite-plugin-svelte',
 				'@tailwindcss/vite',
 				'tailwindcss',
 				'@types/node'
-			].map((name) => [name, web.devDependencies[name]])
+			].map((name) => [
+				name,
+				name === 'typescript' ? workspace.devDependencies.typescript : web.devDependencies[name]
+			])
 		),
 		dependencies: {
 			clsx: web.dependencies.clsx,

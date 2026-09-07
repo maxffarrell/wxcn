@@ -10,7 +10,7 @@
 		"./utils": "./src/utils.ts"
 	},
 	"scripts": {
-		"check": "svelte-check --tsconfig ./tsconfig.json"
+		"check": "svelte-check-native --tsconfig ./tsconfig.json"
 	},
 	"peerDependencies": {
 		"svelte": "^5.0.0"
@@ -35,7 +35,7 @@
 	"devDependencies": {
 		"@types/d3-shape": "^3.2.0",
 		"svelte": "^5.57.0",
-		"svelte-check": "^4.7.6",
-		"typescript": "^6.0.3"
+		"svelte-check-native": "^1.5.2",
+		"typescript": "^7.0.2"
 	}
 }

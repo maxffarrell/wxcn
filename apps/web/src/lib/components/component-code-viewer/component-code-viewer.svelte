@@ -4,7 +4,7 @@
 	import { MediaQuery } from "svelte/reactivity";
 	import * as Dialog from "$lib/registry/ui/dialog/index.js";
 	import { createFileTreeForRegistryItemFiles } from "$lib/registry/registry-utils.js";
-	import { badgeVariants } from "$lib/registry/ui/badge/badge.svelte";
+	import { badgeVariants } from "@wxcn/svelte/components/ui/badge/badge.svelte";
 	import ComponentCodeViewerCode from "./component-code-viewer-code.svelte";
 	import type { HighlightedBlock } from "$lib/docs/highlighted-block.js";
 	import type { Pane } from "paneforge";

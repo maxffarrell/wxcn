@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
-	import { setContext } from 'svelte';
+	import { setContext, onMount } from 'svelte';
 	import { cn } from '@wxcn/svelte/utils';
 
 	import type { Snippet } from 'svelte';
@@ -21,6 +21,24 @@
 
 	// Submenu items are theme-aware; standalone (non-submenu) items always use dark hardcoded colors.
 	setContext('picker-is-submenu', () => submenu);
+	let preview: HTMLElement | null = $state(null);
+	let previewHeight = $state(384);
+	// A virtual bottom edge lets Floating UI position every menu inside the preview.
+	const previewAnchor = {
+		getBoundingClientRect() {
+			const rect = preview?.getBoundingClientRect();
+			return rect ? new DOMRect(rect.x, rect.bottom, rect.width, 0) : new DOMRect();
+		}
+	};
+	onMount(() => {
+		preview = document.querySelector('[data-slot="preview-frame"]');
+		if (!preview) return;
+		const observer = new ResizeObserver(() => {
+			previewHeight = preview?.clientHeight ?? 384;
+		});
+		observer.observe(preview);
+		return () => observer.disconnect();
+	});
 </script>
 
 {#if submenu}
@@ -28,11 +46,16 @@
 		<DropdownMenuPrimitive.SubContent
 			bind:ref
 			data-slot="dropdown-menu-sub-content"
-			{sideOffset}
+			customAnchor={preview ? previewAnchor : null}
+			side={preview ? 'top' : undefined}
+			sideOffset={preview ? 8 : sideOffset}
+			align="start"
+			avoidCollisions={!preview}
+			style={`--picker-height: ${Math.max(96, previewHeight - 16)}px`}
 			preventScroll={false}
 			updatePositionStrategy="always"
 			class={cn(
-				'z-50 max-h-[min(24rem,var(--bits-dropdown-menu-content-available-height))] w-max max-w-[calc(100vw-2rem)] min-w-52 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain rounded-md bg-popover/90 p-1 text-popover-foreground shadow-lg ring-1 ring-foreground/10 backdrop-blur-xs',
+				'z-50 max-h-[min(var(--picker-height),var(--bits-dropdown-menu-content-available-height))] w-(--bits-dropdown-menu-anchor-width) max-w-[calc(100vw-2rem)] min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain rounded-md bg-popover/90 p-1 text-popover-foreground shadow-lg ring-1 ring-foreground/10 backdrop-blur-xs',
 				className
 			)}
 			{...restProps}
@@ -45,12 +68,17 @@
 		<DropdownMenuPrimitive.Content
 			bind:ref
 			data-slot="dropdown-menu-content"
-			{sideOffset}
+			customAnchor={preview ? previewAnchor : null}
+			side={preview ? 'top' : undefined}
+			sideOffset={preview ? 8 : sideOffset}
+			align="start"
+			avoidCollisions={!preview}
+			style={`--picker-height: ${Math.max(96, previewHeight - 16)}px`}
 			preventScroll={false}
 			updatePositionStrategy="always"
 			collisionPadding={16}
 			class={cn(
-				'cn-menu-target z-50 max-h-[min(24rem,var(--bits-dropdown-menu-content-available-height))] w-max max-w-[calc(100vw-2rem)] min-w-52 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain rounded-xl border-0 bg-neutral-950/95 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl outline-none dark:bg-neutral-800/95 dark:ring-neutral-700/50',
+				'cn-menu-target z-50 max-h-[min(var(--picker-height),var(--bits-dropdown-menu-content-available-height))] w-(--bits-dropdown-menu-anchor-width) max-w-[calc(100vw-2rem)] min-w-0 touch-pan-y overflow-x-hidden overflow-y-auto overscroll-contain rounded-xl border-0 bg-neutral-950/95 p-1.5 text-neutral-100 ring-1 ring-neutral-950/80 backdrop-blur-xl outline-none dark:bg-neutral-800/95 dark:ring-neutral-700/50',
 				className
 			)}
 			{...restProps}

@@ -18,6 +18,8 @@ Install with `pnpm install`, then run `pnpm dev` from the repository root. Use N
 
 Run `pnpm check`, `pnpm test`, `pnpm lint`, and `pnpm build` before submitting changes. Registry JSON is generated: update source and run `pnpm registry:build` rather than editing generated files.
 
+Project type checks use TypeScript 7 and `svelte-check-native`. Astro’s checker still requires the TypeScript 6 JavaScript API, so its compatibility dependency is isolated in the website tooling; the native checker uses the root TypeScript 7 compiler for all Svelte sources and consumer checks. `tooling/check-svelte.mjs` preserves pnpm workspace dependency resolution in the native checker’s generated overlays.
+
 ## Adding a framework
 
 Start with one component. There is no requirement to implement the whole collection in one pull request.
@@ -45,7 +47,7 @@ The root workspace is private, and framework/core packages are private while the
 
 ### GitHub deployments
 
-CI uses the latest verified action releases. After validation, pushes to `main` deploy to the GitHub `production` environment at `https://wxcn.dev`. Same-repository pull requests deploy isolated `wxcn-pr-<number>` Workers to the `preview` environment; closing the PR removes that Worker. Fork pull requests run checks without deployment credentials. The manual workflow defaults to a separate preview; production is restricted to `main`.
+CI uses the latest verified action releases. Automatic GitHub deployment is skipped with a notice when `CLOUDFLARE_API_TOKEN` is absent; validation still runs, and Cloudflare Workers Builds is configured independently. Manual deployment fails explicitly without that secret. When credentials are configured, after validation, pushes to `main` deploy to the GitHub `production` environment at `https://wxcn.dev`. Same-repository pull requests deploy isolated `wxcn-pr-<number>` Workers to the `preview` environment; closing the PR removes that Worker. Fork pull requests run checks without deployment credentials. The manual workflow defaults to a separate preview; production is restricted to `main`.
 
 Set the repository secret `CLOUDFLARE_API_TOKEN` to a durable Cloudflare API token with Workers Scripts: Edit and Workers Routes: Edit for the deployment account, and Zone: Read for `wxcn.dev`. The local Wrangler OAuth login is not a CI credential. GitHub environments record deployment status and URLs. Preview configuration has no custom-domain routes, so it cannot replace `wxcn.dev`.
 

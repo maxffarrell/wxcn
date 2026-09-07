@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import * as Card from '../ui/card/index.js';
 	import ForecastScreens from './ForecastScreens.svelte';
 	import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
@@ -137,6 +137,128 @@
 	}
 </script>
 
+{#snippet cardView(
+	day: ForecastDay | undefined,
+	action: Snippet<[boolean]>,
+	overviewVisible: boolean,
+	openDay: (time: string, trigger: HTMLElement) => void
+)}
+	{@const view = day ? heroPeriod(day) : current}
+	{@const displayedPeriods = day ? dayPeriods(day) : periods}
+	<div
+		class={`relative isolate overflow-hidden ${animatedBackground && view ? 'text-white' : 'text-card-foreground'}`}
+	>
+		{#if animatedBackground && view}
+			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+				<WeatherShaderBackground mode={condition(view)} paused={!overviewVisible} />
+			</div>
+			<div
+				class="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-black/35 via-black/15 to-black/55"
+				aria-hidden="true"
+			></div>
+		{/if}
+		<Card.Header class="relative pt-(--card-spacing)">
+			<Card.Title>{day?.label ?? 'Weather'}</Card.Title>
+			<Card.Description class={animatedBackground && view ? 'text-white/80' : ''}
+				>{location.label ?? 'Local forecast'}</Card.Description
+			>
+			{@render action(animatedBackground && !!view)}
+		</Card.Header>
+		<Card.Content class="relative grid gap-5 py-(--card-spacing)">
+			{#if view}
+				<div>
+					<p
+						class={`mb-2 text-xs ${animatedBackground ? 'text-white/75' : 'text-muted-foreground'}`}
+					>
+						{day ? (view.isDaytime ? 'Daytime' : 'Overnight') : 'Now'}
+					</p>
+					<p
+						style="font-size:clamp(2.5rem,18cqw,5rem)"
+						class="leading-none font-medium tracking-tighter tabular-nums"
+					>
+						{temperature(view)}<span class="align-top text-2xl">°</span>
+					</p>
+					<p
+						class={`mt-3 text-sm ${day ? 'truncate' : ''}`}
+						title={day ? view.shortForecast : undefined}
+					>
+						{view.shortForecast}
+					</p>
+					{#if !day && showTemperatureTrend && outlook.trend}<p
+							class="mt-2 text-sm"
+							data-slot="temperature-trend"
+						>
+							{outlook.trend}
+						</p>{/if}
+					{#if !day && showHighLow}<div
+							class="mt-3 flex gap-4 text-sm tabular-nums"
+							data-slot="temperature-range"
+						>
+							{#if outlook.high !== null}<span aria-label={`High ${outlook.high} degrees`}
+									><ForecastIcon name="arrowUp" iconSet={iconType} class="inline size-3.5" />
+									{outlook.high}°</span
+								>{/if}
+							{#if outlook.low !== null}<span aria-label={`Low ${outlook.low} degrees`}
+									><ForecastIcon name="arrowDown" iconSet={iconType} class="inline size-3.5" />
+									{outlook.low}°</span
+								>{/if}
+						</div>{/if}
+				</div>
+				<div class="flex flex-wrap items-center justify-between gap-3 text-xs">
+					<span class="flex items-center gap-2 opacity-80"
+						><ForecastIcon name="wind" iconSet={iconType} class="size-4" />Wind</span
+					>
+					<span class="tabular-nums"
+						>{view.windDirection} {convertWindSpeed(view.windSpeed, windUnit)}</span
+					>
+				</div>
+			{:else}<p role="status" class="py-8 text-center text-sm text-muted-foreground">
+					Current conditions unavailable.
+				</p>{/if}
+			{#if type === 'simple' && sourceLabel}<p
+					class={`text-[10px] ${animatedBackground && view ? 'text-white/70' : 'text-muted-foreground'}`}
+				>
+					{sourceLabel}
+				</p>{/if}
+		</Card.Content>
+	</div>
+	{#if type !== 'simple'}
+		<Card.Content class="pb-(--card-spacing)">
+			{#if displayedPeriods.length}
+				<div class="divide-y">
+					{#each displayedPeriods as period, index (`${period.startTime}-${index}`)}
+						<div
+							class={`grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 text-sm ${density === 'compact' ? 'py-2' : 'py-3'}`}
+						>
+							<div>
+								{#if interactive && !day}<button
+										type="button"
+										class="min-h-8 text-left underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
+										aria-label={`View details for ${period.name}`}
+										onclick={(event) => openDay(period.startTime, event.currentTarget)}
+										>{period.name}</button
+									>{:else}<p>{period.name}</p>{/if}
+								{#if type === 'detailed' || (day && size !== 'sm')}<p
+										class="mt-1 text-xs leading-5 text-muted-foreground"
+									>
+										{type === 'detailed' ? period.detailedForecast : period.shortForecast}
+									</p>{/if}
+							</div>
+							<ForecastIcon
+								name={icon(period)}
+								iconSet={iconType}
+								class="size-4 text-muted-foreground"
+							/>
+							<span class="min-w-9 text-right tabular-nums">{temperature(period)}°</span>
+						</div>
+					{/each}
+				</div>
+			{/if}
+			{#if sourceLabel}<p class="mt-2 text-[10px] text-muted-foreground">{sourceLabel}</p>{/if}
+		</Card.Content>
+	{/if}
+{/snippet}
+
 <Card.Root
 	style="container-type: inline-size"
 	size={size === 'sm' ? 'sm' : 'default'}
@@ -152,197 +274,13 @@
 		{sourceLabel}
 		{iconType}
 		showWeek={size === 'sm' || type === 'simple'}
-		animated={animatedBackground}
+		flush
 	>
-		{#snippet children(openDay, weekAction, overviewVisible)}
-			<div
-				class={`relative isolate overflow-hidden ${animatedBackground && current ? 'text-white' : 'text-card-foreground'}`}
-			>
-				{#if animatedBackground && current}
-					<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-						<WeatherShaderBackground mode={condition(current)} paused={!overviewVisible} />
-					</div>
-					<div
-						class="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-black/35 via-black/15 to-black/55"
-						aria-hidden="true"
-					></div>
-				{/if}
-				<Card.Header class="relative pt-(--card-spacing)">
-					<Card.Title>Weather</Card.Title>
-					<Card.Description class={animatedBackground && current ? 'text-white/80' : ''}
-						>{location.label ?? 'Local forecast'}</Card.Description
-					>
-					{@render weekAction(animatedBackground && !!current)}
-				</Card.Header>
-				<Card.Content class="relative grid gap-5 py-(--card-spacing)">
-					{#if current}
-						<div>
-							<p
-								class={`mb-2 text-xs ${animatedBackground ? 'text-white/75' : 'text-muted-foreground'}`}
-							>
-								Now
-							</p>
-							<p
-								style="font-size:clamp(2.5rem,18cqw,5rem)"
-								class="leading-none font-medium tracking-tighter tabular-nums"
-							>
-								{temperature(current)}<span class="align-top text-2xl">°</span>
-							</p>
-							<p class="mt-3 text-sm">{current.shortForecast}</p>
-							{#if showTemperatureTrend && outlook.trend}<p
-									class="mt-2 text-sm"
-									data-slot="temperature-trend"
-								>
-									{outlook.trend}
-								</p>{/if}
-							{#if showHighLow}<div
-									class="mt-3 flex gap-4 text-sm tabular-nums"
-									data-slot="temperature-range"
-								>
-									{#if outlook.high !== null}<span aria-label={`High ${outlook.high} degrees`}
-											><ForecastIcon name="arrowUp" iconSet={iconType} class="inline size-3.5" />
-											{outlook.high}°</span
-										>{/if}
-									{#if outlook.low !== null}<span aria-label={`Low ${outlook.low} degrees`}
-											><ForecastIcon name="arrowDown" iconSet={iconType} class="inline size-3.5" />
-											{outlook.low}°</span
-										>{/if}
-								</div>{/if}
-						</div>
-						<div class="flex flex-wrap items-center justify-between gap-3 text-xs">
-							<span class="flex items-center gap-2 opacity-80"
-								><ForecastIcon name="wind" iconSet={iconType} class="size-4" />Wind</span
-							>
-							<span class="tabular-nums"
-								>{current.windDirection} {convertWindSpeed(current.windSpeed, windUnit)}</span
-							>
-						</div>
-					{:else}<p role="status" class="py-8 text-center text-sm text-muted-foreground">
-							Current conditions unavailable.
-						</p>{/if}
-					{#if type === 'simple' && sourceLabel}<p
-							class={`text-[10px] ${animatedBackground && current ? 'text-white/70' : 'text-muted-foreground'}`}
-						>
-							{sourceLabel}
-						</p>{/if}
-				</Card.Content>
-			</div>
-			{#if type !== 'simple'}
-				<Card.Content class="pb-(--card-spacing)">
-					{#if periods.length}
-						<div class="divide-y">
-							{#each periods as period, index (`${period.startTime}-${index}`)}
-								<div
-									class={`grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 text-sm ${density === 'compact' ? 'py-2' : 'py-3'}`}
-								>
-									<div>
-										{#if interactive}<button
-												type="button"
-												class="min-h-8 text-left underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
-												aria-label={`View details for ${period.name}`}
-												onclick={(event) => openDay(period.startTime, event.currentTarget)}
-												>{period.name}</button
-											>{:else}<p>{period.name}</p>{/if}
-										{#if type === 'detailed'}<p
-												class="mt-1 text-xs leading-5 text-muted-foreground"
-											>
-												{period.detailedForecast}
-											</p>{/if}
-									</div>
-									<ForecastIcon
-										name={icon(period)}
-										iconSet={iconType}
-										class="size-4 text-muted-foreground"
-									/>
-									<span class="min-w-9 text-right tabular-nums">{temperature(period)}°</span>
-								</div>
-							{/each}
-						</div>
-					{/if}
-					{#if sourceLabel}<p class="mt-2 text-[10px] text-muted-foreground">{sourceLabel}</p>{/if}
-				</Card.Content>
-			{/if}
+		{#snippet children(openDay, action, visible)}
+			{@render cardView(undefined, action, visible, openDay)}
 		{/snippet}
-		{#snippet background(day)}
-			{@const hero = heroPeriod(day)}
-			{#if hero}<WeatherShaderBackground mode={condition(hero)} />
-				<div class="absolute inset-0 bg-linear-to-b from-black/35 via-black/45 to-black/80"></div>
-			{/if}
-		{/snippet}
-		{#snippet detail(day)}
-			{@const values = dayPeriods(day)}
-			{@const hero = heroPeriod(day)}
-			{#if hero}
-				<div
-					class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}
-					data-slot="weather-day-detail"
-				>
-					<div class="flex items-center justify-between gap-4 py-2">
-						<div>
-							<p
-								class={`mb-2 text-xs ${animatedBackground ? 'text-white/70' : 'text-muted-foreground'}`}
-							>
-								{hero.isDaytime ? 'Daytime' : 'Overnight'}
-							</p>
-							<p
-								class="leading-none font-medium tracking-tighter tabular-nums"
-								style="font-size:clamp(2.5rem,18cqw,4.5rem)"
-							>
-								{temperature(hero)}<span class="align-top text-lg"
-									>°{unit === 'celsius' ? 'C' : 'F'}</span
-								>
-							</p>
-							<p class="mt-3 text-sm">{hero.shortForecast}</p>
-						</div>
-						<ForecastIcon
-							name={icon(hero)}
-							iconSet={iconType}
-							class={`size-12 shrink-0 ${animatedBackground ? 'text-white/80' : 'text-muted-foreground'}`}
-						/>
-					</div>
-					<div
-						class={`flex items-center justify-between gap-3 border-y py-3 text-xs ${animatedBackground ? 'border-white/15' : ''}`}
-					>
-						<span class="flex items-center gap-2"
-							><ForecastIcon name="wind" iconSet={iconType} class="size-4" />Wind</span
-						>
-						<span class="text-right tabular-nums"
-							>{hero.windDirection} {convertWindSpeed(hero.windSpeed, windUnit)}</span
-						>
-					</div>
-					<div class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}>
-						{#each values as period}
-							<section class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-2">
-								<ForecastIcon
-									name={period.isDaytime ? 'sun' : 'moon'}
-									iconSet={iconType}
-									class={`mt-0.5 size-4 ${animatedBackground ? 'text-white/70' : 'text-muted-foreground'}`}
-								/>
-								<h4 class="flex items-center justify-between gap-3 text-sm font-medium">
-									<span>{period.isDaytime ? 'Day' : 'Night'}</span><span class="tabular-nums"
-										>{temperature(period)}°</span
-									>
-								</h4>
-								<p
-									class={`col-start-2 text-xs leading-5 ${animatedBackground ? 'text-white/80' : 'text-muted-foreground'}`}
-								>
-									{period.detailedForecast || period.shortForecast}
-								</p>
-								{#if period !== hero}<p
-										class={`col-start-2 flex items-center gap-2 text-xs ${animatedBackground ? 'text-white/70' : 'text-muted-foreground'}`}
-									>
-										<ForecastIcon
-											name="wind"
-											iconSet={iconType}
-											class="size-3"
-										/>{period.windDirection}
-										{convertWindSpeed(period.windSpeed, windUnit)}
-									</p>{/if}
-							</section>
-						{/each}
-					</div>
-				</div>
-			{/if}
+		{#snippet detail(day, action)}
+			{@render cardView(day, action, true, () => {})}
 		{/snippet}
 	</ForecastScreens>
 </Card.Root>

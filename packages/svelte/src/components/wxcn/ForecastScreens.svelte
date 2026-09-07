@@ -9,12 +9,10 @@
 		interactive,
 		days,
 		title,
-		density,
 		sourceLabel,
 		showWeek = true,
 		iconType,
-		animated = false,
-		background,
+		flush = false,
 		detail,
 		children
 	}: {
@@ -25,39 +23,48 @@
 		sourceLabel: string;
 		showWeek?: boolean;
 		iconType?: IconSet;
-		animated?: boolean;
-		background?: Snippet<[ForecastDay]>;
-		detail: Snippet<[ForecastDay]>;
+		flush?: boolean;
+		detail: Snippet<[ForecastDay, Snippet<[boolean]>]>;
 		children: Snippet<[(time: string, trigger: HTMLElement) => void, Snippet<[boolean]>, boolean]>;
 	} = $props();
 	let screen = $state<'overview' | 'week' | 'day'>('overview');
 	let selectedKey = $state('');
 	let fromWeek = false;
-	let weekScrollTop = 0;
-	let scroller = $state<HTMLDivElement>();
-	let origin: HTMLElement | undefined;
 	let originIndex = 0;
 	let host: HTMLElement | undefined;
-	let heading = $state<HTMLHeadingElement>();
+	let surface = $state<HTMLDivElement>();
+	let pageSize = $state(1);
+	let page = $state(0);
+	const pageCount = $derived(Math.max(1, Math.ceil(days.length / pageSize)));
+	const visibleDays = $derived(days.slice(page * pageSize, (page + 1) * pageSize));
 	const selected = $derived(days.find((day) => day.key === selectedKey));
-	const onBackground = $derived(screen === 'day' && animated && !!background);
 	$effect(() => {
 		if (!interactive || (screen === 'day' && !selected)) screen = 'overview';
 	});
+	$effect(() => {
+		if (page >= pageCount) page = pageCount - 1;
+	});
+	function measure(node: HTMLElement) {
+		const update = () => {
+			pageSize = Math.max(1, Math.floor((node.clientHeight - 24 - (sourceLabel ? 22 : 0)) / 32));
+		};
+		const observer = new ResizeObserver(update);
+		observer.observe(node);
+		update();
+		return { destroy: () => observer.disconnect() };
+	}
 	async function open(next: 'week' | 'day', trigger: HTMLElement, key = '') {
 		if (screen === 'overview') {
-			origin = trigger;
 			host = trigger.closest<HTMLElement>('[data-slot=card]') ?? undefined;
 			if (host)
 				originIndex = [...host.querySelectorAll('button')].indexOf(trigger as HTMLButtonElement);
+			page = 0;
 		}
 		fromWeek = screen === 'week';
-		if (fromWeek) weekScrollTop = scroller?.scrollTop ?? 0;
 		selectedKey = key;
 		screen = next;
 		await tick();
-		if (scroller) scroller.scrollTop = 0;
-		heading?.focus({ preventScroll: true });
+		surface?.focus({ preventScroll: true });
 	}
 	function openDay(time: string, trigger: HTMLElement) {
 		const day = days.find((day) => day.entries.some((entry) => entry.time === Date.parse(time)));
@@ -67,15 +74,18 @@
 		if (screen === 'day' && fromWeek) {
 			screen = 'week';
 			await tick();
-			if (scroller) scroller.scrollTop = weekScrollTop;
+			page = Math.floor(days.findIndex((day) => day.key === selectedKey) / pageSize);
+			await tick();
 			host
 				?.querySelector<HTMLButtonElement>(`[data-forecast-day="${selectedKey}"]`)
 				?.focus({ preventScroll: true });
 		} else {
 			screen = 'overview';
 			await tick();
-			const target = origin?.isConnected ? origin : host?.querySelectorAll('button')[originIndex];
-			target?.focus({ preventScroll: true });
+			await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+			host?.querySelectorAll<HTMLButtonElement>('button')[originIndex]?.focus({
+				preventScroll: true
+			});
 		}
 	}
 </script>
@@ -90,21 +100,29 @@
 />
 
 {#snippet weekAction(onSurface: boolean)}
-	{#if interactive && showWeek}
-		<Card.Action>
-			<Button
+	{#if interactive && showWeek}<Card.Action
+			><Button
 				variant="ghost"
 				size="sm"
 				class={`h-6 px-1.5 text-[10px] font-medium ${onSurface ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-muted-foreground hover:text-foreground'}`}
 				aria-label={`View ${title.toLowerCase()} week`}
 				onclick={(event) => open('week', event.currentTarget)}>View week</Button
-			>
-		</Card.Action>
-	{/if}
+			></Card.Action
+		>{/if}
+{/snippet}
+{#snippet backAction(onSurface: boolean)}
+	<Card.Action
+		><Button
+			variant="ghost"
+			size="sm"
+			class={`h-6 gap-1 px-1.5 text-[10px] ${onSurface ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-muted-foreground'}`}
+			onclick={back}
+			><ForecastIcon name="arrowDown" iconSet={iconType} class="size-3 rotate-90" />Back</Button
+		></Card.Action
+	>
 {/snippet}
 
-<!-- Retain the overview's layout and mounted controls. The inset screen never
-     contributes to card dimensions, including at responsive breakpoints. -->
+<!-- The original layout reserves the card's dimensions while navigation is open. -->
 <div
 	class="contents"
 	style:visibility={screen === 'overview' ? 'visible' : 'hidden'}
@@ -115,86 +133,100 @@
 </div>
 {#if interactive && screen !== 'overview'}
 	<div
+		bind:this={surface}
+		tabindex="-1"
+		role="group"
+		aria-label={screen === 'day'
+			? `${selected?.label} ${title.toLowerCase()} forecast`
+			: `${title} week`}
 		data-slot="forecast-screen"
-		class={`absolute inset-0 z-10 flex min-h-0 flex-col gap-(--card-spacing) overflow-hidden rounded-[inherit] bg-card py-(--card-spacing) ${onBackground ? 'text-white' : 'text-card-foreground'}`}
+		class={`absolute inset-0 z-10 flex min-h-0 flex-col overflow-hidden rounded-[inherit] bg-card text-card-foreground outline-none ${screen === 'day' && flush ? 'gap-0' : 'gap-(--card-spacing) py-(--card-spacing)'}`}
 	>
-		{#if onBackground && selected && background}
-			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-				{@render background(selected)}
-			</div>
-		{/if}
-		<Card.Header class="relative shrink-0">
-			<Card.Title
-				><h3 bind:this={heading} tabindex="-1" class="outline-none">
-					{screen === 'day' && selected ? selected.label : `${title} this week`}
-				</h3></Card.Title
-			>
-			<Card.Description class={onBackground ? 'text-white/70' : ''}
-				>{screen === 'day' ? title + ' forecast' : 'Select a day to explore'}</Card.Description
-			>
-			<Card.Action
-				><Button
-					variant="ghost"
-					size="sm"
-					class={`h-6 gap-1 px-1.5 text-[10px] ${onBackground ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-muted-foreground'}`}
-					onclick={back}
-					><ForecastIcon name="arrowDown" iconSet={iconType} class="size-3 rotate-90" />Back</Button
-				></Card.Action
-			>
-		</Card.Header>
-		<!-- svelte-ignore a11y_no_noninteractive_tabindex (The scroll region must be focusable so keyboard users can scroll daily details.) -->
-		<div
-			bind:this={scroller}
-			data-slot="forecast-screen-scroll"
-			class="relative min-h-0 flex-1 overflow-y-auto overscroll-contain"
-			tabindex="0"
-			role="region"
-			aria-label={screen === 'day' ? `${selected?.label} details` : `${title} weekly forecast`}
-		>
-			<Card.Content class="min-w-0">
-				{#if screen === 'day' && selected}
-					{@render detail(selected)}
-				{:else if days.length}
-					<table class="w-full text-left text-xs">
-						<caption class="sr-only">{title} weekly summary</caption>
-						<thead class="text-muted-foreground"
-							><tr class="border-b"
-								><th scope="col" class="pr-3 pb-2 font-normal">Day</th><th
-									scope="col"
-									class="pb-2 font-normal">Forecast</th
-								></tr
-							></thead
+		{#if screen === 'day' && selected}
+			{@render detail(selected, backAction)}
+		{:else}
+			<Card.Header class="shrink-0">
+				<Card.Title class="truncate">{title} week</Card.Title>
+				<Card.Description class="text-xs" aria-live="polite"
+					>{days.length
+						? `${page * pageSize + 1}–${Math.min((page + 1) * pageSize, days.length)} of ${days.length} days`
+						: 'No forecast available'}</Card.Description
+				>
+				<Card.Action class="flex items-center gap-0.5">
+					{#if pageCount > 1}
+						<Button
+							variant="ghost"
+							size="sm"
+							class="size-6 p-0"
+							aria-label="Previous forecast days"
+							disabled={page === 0}
+							onclick={() => page--}
+							><ForecastIcon name="arrowDown" iconSet={iconType} class="size-3 rotate-90" /></Button
 						>
-						<tbody class="divide-y"
-							>{#each days as day}
-								<tr
-									><th
-										scope="row"
-										class={`pr-3 align-top font-medium ${density === 'compact' ? 'py-2' : 'py-3'}`}
-										><button
-											data-forecast-day={day.key}
-											type="button"
-											class="min-h-8 text-left underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
-											aria-label={`View details for ${day.label}`}
-											onclick={(event) => open('day', event.currentTarget, day.key)}
-											>{day.label}</button
-										></th
-									><td class={density === 'compact' ? 'py-2' : 'py-3'}
-										>{#each day.entries as entry}<p class="leading-5">{entry.summary}</p>{/each}</td
-									></tr
-								>
-							{/each}</tbody
+						<Button
+							variant="ghost"
+							size="sm"
+							class="size-6 p-0"
+							aria-label="Next forecast days"
+							disabled={page === pageCount - 1}
+							onclick={() => page++}
+							><ForecastIcon
+								name="arrowDown"
+								iconSet={iconType}
+								class="size-3 -rotate-90"
+							/></Button
 						>
-					</table>
-				{:else}<p role="status" class="py-5 text-center text-sm text-muted-foreground">
-						No forecast available.
-					</p>{/if}
-				{#if sourceLabel}<p
-						class={`mt-4 text-[10px] ${onBackground ? 'text-white/60' : 'text-muted-foreground'}`}
+					{/if}
+					<Button
+						variant="ghost"
+						size="sm"
+						class="h-6 px-1.5 text-[10px] text-muted-foreground"
+						onclick={back}>Back</Button
 					>
-						{sourceLabel}
-					</p>{/if}
+				</Card.Action>
+			</Card.Header>
+			<Card.Content class="min-h-0 min-w-0 flex-1">
+				<div use:measure class="h-full min-h-0" data-slot="forecast-week-table">
+					{#if days.length}<table class="w-full table-fixed text-left text-xs">
+							<caption class="sr-only">{title} weekly summary</caption>
+							<thead class="h-6 text-muted-foreground"
+								><tr class="border-b"
+									><th scope="col" class="w-2/5 pr-2 font-normal">Day</th><th
+										scope="col"
+										class="font-normal">Forecast</th
+									></tr
+								></thead
+							>
+							<tbody class="divide-y"
+								>{#each visibleDays as day}<tr class="h-8"
+										><th scope="row" class="pr-2 font-medium"
+											><button
+												data-forecast-day={day.key}
+												type="button"
+												class="min-h-6 text-left text-[11px] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+												aria-label={`View details for ${day.label}`}
+												onclick={(event) => open('day', event.currentTarget, day.key)}
+												>{day.label}</button
+											></th
+										><td
+											><p
+												class="truncate"
+												title={day.entries.map((entry) => entry.summary).join(' · ')}
+											>
+												{day.entries.map((entry) => entry.summary).join(' · ')}
+											</p></td
+										></tr
+									>{/each}</tbody
+							>
+						</table>{/if}
+					{#if sourceLabel}<p
+							class="mt-2 truncate text-[10px] text-muted-foreground"
+							title={sourceLabel}
+						>
+							{sourceLabel}
+						</p>{/if}
+				</div>
 			</Card.Content>
-		</div>
+		{/if}
 	</div>
 {/if}

@@ -58,9 +58,13 @@
 			directly from each entry. Moon cards offer a weekly phase table.
 		</p>
 		<p>
-			Detail screens preserve the card's dimensions and scroll internally. Back and Escape return to
-			the previous screen and restore focus. Weather details use the selected day's animated
-			background when <code>animatedBackground</code> is enabled. ForecastDashboard forwards
+			Day details reuse the original card layout with the selected day's data, preserving its
+			dimensions without an internal scroll area. Week tables page through the available days when
+			the card is too small to show them all. Back and Escape return to the previous screen and
+			restore focus. Weather details use the selected day's animated background when <code
+				>animatedBackground</code
+			>
+			is enabled. ForecastDashboard forwards
 			<code>interactive</code> to all three cards.
 		</p>
 		<p>

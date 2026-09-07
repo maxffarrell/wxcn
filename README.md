@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="static/favicon.svg" width="48" height="48" alt="" />
+  <img src="docs/images/logo.svg" width="48" height="48" alt="" />
   <h1>wxcn</h1>
   <p><strong>A little atmosphere for your interface.</strong></p>
   <p>Weather, moon, and tide components for Svelte.<br />Built on shadcn-svelte. Shaped by your theme. Yours to customize.</p>
@@ -13,9 +13,9 @@
 </div>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/playground-dark.png" />
-  <source media="(prefers-color-scheme: light)" srcset="docs/images/playground.png" />
-  <img src="docs/images/playground.png" alt="The wxcn playground: weather, tide, and moon cards on a scrollable canvas beside appearance controls." width="1440" />
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/components-dark.png" />
+  <source media="(prefers-color-scheme: light)" srcset="docs/images/components-light.png" />
+  <img src="docs/images/components-light.png" alt="Weather, moon phase, and tide cards with animated skies, lunar illumination, and a tide chart." width="1440" />
 </picture>
 
 ## The components
@@ -29,7 +29,7 @@ A forecast at a glance, a view of the lunar cycle, or the next turn of the tide.
     <th align="left" width="33%">Tides</th>
   </tr>
   <tr>
-    <td valign="top"><img src="docs/images/weather.png" alt="Weather card with temperature and wind over animated rain, followed by upcoming forecast periods." /></td>
+    <td valign="top"><img src="docs/images/weather.png" alt="Weather card with current temperature, high and low, and wind over animated clouds, followed by upcoming forecast periods." /></td>
     <td valign="top"><img src="docs/images/moon.png" alt="Moon card with a waning crescent, illumination, moon age, and estimated full and new moon dates." /></td>
     <td valign="top"><img src="docs/images/tides.png" alt="Tide card with a water-level marker on a curve and previous and next high or low tide times." /></td>
   </tr>
@@ -40,7 +40,7 @@ A forecast at a glance, a view of the lunar cycle, or the next turn of the tide.
   </tr>
 </table>
 
-<sub>Actual component screenshots from the local playground. Weather and tide images use clearly labeled example data; still images capture one frame of the animated backgrounds.</sub>
+<sub>Actual components, photographed in an isolated preview with example data. Still images capture one frame of the animated backgrounds.</sub>
 
 ## Make it yours
 

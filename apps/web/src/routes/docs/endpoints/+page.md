@@ -1,0 +1,54 @@
+# Data sources
+
+## Weather
+
+The website's `/api/forecast?latitude=30.2672&longitude=-97.7431` endpoint returns `location`, `currentWeather`, and `forecast` for United States locations using the National Weather Service. Current station observations are separate from forecast high and low temperatures. Missing or stale observations return `null` while forecast periods remain available.
+
+```ts
+const response = await fetch('/api/forecast?latitude=30.2672&longitude=-97.7431');
+if (!response.ok) throw new Error('Weather unavailable');
+const { location, currentWeather, forecast } = await response.json();
+```
+
+Pass these values to `WeatherForecast`. Enable `showTemperatureTrend` for a sentence about today's high or tonight's low, and `showHighLow` for arrows. `currentWeather.highToday` prevents predicting a rise after the high has been reached. All temperatures respect `unit`; set `location.timeZone` to the local IANA time zone.
+
+Registry installation copies components and helpers, not the website's API routes. Supply observations from your own provider. The included `fetchWeatherForecast` helper fetches forecast periods only:
+
+```ts
+import { fetchWeatherForecast } from '$lib/data/weather';
+
+const forecast = await fetchWeatherForecast({
+	label: 'Austin, TX',
+	latitude: 30.2672,
+	longitude: -97.7431
+});
+```
+
+## Tides
+
+The website's `/api/tides?latitude=30.2672&longitude=-97.7431` endpoint selects the nearest coastal station by default. It returns the station, high/low predictions, a prediction series, and a current reading when available. Station distances help explain inland locations. Heights use NOAA's MLLW datum.
+
+A fresh observation takes precedence over the predicted reading. Readings older than 30 minutes fall back to a labeled prediction; high/low events alone never fabricate a current reading. Use `location.timeZone` for display times and `unit` for tide heights.
+
+The included helper fetches high/low predictions for a known station:
+
+```ts
+import { fetchTidePredictions } from '$lib/data/tides';
+
+const predictions = await fetchTidePredictions({
+	label: 'Galveston Pier 21, TX',
+	latitude: 29.31,
+	longitude: -94.7933,
+	station: '8771450'
+});
+```
+
+## Moon
+
+Moon data is calculated locally from a mean synodic month. Phase and cycle dates are estimates; rise and set times need a location-specific ephemeris. The component does not require an external API.
+
+```ts
+import { getMoonForecast } from '$lib/data/moon';
+
+const moon = getMoonForecast(new Date());
+```

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { coordinates, loadForecast, nearestStation } from '../src/lib/server/forecast.ts';
-import { getCommand } from '../src/lib/package-manager.ts';
+import { coordinates, loadForecast, nearestStation } from '../apps/web/src/lib/server/forecast.ts';
+import { getCommand } from '../apps/web/src/lib/package-manager.ts';
 const austin = { latitude: 30.2672, longitude: -97.7431 };
 test('location input rejects missing, invalid, and out-of-range coordinates', () => {
 	for (const query of [

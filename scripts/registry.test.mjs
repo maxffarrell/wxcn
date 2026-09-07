@@ -1,3 +1,7 @@
+import { createRequire } from 'node:module';
+const resolveFromSvelte = createRequire(
+	new URL('../packages/svelte/package.json', import.meta.url)
+).resolve;
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -27,7 +31,7 @@ for (const item of registry.items) {
 		assert.ok(item.files.every((f) => f.content && !f.target.startsWith('ui/')));
 		assert.ok(item.files.every((f) => !f.content.includes('var(--wxcn-')));
 		const served = JSON.parse(
-			readFileSync(new URL(`../static/r/${item.name}.json`, import.meta.url), 'utf8')
+			readFileSync(new URL(`../apps/web/static/r/${item.name}.json`, import.meta.url), 'utf8')
 		);
 		assert.deepEqual(served, item);
 	});
@@ -51,7 +55,7 @@ for (const [iconLibrary, packages] of Object.entries(libraries)) {
 		assert.equal(warnings.length, 0);
 		for (const [, specifier] of transformed.content.matchAll(/from ['"]([^'"]+)['"]/g)) {
 			if (specifier.startsWith('$')) continue;
-			assert.doesNotThrow(() => import.meta.resolve(specifier));
+			assert.doesNotThrow(() => resolveFromSvelte(specifier));
 			assert.ok(packages.some((pkg) => specifier === pkg || specifier.startsWith(pkg + '/')));
 		}
 	});
@@ -64,5 +68,29 @@ test('weather registry includes its background and transforms all aliases', asyn
 		assert.ok(!/\$(UI|LIB|COMPONENTS|UTILS)\$/.test(result.content));
 		if (file.target === 'wxcn/WeatherForecast.svelte')
 			assert.ok(result.content.includes('$custom/primitives/card'));
+	}
+});
+
+test('framework paths preserve legacy Svelte payloads and never leak workspace imports', () => {
+	for (const item of registry.items) {
+		const native = JSON.parse(
+			readFileSync(
+				new URL(`../apps/web/static/r/svelte/${item.name}.json`, import.meta.url),
+				'utf8'
+			)
+		);
+		assert.deepEqual(native, item);
+		for (const file of native.files) assert.ok(!file.content.includes('@wxcn/'), file.target);
+	}
+	const frameworks = JSON.parse(
+		readFileSync(new URL('../tooling/contracts/frameworks.json', import.meta.url), 'utf8')
+	);
+	assert.deepEqual(
+		frameworks.svelte.components.toSorted(),
+		registry.items.map((i) => i.name).toSorted()
+	);
+	for (const name of ['react', 'vue']) {
+		assert.equal(frameworks[name].status, 'planned');
+		assert.deepEqual(frameworks[name].components, []);
 	}
 });

@@ -1,0 +1,23 @@
+{
+	"svelte": {
+		"status": "available",
+		"cli": "shadcn-svelte",
+		"registryBase": "/r/svelte",
+		"components": ["weather-forecast", "moon-forecast", "tide-forecast", "forecast-dashboard"],
+		"label": "Svelte"
+	},
+	"react": {
+		"status": "planned",
+		"cli": "shadcn",
+		"registryBase": "/r/react",
+		"components": [],
+		"label": "React"
+	},
+	"vue": {
+		"status": "planned",
+		"cli": "shadcn-vue",
+		"registryBase": "/r/vue",
+		"components": [],
+		"label": "Vue"
+	}
+}

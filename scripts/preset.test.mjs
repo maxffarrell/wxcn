@@ -5,9 +5,9 @@ import {
 	decodePreset,
 	generateRandomConfig,
 	DEFAULT_PRESET_CONFIG
-} from '../src/lib/preset.ts';
+} from '../apps/web/src/lib/preset.ts';
 import * as upstream from 'shadcn-svelte/preset';
-import { convertWindSpeed } from '../src/lib/data/weather.ts';
+import { convertWindSpeed } from '../packages/core/src/weather.ts';
 test('presets use the upstream encoder and preserve every native setting', () => {
 	assert.equal(encodePreset, upstream.encodePreset);
 	assert.equal(decodePreset, upstream.decodePreset);

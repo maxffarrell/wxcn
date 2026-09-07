@@ -86,7 +86,22 @@ After installing the registry components:
 </div>
 ```
 
-These defaults render example data. Supply your own `forecast`, tide `predictions`, `series`, and `reading` for a live interface; set `sourceLabel` to identify the data.
+These defaults render example data. Supply your own `currentWeather` observation and `forecast`, tide `predictions`, `series`, and `reading` for a live interface; set `sourceLabel` to identify the data.
+
+For weather, `showTemperatureTrend` adds “Going up to 92° today” or “Going down to 74° tonight.” Pass `currentWeather.highToday` (in its `temperatureUnit`) to stop the upward sentence once the day's high has been reached, even if it subsequently cools. `showHighLow` independently adds high/low arrows using your selected icon library. Both default to `false` and respect `unit`.
+
+```svelte
+<WeatherForecast
+	{location}
+	{currentWeather}
+	{forecast}
+	showTemperatureTrend
+	showHighLow
+	unit="celsius"
+/>
+```
+
+`currentWeather` uses the exported `CurrentWeather` type, including `observedAt` and optional `highToday` / `lowToday`. Set `location.timeZone` to the location's IANA time zone. If a live observation is unavailable, pass `null`; the forecast remains visible without presenting a forecast high as the current temperature. The website's `/api/forecast` response supplies both `currentWeather` and `forecast`; bring your own data provider when installing the card.
 
 | Prop               | Options                         |
 | ------------------ | ------------------------------- |
@@ -101,7 +116,7 @@ All unit props are optional. Defaults are Fahrenheit, mph, and feet. The dashboa
 
 ### Know your data
 
-Weather uses NWS forecast periods, not instantaneous observations. Tides use NOAA MLLW heights and offset-aware timestamps; a fresh observation takes precedence, while readings older than 30 minutes fall back to a labeled prediction. Extrema alone never fabricate a current reading. Set `location.timeZone` for display times.
+Weather keeps the latest station observation separate from NWS forecast highs and lows. Tides use NOAA MLLW heights and offset-aware timestamps; a fresh observation takes precedence, while readings older than 30 minutes fall back to a labeled prediction. Extrema alone never fabricate a current reading. Set `location.timeZone` for display times.
 
 Moon phases use a mean lunar-cycle estimate. Full/new moon dates are approximate; moonrise and moonset are not calculated. The playground does not save location coordinates in browser storage.
 
@@ -109,16 +124,16 @@ Moon phases use a mean lunar-cycle estimate. Full/new moon dates are approximate
 
 Use the pnpm version pinned in [`package.json`](package.json) to install dependencies, then start the playground with `pnpm dev`.
 
-| Command        | Purpose                                                |
-| -------------- | ------------------------------------------------------ |
-| `pnpm dev`     | Start the playground and local registry                |
-| `pnpm check`   | Run Svelte and TypeScript checks                       |
-| `pnpm test`    | Verify registry transforms, data handling, and presets |
-| `pnpm lint`    | Check formatting                                       |
-| `pnpm build`   | Regenerate the registry and build the site             |
-| `pnpm package` | Build the Svelte library                               |
+| Command               | Purpose                                                |
+| --------------------- | ------------------------------------------------------ |
+| `pnpm dev`            | Start the playground and local registry                |
+| `pnpm check`          | Run Svelte and TypeScript checks                       |
+| `pnpm test`           | Verify registry transforms, data handling, and presets |
+| `pnpm lint`           | Check formatting                                       |
+| `pnpm build`          | Regenerate the registry and build the site             |
+| `pnpm registry:build` | Generate installable Svelte registry files             |
 
-Component source lives in [`src/lib/components/wxcn`](src/lib/components/wxcn). [`scripts/build-registry.mjs`](scripts/build-registry.mjs) generates the installable registry from that source. For registry-only iteration, use the `registry:build` package script before testing an install.
+Component source lives in [`packages/svelte/src/components/wxcn`](packages/svelte/src/components/wxcn), with shared data and calculations in [`packages/core`](packages/core). [`tooling/registry/build.mjs`](tooling/registry/build.mjs) generates the installable registry from that source. For registry-only iteration, use the `registry:build` package script before testing an install.
 
 <details>
 <summary>About playground presets</summary>
@@ -134,3 +149,15 @@ Contributions are welcome, especially React and Vue implementations that preserv
 Built with [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) and [LayerChart](https://github.com/techniq/layerchart). The playground layout and controls are adapted from [shadcn-svelte PR #2755](https://github.com/huntabyte/shadcn-svelte/pull/2755). See [third-party notices](THIRD_PARTY_NOTICES.md) for attribution.
 
 [MIT licensed](LICENSE).
+
+## Contributing across frameworks
+
+The pnpm workspace separates the SvelteKit website (`apps/web`), native Svelte components (`packages/svelte`), and shared TypeScript logic (`packages/core`). React and Vue package and preview directories are reserved for future contributions; neither framework has an implementation yet.
+
+Svelte registry items are available at `/r/svelte/<component>.json`. Existing `/r/<component>.json` URLs remain compatible. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, framework adapters, parity requirements, and deployment configuration.
+
+### Agent documentation
+
+Every public page has a Markdown version: use `/index.md`, `/docs/components.md`, `/docs/endpoints.md`, `/registry.md`, or `/shader-preview.md`, or request the normal URL with `Accept: text/markdown`. `/llms.txt` lists these pages. Component Markdown includes usage, installation steps, and the same source files as the manual code viewer.
+
+The [wxcn skill](skills/wxcn/SKILL.md) provides registry installation, data-prop, theming, and contribution guidance. Install it with `npx skills add maxffarrell/wxcn-svelte --skill wxcn`.

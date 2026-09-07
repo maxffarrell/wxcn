@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { tideState, tideTimestamp } from '../src/lib/data/tide-state.ts';
+import { tideState, tideTimestamp } from '../packages/core/src/tide-state.ts';
 const now = Date.parse('2026-09-06T16:00:00Z');
 const events = [
 	{ time: '2026-09-06T13:00:00Z', height: '0.3', type: 'L' },
@@ -35,7 +35,7 @@ test('extrema alone never fabricate a current reading and series do not extrapol
 });
 
 test('NOAA uses UTC and fetches past/future extrema, continuous predictions, and observations', async () => {
-	const { loadTides } = await import('../src/lib/server/forecast.ts');
+	const { loadTides } = await import('../apps/web/src/lib/server/forecast.ts');
 	const requests = [];
 	const result = await loadTides(
 		{ latitude: 30.2672, longitude: -97.7431, timeZone: 'America/Chicago' },

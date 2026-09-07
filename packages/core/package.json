@@ -1,0 +1,16 @@
+{
+	"name": "@wxcn/core",
+	"version": "0.1.0",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./*.js": "./src/*.ts",
+		"./*": "./src/*.ts"
+	},
+	"scripts": {
+		"check": "tsc --noEmit"
+	},
+	"devDependencies": {
+		"typescript": "^6.0.3"
+	}
+}

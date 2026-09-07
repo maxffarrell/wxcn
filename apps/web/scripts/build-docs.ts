@@ -105,7 +105,13 @@ export async function load() {
 					],
 					dependencies:
 						name === 'tide-forecast' || name === 'forecast-dashboard'
-							? ['@lucide/svelte', 'layerchart@^2.4.0', 'd3-shape@^3.2.0', '@types/d3-shape']
+							? [
+									'@lucide/svelte',
+									'@number-flow/svelte@^0.4.2',
+									'layerchart@^2.4.0',
+									'd3-shape@^3.2.0',
+									'@types/d3-shape'
+								]
 							: ['@lucide/svelte'],
 					files: await Promise.all(
 						files.map(async (f) => {

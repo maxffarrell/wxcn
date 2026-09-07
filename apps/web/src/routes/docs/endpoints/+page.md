@@ -52,3 +52,7 @@ import { getMoonForecast } from '$lib/data/moon';
 
 const moon = getMoonForecast(new Date());
 ```
+
+## Location search
+
+The homepage searches US cities and towns using the public-domain Census Places Gazetteer. `/api/locations?q=Austin%20TX` returns up to eight names and coordinates. Selecting a place loads its weather, moon data, and nearest coastal tide station. Use “Use my location” to return to browser geolocation.

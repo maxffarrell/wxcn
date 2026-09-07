@@ -98,7 +98,7 @@ for (const [name, component, data, description, registryDependencies] of definit
 		registryDependencies,
 		...(name === 'tide-forecast'
 			? {
-					dependencies: ['layerchart@^2.4.0', 'd3-shape@^3.2.0'],
+					dependencies: ['@number-flow/svelte@^0.4.2', 'layerchart@^2.4.0', 'd3-shape@^3.2.0'],
 					devDependencies: ['@types/d3-shape@^3.1.0']
 				}
 			: {}),

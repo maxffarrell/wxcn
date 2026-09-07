@@ -33,3 +33,5 @@ apps/web/src/lib/components/icons
 
 .wrangler
 apps/web/src/lib/server/generated
+
+apps/web/src/lib/server/places.json

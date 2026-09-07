@@ -19,7 +19,10 @@
 		"@hugeicons/core-free-icons": "^4.3.0",
 		"@hugeicons/svelte": "^1.1.5",
 		"@lucide/svelte": "^1.41.0",
+		"@number-flow/svelte": "^0.4.2",
 		"@tabler/icons-svelte": "^3.46.0",
+		"@wxcn/core": "workspace:*",
+		"@wxcn/svelte": "workspace:*",
 		"bits-ui": "^2.19.0",
 		"clsx": "^2.1.1",
 		"d3-shape": "^3.2.0",
@@ -27,14 +30,12 @@
 		"phosphor-svelte": "^3.1.0",
 		"remixicon-svelte": "^0.0.5",
 		"tailwind-merge": "^3.6.0",
-		"tailwind-variants": "^3.3.1",
-		"@wxcn/core": "workspace:*",
-		"@wxcn/svelte": "workspace:*"
+		"tailwind-variants": "^3.3.1"
 	},
 	"devDependencies": {
+		"@types/d3-shape": "^3.2.0",
 		"svelte": "^5.57.0",
 		"svelte-check": "^4.7.6",
-		"typescript": "^6.0.3",
-		"@types/d3-shape": "^3.2.0"
+		"typescript": "^6.0.3"
 	}
 }

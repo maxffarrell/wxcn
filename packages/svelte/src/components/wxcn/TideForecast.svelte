@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, type ComponentProps } from 'svelte';
+	import NumberFlow from '@number-flow/svelte';
 	import * as ChartUI from '../ui/chart/index.js';
 	import { Chart, Svg, Area } from 'layerchart';
 	import { curveMonotoneX } from 'd3-shape';
@@ -68,6 +69,19 @@
 		).filter((p) => p.time >= now - 12 * 3600000 && p.time <= now + 18 * 3600000)
 	);
 	const markerTime = $derived(tide.observed ? tideTimestamp(tide.observed.time) : now);
+	let chartContext = $state<ComponentProps<typeof Chart>['context']>();
+	const hovered = $derived(
+		chartContext?.tooltip.data as { time: number; height: number } | null | undefined
+	);
+	const displayedLevel = $derived(hovered?.height ?? tide.level);
+	const displayedTime = $derived(hovered?.time ?? markerTime);
+	const timeParts = $derived(
+		new Intl.DateTimeFormat('en-US', {
+			hour: 'numeric',
+			minute: '2-digit',
+			timeZone: location.timeZone ?? 'UTC'
+		}).formatToParts(displayedTime)
+	);
 	const domain = $derived.by(() => {
 		const v = chartData.map((p) => p.height);
 		if (tide.level !== null) v.push(tide.level);
@@ -109,32 +123,47 @@
 			<div class="flex flex-wrap items-end justify-between gap-3">
 				<div>
 					<p class="mb-1 text-xs text-muted-foreground">
-						{isSample
-							? 'Example water level'
-							: tide.observed
-								? 'Current water level'
-								: tide.predicted !== null
-									? 'Predicted water level'
-									: 'Current reading unavailable'}
+						{hovered
+							? 'Predicted water level'
+							: isSample
+								? 'Example water level'
+								: tide.observed
+									? 'Current water level'
+									: tide.predicted !== null
+										? 'Predicted water level'
+										: 'Current reading unavailable'}
 					</p>
 					<p
 						style="font-size:clamp(1.5rem,12cqw,2.5rem)"
 						class={`${size === 'sm' ? 'text-3xl' : 'text-4xl'} font-medium tracking-tight tabular-nums`}
 					>
-						{tide.level === null ? '—' : height(tide.level)}<span
-							class="ml-1 text-sm text-muted-foreground">{symbol}</span
-						>
+						{#if displayedLevel === null}—{:else}<NumberFlow
+								value={Number(height(displayedLevel))}
+								format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
+							/>{/if}<span class="ml-1 text-sm text-muted-foreground">{symbol}</span>
 					</p>
 				</div>
 				<div class="text-right text-xs text-muted-foreground">
 					<p>
-						{tide.next
-							? tide.next.type === 'H'
-								? 'Rising toward high tide'
-								: 'Falling toward low tide'
-							: 'Tide outlook'}
+						{hovered
+							? 'Selected time'
+							: tide.next
+								? tide.next.type === 'H'
+									? 'Rising toward high tide'
+									: 'Falling toward low tide'
+								: 'Tide outlook'}
 					</p>
-					<p class="mt-1">{tide.observed ? 'Observed ' : ''}{time(markerTime)}</p>
+					<p class="mt-1 tabular-nums" data-slot="tide-time">
+						<span class="sr-only">{time(displayedTime)}</span><span aria-hidden="true"
+							>{#each timeParts as part}{#if part.type === 'hour' || part.type === 'minute'}<NumberFlow
+										value={Number(part.value)}
+										format={{
+											minimumIntegerDigits: part.type === 'minute' ? 2 : 1,
+											useGrouping: false
+										}}
+									/>{:else}{part.value}{/if}{/each}</span
+						>
+					</p>
 				</div>
 			</div>
 			{#if chartData.length > 1}
@@ -145,6 +174,7 @@
 					aria-label="Tide prediction curve with current water level marker"
 				>
 					<Chart
+						bind:context={chartContext}
 						data={chartData}
 						x="time"
 						y="height"
@@ -166,10 +196,10 @@
 									}}
 									motion={{ type: 'tween', duration: 0 }}
 								/>
-								{#if tide.level !== null && markerTime >= chartData[0].time && markerTime <= chartData[chartData.length - 1].time}
+								{#if tide.level !== null && displayedTime >= chartData[0].time && displayedTime <= chartData[chartData.length - 1].time}
 									<line
-										x1={context.xScale(markerTime)}
-										x2={context.xScale(markerTime)}
+										x1={context.xScale(displayedTime)}
+										x2={context.xScale(displayedTime)}
 										y1={0}
 										y2={context.height}
 										stroke="var(--muted-foreground)"
@@ -177,8 +207,8 @@
 									/>
 									<circle
 										data-slot="current-tide-marker"
-										cx={context.xScale(markerTime)}
-										cy={context.yScale(tide.level)}
+										cx={context.xScale(displayedTime)}
+										cy={context.yScale(displayedLevel ?? tide.level)}
 										r={4.5}
 										fill="var(--chart-1, var(--primary))"
 										stroke="var(--card)"
@@ -186,20 +216,6 @@
 									/>
 								{/if}
 							</Svg>
-							<ChartUI.Tooltip
-								labelFormatter={(v: number) =>
-									new Intl.DateTimeFormat('en-US', {
-										month: 'short',
-										day: 'numeric',
-										hour: 'numeric',
-										minute: '2-digit',
-										timeZone: location.timeZone ?? 'UTC'
-									}).format(v)}
-							>
-								{#snippet formatter({ value })}<span>Tide level</span><span
-										class="ml-auto font-mono tabular-nums">{height(Number(value))} {symbol}</span
-									>{/snippet}
-							</ChartUI.Tooltip>
 						{/snippet}
 					</Chart>
 				</ChartUI.Container>

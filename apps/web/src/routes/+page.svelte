@@ -1,4 +1,5 @@
 <script lang="ts">
+	import LocationSearch from '$lib/components/site/location-search.svelte';
 	import { getContext, onMount } from 'svelte';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
@@ -220,7 +221,10 @@
 		showTemperatureTrend = true;
 		showHighLow = false;
 	}
-	async function updateLocation(coords: { latitude: number; longitude: number }, request: number) {
+	async function updateLocation(
+		coords: { latitude: number; longitude: number; label?: string },
+		request: number
+	) {
 		status = 'loading';
 		message = 'Loading your local forecast…';
 		const query = new URLSearchParams({
@@ -234,7 +238,7 @@
 			const data = await response.json();
 			if (!response.ok) throw new Error(data.message);
 			if (request !== locationRequest) return;
-			location = data.location;
+			location = { ...data.location, label: coords.label ?? data.location.label };
 			forecast = data.forecast;
 			currentWeather = data.currentWeather ?? null;
 			moon = getMoonForecast(new Date());
@@ -436,6 +440,14 @@
 							onclick={() => selectItem(entry.value)}>{entry.label}</Button
 						>{/each}
 				</nav>
+				<LocationSearch
+					label={location.label ?? ''}
+					onselect={(place) => {
+						scene = 'live';
+						void updateLocation(place, ++locationRequest);
+					}}
+					onlocate={useLocation}
+				/>
 				<FrameworkTabs />
 			</div>
 			<p class="sr-only" role="status">{message}</p>
@@ -595,27 +607,6 @@
 						options={[
 							{ value: 'ft', label: 'Feet' },
 							{ value: 'meter', label: 'Meters' }
-						]}
-					/>
-					<Picker
-						label="Temperature outlook"
-						bind:value={
-							() => (showTemperatureTrend ? 'on' : 'off'),
-							(value) => (showTemperatureTrend = value === 'on')
-						}
-						options={[
-							{ value: 'on', label: 'Sentence' },
-							{ value: 'off', label: 'Hidden' }
-						]}
-					/>
-					<Picker
-						label="High / low"
-						bind:value={
-							() => (showHighLow ? 'on' : 'off'), (value) => (showHighLow = value === 'on')
-						}
-						options={[
-							{ value: 'on', label: 'Arrows' },
-							{ value: 'off', label: 'Hidden' }
 						]}
 					/>
 					<Picker

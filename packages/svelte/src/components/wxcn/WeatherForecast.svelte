@@ -144,9 +144,7 @@
 						style="font-size:clamp(2.5rem,18cqw,5rem)"
 						class="leading-none font-medium tracking-tighter tabular-nums"
 					>
-						{temperature(current)}<span class="align-top text-2xl"
-							>°{unit === 'celsius' ? 'C' : 'F'}</span
-						>
+						{temperature(current)}<span class="align-top text-2xl">°</span>
 					</p>
 					<p class="mt-3 text-sm">{current.shortForecast}</p>
 					{#if showTemperatureTrend && outlook.trend}<p

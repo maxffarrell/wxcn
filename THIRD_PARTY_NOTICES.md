@@ -19,3 +19,5 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 The manual installation source viewer, file controls, language icons, and steps use PR #2761 at b209b923033ae5c10602cf668fd1ae7a0dc21a7c. Its data/type adapters point to wxcn registry files. The Card implementation was checked against upstream main and matches apart from the local utility import.
 
 The MDSX heading components in `apps/web/src/lib/components/mdsx` are copied from the shadcn-svelte documentation (MIT), including its heading anchor behavior.
+
+`apps/web/src/lib/server/places.json` contains names and representative coordinates from the US Census Bureau's [2025 National Places Gazetteer](https://www2.census.gov/geo/docs/maps-data/data/gazetteer/2025_Gazetteer/2025_Gaz_place_national.zip). Federal government data is public domain. Labels omit legal/statistical suffixes; coordinates are rounded to five decimals.

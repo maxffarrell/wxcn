@@ -136,6 +136,7 @@
 		longitude: -97.7431,
 		timeZone: 'America/Chicago'
 	});
+	let hourlyForecast = $state<WeatherPeriod[]>([]);
 	let forecast = $state<WeatherPeriod[]>(sampleWeather),
 		moon = $state(sampleMoon),
 		tides = $state<TidePrediction[]>(sampleTides);
@@ -250,6 +251,7 @@
 			if (request !== locationRequest) return;
 			location = { ...data.location, label: coords.label ?? data.location.label };
 			forecast = data.forecast;
+			hourlyForecast = data.hourlyForecast ?? [];
 			currentWeather = data.currentWeather ?? null;
 			moon = getMoonForecast(new Date());
 			status = 'live';
@@ -308,6 +310,7 @@
 			timeZone: 'America/Chicago'
 		};
 		forecast = sampleWeather;
+		hourlyForecast = [];
 		currentWeather = sampleCurrentWeather;
 		tides = sampleTides;
 		tideSeries = undefined;
@@ -389,6 +392,7 @@
 			{windUnit}
 			iconType={icons.value}
 			forecast={displayedForecast}
+			{hourlyForecast}
 			currentWeather={scene === 'live'
 				? currentWeather
 				: {

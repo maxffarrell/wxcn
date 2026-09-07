@@ -35,6 +35,7 @@
 			timeZone: 'America/Chicago'
 		},
 		forecast = sampleWeather,
+		hourlyForecast = [],
 		currentWeather = forecast === sampleWeather ? sampleCurrentWeather : null,
 		showTemperatureTrend = false,
 		showHighLow = false,
@@ -53,6 +54,7 @@
 		iconType?: IconSet;
 		location?: LocationInput;
 		forecast?: WeatherPeriod[];
+		hourlyForecast?: WeatherPeriod[];
 		currentWeather?: CurrentWeather | null;
 		showTemperatureTrend?: boolean;
 		showHighLow?: boolean;
@@ -133,6 +135,20 @@
 			.filter((period) => day.entries.some((entry) => entry.time === Date.parse(period.startTime)))
 			.toSorted((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime));
 	}
+	function dayHours(day: ForecastDay) {
+		const date = new Intl.DateTimeFormat('en-CA', {
+			timeZone: displayTimeZone,
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit'
+		});
+		return hourlyForecast
+			.filter(
+				(p) =>
+					Number.isFinite(Date.parse(p.startTime)) && date.format(new Date(p.startTime)) === day.key
+			)
+			.toSorted((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime));
+	}
 	function heroPeriod(day: ForecastDay) {
 		const values = dayPeriods(day);
 		return values.find((period) => period.isDaytime) ?? values[0];
@@ -148,7 +164,7 @@
 	{@const view = day ? heroPeriod(day) : current}
 	{@const displayedPeriods = day ? dayPeriods(day) : periods}
 	<div
-		class={`relative isolate overflow-hidden ${background !== 'none' && view ? 'text-white' : 'text-card-foreground'}`}
+		class={`${day ? 'contents' : 'relative isolate overflow-hidden'} ${background !== 'none' && view ? 'text-white' : 'text-card-foreground'}`}
 	>
 		{#if background !== 'none' && view}
 			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
@@ -168,13 +184,13 @@
 			></div>
 		{/if}
 		<Card.Header class="relative pt-(--card-spacing)">
-			<Card.Title>{day?.label ?? 'Weather'}</Card.Title>
-			<Card.Description class={background !== 'none' && view ? 'text-white/80' : ''}
+			<Card.Title class="min-w-0 truncate">{day?.label ?? 'Weather'}</Card.Title>
+			<Card.Description class={`truncate ${background !== 'none' && view ? 'text-white/80' : ''}`}
 				>{location.label ?? 'Local forecast'}</Card.Description
 			>
 			{@render action(background !== 'none' && !!view)}
 		</Card.Header>
-		<Card.Content class="relative grid gap-5 py-(--card-spacing)">
+		<Card.Content class="relative grid min-w-0 shrink-0 gap-5 py-(--card-spacing)">
 			{#if view}
 				<div>
 					<p
@@ -225,15 +241,36 @@
 			{:else}<p role="status" class="py-8 text-center text-sm text-muted-foreground">
 					Current conditions unavailable.
 				</p>{/if}
-			{#if type === 'simple' && sourceLabel}<p
+			{#if !day && type === 'simple' && sourceLabel}<p
 					class={`text-[10px] ${background !== 'none' && view ? 'text-white/70' : 'text-muted-foreground'}`}
 				>
 					{sourceLabel}
 				</p>{/if}
 		</Card.Content>
 	</div>
-	{#if type !== 'simple'}
-		<Card.Content class="pb-(--card-spacing)">
+	{#if day && size === 'lg' && type !== 'simple' && dayHours(day).length}
+		<Card.Content class="relative min-h-0 flex-1 pb-(--card-spacing)">
+			<p class="mb-3 text-xs font-medium">Hourly forecast</p>
+			<div class="grid grid-cols-3 gap-x-4 gap-y-2" data-slot="hourly-forecast">
+				{#each dayHours(day) as hour}
+					<div
+						class="flex min-w-0 items-center justify-between gap-1 text-xs"
+						title={hour.shortForecast}
+					>
+						<span class="opacity-75"
+							>{new Intl.DateTimeFormat('en-US', {
+								timeZone: displayTimeZone,
+								hour: 'numeric'
+							}).format(new Date(hour.startTime))}</span
+						>
+						<ForecastIcon name={icon(hour)} iconSet={iconType} class="size-3.5 shrink-0" />
+						<span class="tabular-nums">{temperature(hour)}°</span>
+					</div>
+				{/each}
+			</div>
+		</Card.Content>
+	{:else if type !== 'simple'}
+		<Card.Content class="relative min-h-0 min-w-0 pb-(--card-spacing)">
 			{#if displayedPeriods.length}
 				<div class="divide-y">
 					{#each displayedPeriods as period, index (`${period.startTime}-${index}`)}
@@ -249,7 +286,7 @@
 										>{period.name}</button
 									>{:else}<p>{period.name}</p>{/if}
 								{#if type === 'detailed' || (day && size !== 'sm')}<p
-										class="mt-1 text-xs leading-5 text-muted-foreground"
+										class={`mt-1 text-xs leading-5 ${day ? 'line-clamp-2' : ''} ${day && background !== 'none' ? 'text-white/75' : 'text-muted-foreground'}`}
 									>
 										{type === 'detailed' ? period.detailedForecast : period.shortForecast}
 									</p>{/if}
@@ -257,14 +294,16 @@
 							<ForecastIcon
 								name={icon(period)}
 								iconSet={iconType}
-								class="size-4 text-muted-foreground"
+								class={`size-4 ${day && background !== 'none' ? 'text-white/75' : 'text-muted-foreground'}`}
 							/>
 							<span class="min-w-9 text-right tabular-nums">{temperature(period)}°</span>
 						</div>
 					{/each}
 				</div>
 			{/if}
-			{#if sourceLabel}<p class="mt-2 text-[10px] text-muted-foreground">{sourceLabel}</p>{/if}
+			{#if !day && sourceLabel}<p class="mt-2 text-[10px] text-muted-foreground">
+					{sourceLabel}
+				</p>{/if}
 		</Card.Content>
 	{/if}
 {/snippet}
@@ -290,7 +329,11 @@
 			{@render cardView(undefined, action, visible, openDay)}
 		{/snippet}
 		{#snippet detail(day, action)}
-			{@render cardView(day, action, true, () => {})}
+			<div
+				class={`relative isolate flex h-full min-h-0 flex-col ${background !== 'none' ? 'text-white' : ''}`}
+			>
+				{@render cardView(day, action, true, () => {})}
+			</div>
 		{/snippet}
 	</ForecastScreens>
 </Card.Root>

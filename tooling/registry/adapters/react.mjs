@@ -54,7 +54,7 @@ const definitions = [
 const items = [];
 for (const [name, description, helpers, components, registryDependencies] of definitions) {
 	const files = await Promise.all([
-		...[name, ...components].map((name) =>
+		...[name, 'forecast-screens', ...components].map((name) =>
 			file(
 				`packages/react/src/components/wxcn/${name}.tsx`,
 				'registry:component',
@@ -66,7 +66,7 @@ for (const [name, description, helpers, components, registryDependencies] of def
 			'registry:component',
 			'@components/wxcn/forecast-icons.tsx'
 		),
-		...['types', ...helpers].map((name) =>
+		...['types', 'forecast-days', ...helpers].map((name) =>
 			file(`packages/core/src/${name}.ts`, 'registry:lib', `@lib/wxcn/${name}.ts`)
 		)
 	]);
@@ -75,7 +75,7 @@ for (const [name, description, helpers, components, registryDependencies] of def
 		name,
 		type: 'registry:component',
 		description,
-		registryDependencies,
+		registryDependencies: [...registryDependencies, 'button'],
 		dependencies:
 			name === 'tide-forecast' ? ['lucide-react', '@number-flow/react@^0.5.8'] : ['lucide-react'],
 		files

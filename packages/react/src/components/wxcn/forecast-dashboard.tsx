@@ -11,6 +11,7 @@ import { TideForecast } from './tide-forecast';
 import { MoonForecast } from './moon-forecast';
 
 export type ForecastDashboardProps = {
+	interactive?: boolean;
 	iconType?: IconSet;
 	timeZone?: string;
 	type?: ForecastType;
@@ -28,6 +29,7 @@ export type ForecastDashboardProps = {
 };
 
 export function ForecastDashboard({
+	interactive = false,
 	iconType,
 	timeZone,
 	type = 'summary',
@@ -48,6 +50,7 @@ export function ForecastDashboard({
 			<div className="grid items-start gap-4 @min-[38rem]/dashboard:grid-cols-2 @min-[52rem]/dashboard:grid-cols-3">
 				<div className="min-w-0 @min-[38rem]/dashboard:col-span-2 @min-[52rem]/dashboard:col-span-1">
 					<WeatherForecast
+						interactive={interactive}
 						iconType={iconType}
 						timeZone={timeZone}
 						type={type}
@@ -63,6 +66,7 @@ export function ForecastDashboard({
 					/>
 				</div>
 				<TideForecast
+					interactive={interactive}
 					iconType={iconType}
 					timeZone={timeZone}
 					type={type}
@@ -72,6 +76,8 @@ export function ForecastDashboard({
 					location={tideLocation}
 				/>
 				<MoonForecast
+					interactive={interactive}
+					iconType={iconType}
 					timeZone={timeZone}
 					type={type}
 					size={size}

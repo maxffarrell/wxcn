@@ -19,9 +19,9 @@ import { WeatherForecast } from '@/components/wxcn/weather-forecast';
 />;
 ```
 
-Props retain the Svelte meanings for size (`sm`, `default`, `lg`), density (`compact`, `comfortable`), detail (`simple`, `summary`, `detailed`), units, timezone, and provider data; use React `className`. The native icon adapter supports Lucide, Tabler, Phosphor, Hugeicons, and Remixicon using React-local icon names. Atmospheric backgrounds respect reduced motion and pause when hidden.
+Props retain the Svelte meanings for `interactive`, size (`sm`, `default`, `lg`), density (`compact`, `comfortable`), detail (`simple`, `summary`, `detailed`), units, timezone, and provider data; use React `className`. Set `interactive` to enable week and day navigation; it defaults to `false`. The native icon adapter supports Lucide, Tabler, Phosphor, Hugeicons, and Remixicon using React-local icon names. Atmospheric backgrounds respect reduced motion and pause when hidden.
 
-Defaults are fixtures, not live data. For live tides, provide `predictions`, `series`, `reading`, and a source label; `example={false}` disables sample interpolation. Missing or stale observations never appear as fresh observations. `at` accepts an explicit timestamp for server-rendered live data and tests. Without `at`, live data displays a stable loading state until the client clock is available. Provide an explicit `timeZone` for consistent server/client display.
+Defaults are fixtures, not live data. For live tides, provide `predictions`, `series`, `reading`, and a source label; `example={false}` disables sample interpolation. Missing or stale observations never appear as fresh observations. `at` accepts an explicit timestamp for server-rendered live data and tests. Without `at`, live data displays a stable loading state until the client clock is available. Display time zones use explicit `timeZone`, then `location.timeZone`, then the browser time zone after hydration; SSR falls back to UTC when neither prop supplies a time zone.
 
 The standalone Vite preview in `apps/preview-react` is a validation harness; the same native React cards are rendered by the Astro site at `/react`, with component documentation at `/react/docs/components` and React registry endpoints at `/r/react/<component>.json`.
 

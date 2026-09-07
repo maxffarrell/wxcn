@@ -36,6 +36,7 @@ test('React registry is schema-valid, self-contained and uses native consumer pr
 	assert.deepEqual(registry.items.find((i) => i.name === 'tide-forecast').registryDependencies, [
 		'card',
 		'badge',
-		'chart'
+		'chart',
+		'button'
 	]);
 });

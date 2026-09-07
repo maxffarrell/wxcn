@@ -135,7 +135,7 @@ For weather, `showTemperatureTrend` adds “Going up to 92° today” or “Goin
 />
 ```
 
-`currentWeather` uses the exported `CurrentWeather` type, including `observedAt` and optional `highToday` / `lowToday`. The browser time zone is used by default; set `timeZone` to an IANA identifier to override it. If a live observation is unavailable, pass `null`; the forecast remains visible without presenting a forecast high as the current temperature. The website's `/api/forecast` response supplies both `currentWeather` and `forecast`; bring your own data provider when installing the card.
+`currentWeather` uses the exported `CurrentWeather` type, including `observedAt` and optional `highToday` / `lowToday`. Display time zones use explicit `timeZone`, then `location.timeZone`, then the browser time zone after hydration; SSR falls back to UTC when neither prop supplies a time zone. If a live observation is unavailable, pass `null`; the forecast remains visible without presenting a forecast high as the current temperature. The website's `/api/forecast` response supplies both `currentWeather` and `forecast`; bring your own data provider when installing the card.
 
 | Prop               | Options                         |
 | ------------------ | ------------------------------- |
@@ -150,7 +150,7 @@ All unit props are optional. Defaults are Fahrenheit, mph, and feet. The dashboa
 
 ### Know your data
 
-Weather keeps the latest station observation separate from NWS forecast highs and lows. Tides use NOAA MLLW heights and offset-aware timestamps; a fresh observation takes precedence, while readings older than 30 minutes fall back to a labeled prediction. Extrema alone never fabricate a current reading. Display times default to the visitor’s browser time zone; override with the optional `timeZone` prop.
+Weather keeps the latest station observation separate from NWS forecast highs and lows. Tides use NOAA MLLW heights and offset-aware timestamps; a fresh observation takes precedence, while readings older than 30 minutes fall back to a labeled prediction. Extrema alone never fabricate a current reading. Display times follow the explicit `timeZone`, `location.timeZone`, browser-after-hydration precedence described above.
 
 Moon phases use a mean lunar-cycle estimate. Full/new moon dates are approximate; moonrise and moonset are not calculated. The playground does not save location coordinates in browser storage.
 

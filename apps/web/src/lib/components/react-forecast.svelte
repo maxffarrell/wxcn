@@ -32,7 +32,7 @@
 		return createElement(HydrationBoundary, {
 			children: createElement(components[kind] as ComponentType<Record<string, unknown>>, {
 				...rest,
-				...(kind === 'weather' || kind === 'tides' || kind === 'dashboard'
+				...(kind === 'weather' || kind === 'tides' || kind === 'dashboard' || kind === 'moon'
 					? { iconType: nativeIconType }
 					: {})
 			})

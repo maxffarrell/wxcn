@@ -400,6 +400,7 @@
 	{#if isReact}<ReactForecast
 			kind={collection as 'weather' | 'moon' | 'tides'}
 			props={{
+				interactive: interaction === 'on',
 				size,
 				type: variant,
 				density: cardDensity,

@@ -37,6 +37,7 @@ try {
 		for (const path of ['/', '/react']) {
 			await page.goto(`${base}${path}?preset=${encodePreset({ style })}`);
 			await page.locator('[data-slot="designer"]').waitFor();
+			await page.waitForLoadState('networkidle');
 			await page.getByRole('button', { name: 'Style', exact: true }).waitFor();
 			await page.waitForFunction(
 				(style) =>

@@ -45,16 +45,17 @@
 							kind={reactKinds[item.name as keyof typeof reactKinds]}
 							props={item.name === 'weather-forecast'
 								? {
+										interactive: true,
 										unit: 'celsius',
 										animatedBackground: true,
 										showTemperatureTrend: true,
 										showHighLow: true
 									}
 								: item.name === 'tide-forecast'
-									? { unit: 'meter' }
+									? { interactive: true, unit: 'meter' }
 									: item.name === 'forecast-dashboard'
-										? { animatedWeatherBackground: true }
-										: {}}
+										? { interactive: true, animatedWeatherBackground: true }
+										: { interactive: true }}
 						/>
 					</div>
 				{:else}
@@ -79,8 +80,9 @@
 				<code>unit</code>.
 			</p>
 			<p>
-				Set <code>timeZone</code> for the local calendar day. The example uses both options with sample
-				observations.
+				Set an explicit <code>timeZone</code> first; otherwise cards use
+				<code>location.timeZone</code>, then the visitor's browser time zone after hydration. Server
+				rendering falls back to UTC when neither prop supplies a time zone.
 			</p>
 		{/if}
 		<H3 id={`${item.name}-interaction`}>Interactive forecasts</H3>
@@ -121,8 +123,9 @@
 						/>{/if}
 					<Step>Copy and paste the following code into your project.</Step>
 					<p>
-						These files use the default aliases and Lucide icons. Adjust imports to match your
-						project, or use CLI installation to apply your configuration automatically.
+						These files use the default aliases and native icon adapter. Adjust imports to match
+						your project, or use CLI installation to apply your aliases and configured icon library
+						automatically.
 					</p>
 					<ComponentSource
 						item={{

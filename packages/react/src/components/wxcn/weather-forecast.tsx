@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { ForecastScreens, type ForecastAction, type OpenForecastDay } from './forecast-screens';
+import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 import { ForecastIcon, type IconSet, type IconName } from '../../icons/forecast-icons';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -16,6 +18,7 @@ import { sampleWeather, sampleCurrentWeather, convertWindSpeed } from '@wxcn/cor
 import { weatherOutlook } from '@wxcn/core/weather-outlook.js';
 
 export interface WeatherForecastProps {
+	interactive?: boolean;
 	iconType?: IconSet;
 	timeZone?: string;
 	type?: ForecastType;
@@ -62,6 +65,7 @@ function periodIcon(p: WeatherPeriod): IconName {
 }
 
 export function WeatherForecast({
+	interactive = false,
 	iconType,
 	timeZone,
 	type = 'summary',
@@ -98,7 +102,7 @@ export function WeatherForecast({
 		currentWeather,
 		forecast,
 		unit,
-		timeZone ?? visitorTimeZone,
+		timeZone ?? location.timeZone ?? visitorTimeZone,
 		effectiveTime
 	);
 	const periods = forecast.slice(0, type === 'detailed' ? 8 : density === 'compact' ? 3 : 5);
@@ -129,6 +133,195 @@ export function WeatherForecast({
 			</Card>
 		);
 	}
+	const days = forecastDays(
+		forecast.map((p) => ({
+			time: Date.parse(p.startTime),
+			label: p.name,
+			summary: `${temperature(p)}° · ${p.shortForecast}`,
+			details: `${p.detailedForecast || p.shortForecast} Wind: ${p.windDirection} ${convertWindSpeed(p.windSpeed, windUnit)}.`
+		})),
+		timeZone ?? location.timeZone ?? visitorTimeZone
+	);
+	function cardView(
+		day: ForecastDay | undefined,
+		action: ForecastAction,
+		overviewVisible: boolean,
+		openDay: OpenForecastDay
+	) {
+		const displayedPeriods = day
+			? forecast
+					.filter((period) =>
+						day.entries.some((entry) => entry.time === Date.parse(period.startTime))
+					)
+					.toSorted((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime))
+			: periods;
+		const view = day
+			? (displayedPeriods.find((period) => period.isDaytime) ?? displayedPeriods[0])
+			: current;
+		return (
+			<>
+				<div
+					className={cn(
+						'relative isolate overflow-hidden',
+						animatedBackground && view ? 'text-white' : 'text-card-foreground'
+					)}
+				>
+					{animatedBackground && view && (
+						<>
+							<div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+								<WeatherShaderBackground mode={condition(view)} paused={!overviewVisible} />
+							</div>
+							<div
+								className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-black/35 via-black/15 to-black/55"
+								aria-hidden="true"
+							/>
+						</>
+					)}
+					<CardHeader className="relative px-[var(--card-spacing,var(--wxcn-spacing))] pt-[var(--card-spacing,var(--wxcn-spacing))]">
+						<CardTitle>{day?.label ?? 'Weather'}</CardTitle>
+						<CardDescription className={animatedBackground && view ? 'text-white/80' : ''}>
+							{location.label ?? 'Local forecast'}
+						</CardDescription>
+						{action(animatedBackground && !!view)}
+					</CardHeader>
+					<CardContent className="relative grid gap-5 px-[var(--card-spacing,var(--wxcn-spacing))] py-[var(--card-spacing,var(--wxcn-spacing))]">
+						{view ? (
+							<>
+								<div>
+									<p
+										className={cn(
+											'mb-2 text-xs',
+											animatedBackground ? 'text-white/75' : 'text-muted-foreground'
+										)}
+									>
+										{day ? (view.isDaytime ? 'Daytime' : 'Overnight') : 'Now'}
+									</p>
+									<p
+										style={{ fontSize: 'clamp(2.5rem,18cqw,5rem)' }}
+										className="leading-none font-medium tracking-tighter tabular-nums"
+									>
+										{temperature(view)}
+										<span className="align-top text-2xl">°</span>
+									</p>
+									<p
+										className={`mt-3 text-sm ${day ? 'truncate' : ''}`}
+										title={day ? view.shortForecast : undefined}
+									>
+										{view.shortForecast}
+									</p>
+									{!day && showTemperatureTrend && outlook.trend && (
+										<p className="mt-2 text-sm" data-slot="temperature-trend">
+											{outlook.trend}
+										</p>
+									)}
+									{!day && showHighLow && (
+										<div
+											className="mt-3 flex gap-4 text-sm tabular-nums"
+											data-slot="temperature-range"
+										>
+											{outlook.high !== null && (
+												<span aria-label={`High ${outlook.high} degrees`}>
+													<ForecastIcon
+														name="arrowUp"
+														iconSet={iconType}
+														className="inline size-3.5"
+													/>{' '}
+													{outlook.high}°
+												</span>
+											)}
+											{outlook.low !== null && (
+												<span aria-label={`Low ${outlook.low} degrees`}>
+													<ForecastIcon
+														name="arrowDown"
+														iconSet={iconType}
+														className="inline size-3.5"
+													/>{' '}
+													{outlook.low}°
+												</span>
+											)}
+										</div>
+									)}
+								</div>
+								<div className="flex flex-wrap items-center justify-between gap-3 text-xs">
+									<span className="flex items-center gap-2 opacity-80">
+										<ForecastIcon name="wind" iconSet={iconType} className="size-4" />
+										Wind
+									</span>
+									<span className="tabular-nums">
+										{view.windDirection} {convertWindSpeed(view.windSpeed, windUnit)}
+									</span>
+								</div>
+							</>
+						) : (
+							<p role="status" className="py-8 text-center text-sm text-muted-foreground">
+								Current conditions unavailable.
+							</p>
+						)}
+						{type === 'simple' && sourceLabel && (
+							<p
+								className={cn(
+									'text-[10px]',
+									animatedBackground && view ? 'text-white/70' : 'text-muted-foreground'
+								)}
+							>
+								{sourceLabel}
+							</p>
+						)}
+					</CardContent>
+				</div>
+				{type !== 'simple' && (
+					<CardContent className="px-[var(--card-spacing,var(--wxcn-spacing))] pb-[var(--card-spacing,var(--wxcn-spacing))]">
+						{displayedPeriods.length > 0 && (
+							<div className="divide-y">
+								{displayedPeriods.map((period, index) => {
+									const icon = periodIcon(period);
+									return (
+										<div
+											key={`${period.startTime}-${index}`}
+											className={cn(
+												'grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 text-sm',
+												density === 'compact' ? 'py-2' : 'py-3'
+											)}
+										>
+											<div>
+												{interactive && !day ? (
+													<button
+														type="button"
+														className="min-h-8 text-left underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
+														aria-label={`View details for ${period.name}`}
+														onClick={(event) => openDay(period.startTime, event.currentTarget)}
+													>
+														{period.name}
+													</button>
+												) : (
+													<p>{period.name}</p>
+												)}
+												{(type === 'detailed' || (day && size !== 'sm')) && (
+													<p className="mt-1 text-xs leading-5 text-muted-foreground">
+														{type === 'detailed' ? period.detailedForecast : period.shortForecast}
+													</p>
+												)}
+											</div>
+											<ForecastIcon
+												name={icon}
+												iconSet={iconType}
+												className="size-4 text-muted-foreground"
+											/>
+											<span className="min-w-9 text-right tabular-nums">
+												{temperature(period)}°
+											</span>
+										</div>
+									);
+								})}
+							</div>
+						)}
+						{sourceLabel && <p className="mt-2 text-[10px] text-muted-foreground">{sourceLabel}</p>}
+					</CardContent>
+				)}
+			</>
+		);
+	}
+
 	return (
 		<Card
 			data-density={density}
@@ -146,145 +339,19 @@ export function WeatherForecast({
 				className
 			)}
 		>
-			<div
-				className={cn(
-					'relative isolate overflow-hidden',
-					animatedBackground && current ? 'text-white' : 'text-card-foreground'
-				)}
+			<ForecastScreens
+				interactive={interactive}
+				days={days}
+				title="Weather"
+				density={density}
+				sourceLabel={sourceLabel}
+				iconType={iconType}
+				showWeek={size === 'sm' || type === 'simple'}
+				flush
+				detail={(day, action) => cardView(day, action, true, () => {})}
 			>
-				{animatedBackground && current && (
-					<>
-						<div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-							<WeatherShaderBackground mode={condition(current)} />
-						</div>
-						<div
-							className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-black/35 via-black/15 to-black/55"
-							aria-hidden="true"
-						/>
-					</>
-				)}
-				<CardHeader className="relative px-[var(--card-spacing,var(--wxcn-spacing))] pt-[var(--card-spacing,var(--wxcn-spacing))]">
-					<CardTitle>Weather</CardTitle>
-					<CardDescription className={animatedBackground && current ? 'text-white/80' : ''}>
-						{location.label ?? 'Local forecast'}
-					</CardDescription>
-				</CardHeader>
-				<CardContent className="relative grid gap-5 px-[var(--card-spacing,var(--wxcn-spacing))] py-[var(--card-spacing,var(--wxcn-spacing))]">
-					{current ? (
-						<>
-							<div>
-								<p
-									className={cn(
-										'mb-2 text-xs',
-										animatedBackground ? 'text-white/75' : 'text-muted-foreground'
-									)}
-								>
-									Now
-								</p>
-								<p
-									style={{ fontSize: 'clamp(2.5rem,18cqw,5rem)' }}
-									className="leading-none font-medium tracking-tighter tabular-nums"
-								>
-									{temperature(current)}
-									<span className="align-top text-2xl">°</span>
-								</p>
-								<p className="mt-3 text-sm">{current.shortForecast}</p>
-								{showTemperatureTrend && outlook.trend && (
-									<p className="mt-2 text-sm" data-slot="temperature-trend">
-										{outlook.trend}
-									</p>
-								)}
-								{showHighLow && (
-									<div
-										className="mt-3 flex gap-4 text-sm tabular-nums"
-										data-slot="temperature-range"
-									>
-										{outlook.high !== null && (
-											<span aria-label={`High ${outlook.high} degrees`}>
-												<ForecastIcon
-													name="arrowUp"
-													iconSet={iconType}
-													className="inline size-3.5"
-												/>{' '}
-												{outlook.high}°
-											</span>
-										)}
-										{outlook.low !== null && (
-											<span aria-label={`Low ${outlook.low} degrees`}>
-												<ForecastIcon
-													name="arrowDown"
-													iconSet={iconType}
-													className="inline size-3.5"
-												/>{' '}
-												{outlook.low}°
-											</span>
-										)}
-									</div>
-								)}
-							</div>
-							<div className="flex flex-wrap items-center justify-between gap-3 text-xs">
-								<span className="flex items-center gap-2 opacity-80">
-									<ForecastIcon name="wind" iconSet={iconType} className="size-4" />
-									Wind
-								</span>
-								<span className="tabular-nums">
-									{current.windDirection} {convertWindSpeed(current.windSpeed, windUnit)}
-								</span>
-							</div>
-						</>
-					) : (
-						<p role="status" className="py-8 text-center text-sm text-muted-foreground">
-							Current conditions unavailable.
-						</p>
-					)}
-					{type === 'simple' && sourceLabel && (
-						<p
-							className={cn(
-								'text-[10px]',
-								animatedBackground && current ? 'text-white/70' : 'text-muted-foreground'
-							)}
-						>
-							{sourceLabel}
-						</p>
-					)}
-				</CardContent>
-			</div>
-			{type !== 'simple' && (
-				<CardContent className="px-[var(--card-spacing,var(--wxcn-spacing))] pb-[var(--card-spacing,var(--wxcn-spacing))]">
-					{periods.length > 0 && (
-						<div className="divide-y">
-							{periods.map((period, index) => {
-								const icon = periodIcon(period);
-								return (
-									<div
-										key={`${period.startTime}-${index}`}
-										className={cn(
-											'grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 text-sm',
-											density === 'compact' ? 'py-2' : 'py-3'
-										)}
-									>
-										<div>
-											<p>{period.name}</p>
-											{type === 'detailed' && (
-												<p className="mt-1 text-xs leading-5 text-muted-foreground">
-													{period.detailedForecast}
-												</p>
-											)}
-										</div>
-										<ForecastIcon
-											name={icon}
-											iconSet={iconType}
-											className="size-4 text-muted-foreground"
-										/>
-										<span className="min-w-9 text-right tabular-nums">{temperature(period)}°</span>
-									</div>
-								);
-							})}
-						</div>
-					)}
-					{sourceLabel && <p className="mt-2 text-[10px] text-muted-foreground">{sourceLabel}</p>}
-				</CardContent>
-			)}
+				{(openDay, action, visible) => cardView(undefined, action, visible, openDay)}
+			</ForecastScreens>
 		</Card>
 	);
 }

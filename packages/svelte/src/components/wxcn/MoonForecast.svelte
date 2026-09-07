@@ -1,15 +1,18 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
+	import { onMount, type Snippet } from 'svelte';
 	import MoonDisc from './MoonDisc.svelte';
 	import * as Card from '../ui/card/index.js';
+	import ForecastScreens from './ForecastScreens.svelte';
+	import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 	import type {
 		ForecastType,
 		IconSet,
 		LocationInput,
 		MoonForecast as MoonData
 	} from '@wxcn/core/types.js';
-	import { sampleMoon } from '@wxcn/core/moon.js';
+	import { sampleMoon, getMoonForecast } from '@wxcn/core/moon.js';
 	let {
+		interactive = false,
 		timeZone,
 		type = 'summary',
 		size = 'default',
@@ -20,6 +23,7 @@
 		forecast = sampleMoon,
 		sourceLabel = ''
 	}: {
+		interactive?: boolean;
 		timeZone?: string;
 		type?: ForecastType;
 		size?: 'sm' | 'default' | 'lg';
@@ -34,34 +38,50 @@
 	onMount(() => {
 		visitorTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 	});
-	const displayTimeZone = $derived(timeZone ?? visitorTimeZone);
+	const displayTimeZone = $derived(timeZone ?? location.timeZone ?? visitorTimeZone);
 	const date = (v: string) =>
 		new Intl.DateTimeFormat('en-US', {
 			month: 'short',
 			day: 'numeric',
 			timeZone: displayTimeZone
 		}).format(new Date(v));
-	const phase = $derived(forecast.age / 29.530588853);
+	const days = $derived(
+		forecastDays(
+			Array.from({ length: 7 }, (_, index) => {
+				const value =
+					index === 0
+						? forecast
+						: getMoonForecast(new Date(Date.parse(forecast.date) + index * 86400000));
+				return {
+					time: Date.parse(value.date),
+					label: value.phaseName,
+					summary: `${value.illumination}% illuminated`,
+					details: `Moon age: ${value.age} days. Next full moon: ${date(value.nextFullMoon)}. Next new moon: ${date(value.nextNewMoon)}.`
+				};
+			}),
+			displayTimeZone
+		)
+	);
 </script>
 
-<Card.Root
-	style="container-type: inline-size"
-	size={size === 'sm' ? 'sm' : 'default'}
-	data-density={density}
-	data-card-size={size}
-	class={`min-w-0 overflow-hidden ${className}`}
->
+{#snippet cardView(day: ForecastDay | undefined, action: Snippet<[boolean]>)}
+	{@const view = day
+		? day.entries[0].time === Date.parse(forecast.date)
+			? forecast
+			: getMoonForecast(new Date(day.entries[0].time))
+		: forecast}
 	<Card.Header
-		><Card.Title>Moon phase</Card.Title><Card.Description>{location.label}</Card.Description
-		></Card.Header
+		><Card.Title>{day?.label ?? 'Moon phase'}</Card.Title><Card.Description
+			>{location.label}</Card.Description
+		>{@render action(false)}</Card.Header
 	>
 	<Card.Content class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}>
 		<div
 			class={`flex items-center gap-4 ${size === 'lg' ? 'flex-col rounded-lg bg-muted/20 p-5 text-center' : ''}`}
 		>
 			<MoonDisc
-				{phase}
-				label={`${forecast.phaseName}, ${forecast.illumination}% illuminated`}
+				phase={view.age / 29.530588853}
+				label={`${view.phaseName}, ${view.illumination}% illuminated`}
 				class={size === 'sm'
 					? 'size-16 shrink-0'
 					: size === 'lg'
@@ -73,30 +93,47 @@
 					style="font-size:clamp(1rem,6cqw,1.5rem)"
 					class={`font-medium tracking-tight ${size === 'sm' ? 'text-lg' : 'text-2xl'}`}
 				>
-					{forecast.phaseName}
+					{view.phaseName}
 				</p>
-				<p class="mt-2 text-sm text-muted-foreground">{forecast.illumination}% illuminated</p>
+				<p class="mt-2 text-sm text-muted-foreground">{view.illumination}% illuminated</p>
 			</div>
 		</div>
 		{#if type !== 'simple'}<dl class="moon-data divide-y text-sm">
 				<div class="flex justify-between gap-4 pb-3">
 					<dt class="text-muted-foreground">Moon age</dt>
-					<dd>{forecast.age} days</dd>
+					<dd>{view.age} days</dd>
 				</div>
 				<div class="flex justify-between gap-4 py-3">
 					<dt class="text-muted-foreground">Next full moon</dt>
-					<dd>{date(forecast.nextFullMoon)}</dd>
+					<dd>{date(view.nextFullMoon)}</dd>
 				</div>
 				<div class="flex justify-between gap-4 pt-3">
 					<dt class="text-muted-foreground">Next new moon</dt>
-					<dd>{date(forecast.nextNewMoon)}</dd>
+					<dd>{date(view.nextNewMoon)}</dd>
 				</div>
 			</dl>{/if}
 
 		{#if sourceLabel}<p class="text-[10px] text-muted-foreground">
-				{sourceLabel} · {date(forecast.date)}
+				{sourceLabel} · {date(view.date)}
 			</p>{/if}
 	</Card.Content>
+{/snippet}
+
+<Card.Root
+	style="container-type: inline-size"
+	size={size === 'sm' ? 'sm' : 'default'}
+	data-density={density}
+	data-card-size={size}
+	class={`relative isolate min-w-0 overflow-hidden ${className}`}
+>
+	<ForecastScreens {interactive} {days} title="Moon" {density} {sourceLabel} {iconType}>
+		{#snippet children(openDay, action, visible)}
+			{@render cardView(undefined, action)}
+		{/snippet}
+		{#snippet detail(day, action)}
+			{@render cardView(day, action)}
+		{/snippet}
+	</ForecastScreens>
 </Card.Root>
 
 <style>

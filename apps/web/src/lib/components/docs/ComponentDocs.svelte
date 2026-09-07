@@ -83,6 +83,28 @@
 				observations.
 			</p>
 		{/if}
+		<H3 id={`${item.name}-interaction`}>Interactive forecasts</H3>
+		<p>
+			Set <code>interactive</code> to enable navigation inside each card; it defaults to
+			<code>false</code>. Small and simple cards have a subtle View week action in the top-right
+			corner. Weather and tide cards that already display the forecast list open daily details
+			directly from each entry. Moon cards offer a weekly phase table.
+		</p>
+		<p>
+			Day details reuse the original card layout with the selected day's data, preserving its
+			dimensions without an internal scroll area. Week tables page through the available days when
+			the card is too small to show them all. Back and Escape return to the previous screen and
+			restore focus. Weather details use the selected day's animated background when <code
+				>animatedBackground</code
+			>
+			is enabled. ForecastDashboard forwards
+			<code>interactive</code> to all three cards.
+		</p>
+		<p>
+			Weather and tides show supplied periods only, up to seven days; missing days are not filled
+			in. Moon summaries use the existing lunar estimates anchored to the supplied forecast date.
+			Set <code>timeZone</code> or <code>location.timeZone</code> to group days in the local calendar.
+		</p>
 		<H3 id={`${item.name}-installation`}>Installation</H3>
 		<InstallTabs>
 			{#snippet cli()}<PMBlock

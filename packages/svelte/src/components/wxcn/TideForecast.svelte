@@ -1,10 +1,12 @@
 <script lang="ts">
-	import { onMount, type ComponentProps } from 'svelte';
+	import { onMount, type ComponentProps, type Snippet } from 'svelte';
 	import NumberFlow from '@number-flow/svelte';
 	import * as ChartUI from '../ui/chart/index.js';
 	import { Chart, Svg, Area } from 'layerchart';
 	import { curveMonotoneX } from 'd3-shape';
 	import * as Card from '../ui/card/index.js';
+	import ForecastScreens from './ForecastScreens.svelte';
+	import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 	import type {
 		ForecastType,
 		IconSet,
@@ -17,6 +19,7 @@
 	import { sampleTides, sampleTideSeries, sampleTideTime } from '@wxcn/core/tides.js';
 	import { tideState, tideTimestamp } from '@wxcn/core/tide-state.js';
 	let {
+		interactive = false,
 		timeZone,
 		type = 'summary',
 		size = 'default',
@@ -38,6 +41,7 @@
 		at,
 		sourceLabel = 'Sample tides'
 	}: {
+		interactive?: boolean;
 		timeZone?: string;
 		type?: ForecastType;
 		size?: 'sm' | 'default' | 'lg';
@@ -57,7 +61,7 @@
 	onMount(() => {
 		visitorTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 	});
-	const displayTimeZone = $derived(timeZone ?? visitorTimeZone);
+	const displayTimeZone = $derived(timeZone ?? location.timeZone ?? visitorTimeZone);
 	let clock = $state(Date.now());
 	onMount(() => {
 		clock = Date.now();
@@ -119,31 +123,87 @@
 			minute: '2-digit',
 			timeZone: displayTimeZone
 		}).format(tideTimestamp(p.time));
+	const days = $derived(
+		forecastDays(
+			tide.events
+				.filter((p) => tideTimestamp(p.time) >= now && tideTimestamp(p.time) < now + 7 * 86400000)
+				.map((p) => ({
+					time: tideTimestamp(p.time),
+					label: time(p.time),
+					summary: `${p.type === 'H' ? 'High' : 'Low'} tide · ${height(Number(p.height))} ${symbol}`,
+					details: `Predicted ${p.type === 'H' ? 'high' : 'low'} tide, ${height(Number(p.height))} ${symbol} above MLLW.`
+				})),
+			displayTimeZone
+		)
+	);
+
+	let dayChartContext = $state<ComponentProps<typeof Chart>['context']>();
+	function pointsForDay(day: ForecastDay) {
+		const key = new Intl.DateTimeFormat('en-CA', {
+			timeZone: displayTimeZone,
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit'
+		});
+		return tide.points.filter((point) => key.format(point.time) === day.key);
+	}
+	function dailyDomain(points: { time: number; height: number }[]) {
+		const values = points.map((point) => point.height);
+		if (!values.length) return [0, 1];
+		const lo = Math.min(...values),
+			hi = Math.max(...values),
+			padding = Math.max(0.15, (hi - lo) * 0.2);
+		return [lo - padding, hi + padding];
+	}
 </script>
 
-<Card.Root
-	style="container-type: inline-size"
-	size={size === 'sm' ? 'sm' : 'default'}
-	data-density={density}
-	data-card-size={size}
-	class={`min-w-0 overflow-hidden ${className}`}
->
+{#snippet cardView(
+	day: ForecastDay | undefined,
+	action: Snippet<[boolean]>,
+	openDay: (time: string, trigger: HTMLElement) => void
+)}
+	{@const events = day
+		? tide.events.filter((event) =>
+				day.entries.some((entry) => entry.time === tideTimestamp(event.time))
+			)
+		: predictions}
+	{@const viewNow = day ? day.entries[0].time : now}
+	{@const viewTide = day
+		? tideState(events, series ?? (isSample ? sampleTideSeries : []), null, viewNow)
+		: tide}
+	{@const viewChartData = day ? pointsForDay(day) : chartData}
+	{@const viewDomain = day ? dailyDomain(viewChartData) : domain}
+	{@const viewHovered = day
+		? (dayChartContext?.tooltip.data as { time: number; height: number } | undefined)
+		: hovered}
+	{@const viewDisplayedLevel = day ? (viewHovered?.height ?? viewTide.level) : displayedLevel}
+	{@const viewDisplayedTime = day ? (viewHovered?.time ?? viewNow) : displayedTime}
+	{@const viewTimeParts = day
+		? new Intl.DateTimeFormat('en-US', {
+				hour: 'numeric',
+				minute: '2-digit',
+				timeZone: displayTimeZone
+			}).formatToParts(viewDisplayedTime)
+		: timeParts}
+	{@const viewIndicatorTime = day ? viewDisplayedTime : indicatorTime}
+	{@const viewIndicatorLevel = day ? (viewHovered?.height ?? viewTide.predicted) : indicatorLevel}
 	<Card.Header
-		><Card.Title>Tides</Card.Title><Card.Description>{location.label}</Card.Description
-		></Card.Header
+		><Card.Title>{day?.label ?? 'Tides'}</Card.Title><Card.Description
+			>{location.label}</Card.Description
+		>{@render action(false)}</Card.Header
 	>
 	<Card.Content class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}>
-		{#if tide.events.length || tide.points.length}
-			<div class="flex flex-wrap items-end justify-between gap-3">
-				<div>
-					<p class="mb-1 text-xs text-muted-foreground">
-						{hovered
+		{#if viewTide.events.length || viewTide.points.length}
+			<div class={`flex items-end justify-between gap-3 ${day ? '' : 'flex-wrap'}`}>
+				<div class="min-w-0">
+					<p class={`mb-1 text-xs text-muted-foreground ${day ? 'truncate' : ''}`}>
+						{viewHovered
 							? 'Predicted water level'
-							: isSample
+							: !day && isSample
 								? 'Example water level'
-								: tide.observed
+								: viewTide.observed
 									? 'Current water level'
-									: tide.predicted !== null
+									: viewTide.predicted !== null
 										? 'Predicted water level'
 										: 'High/low predictions only'}
 					</p>
@@ -151,25 +211,25 @@
 						style="font-size:clamp(1.5rem,12cqw,2.5rem)"
 						class={`${size === 'sm' ? 'text-3xl' : 'text-4xl'} font-medium tracking-tight tabular-nums`}
 					>
-						{#if displayedLevel === null}—{:else}<NumberFlow
-								value={Number(height(displayedLevel))}
+						{#if viewDisplayedLevel === null}—{:else}<NumberFlow
+								value={Number(height(viewDisplayedLevel))}
 								format={{ minimumFractionDigits: 1, maximumFractionDigits: 1 }}
 							/>{/if}<span class="ml-1 text-sm text-muted-foreground">{symbol}</span>
 					</p>
 				</div>
 				<div class="text-right text-xs text-muted-foreground">
 					<p>
-						{hovered
+						{viewHovered
 							? 'Selected time'
-							: tide.next
-								? tide.next.type === 'H'
+							: viewTide.next
+								? viewTide.next.type === 'H'
 									? 'Rising toward high tide'
 									: 'Falling toward low tide'
 								: 'Tide outlook'}
 					</p>
 					<p class="mt-1 tabular-nums" data-slot="tide-time">
-						<span class="sr-only">{time(displayedTime)}</span><span aria-hidden="true"
-							>{#each timeParts as part}{#if part.type === 'hour' || part.type === 'minute'}<NumberFlow
+						<span class="sr-only">{time(viewDisplayedTime)}</span><span aria-hidden="true"
+							>{#each viewTimeParts as part}{#if part.type === 'hour' || part.type === 'minute'}<NumberFlow
 										value={Number(part.value)}
 										format={{
 											minimumIntegerDigits: part.type === 'minute' ? 2 : 1,
@@ -180,7 +240,7 @@
 					</p>
 				</div>
 			</div>
-			{#if chartData.length > 1}
+			{#if viewChartData.length > 1}
 				<ChartUI.Container
 					config={{ height: { label: 'Tide level', color: 'var(--chart-1)' } }}
 					class={`aspect-auto w-full ${size === 'sm' ? 'h-20' : size === 'lg' ? 'h-36' : 'h-28'}`}
@@ -188,11 +248,17 @@
 					aria-label="Tide prediction curve with predicted water level marker"
 				>
 					<Chart
-						bind:context={chartContext}
-						data={chartData}
+						bind:context={
+							() => (day ? dayChartContext : chartContext),
+							(value) => {
+								if (day) dayChartContext = value;
+								else chartContext = value;
+							}
+						}
+						data={viewChartData}
 						x="time"
 						y="height"
-						yDomain={domain}
+						yDomain={viewDomain}
 						series={[{ key: 'height', label: 'Tide level', color: 'var(--chart-1)' }]}
 						tooltipContext={{ mode: 'bisect-x' }}
 						padding={{ top: 8, right: 8, bottom: 4, left: 8 }}
@@ -210,10 +276,10 @@
 									}}
 									motion={{ type: 'tween', duration: 0 }}
 								/>
-								{#if indicatorLevel !== null && indicatorTime >= chartData[0].time && indicatorTime <= chartData[chartData.length - 1].time}
+								{#if viewIndicatorLevel !== null && viewIndicatorTime >= viewChartData[0].time && viewIndicatorTime <= viewChartData[viewChartData.length - 1].time}
 									<line
-										x1={context.xScale(indicatorTime)}
-										x2={context.xScale(indicatorTime)}
+										x1={context.xScale(viewIndicatorTime)}
+										x2={context.xScale(viewIndicatorTime)}
 										y1={0}
 										y2={context.height}
 										stroke="var(--muted-foreground)"
@@ -221,8 +287,8 @@
 									/>
 									<circle
 										data-slot="current-tide-marker"
-										cx={context.xScale(indicatorTime)}
-										cy={context.yScale(indicatorLevel)}
+										cx={context.xScale(viewIndicatorTime)}
+										cy={context.yScale(viewIndicatorLevel)}
 										r={4.5}
 										fill="var(--chart-1, var(--primary))"
 										stroke="var(--card)"
@@ -234,13 +300,13 @@
 					</Chart>
 				</ChartUI.Container>
 				<div class="-mt-2 flex justify-between text-[10px] text-muted-foreground">
-					<span>{time(chartData[0].time)}</span><span
-						>MLLW · {tide.points.length ? 'predicted curve' : 'extrema only'}</span
-					><span>{time(chartData.at(-1)!.time)}</span>
+					<span>{time(viewChartData[0].time)}</span><span
+						>MLLW · {viewTide.points.length ? 'predicted curve' : 'extrema only'}</span
+					><span>{time(viewChartData.at(-1)!.time)}</span>
 				</div>
 			{/if}
 			<div class="grid grid-cols-2 gap-3 border-t pt-3">
-				{#each [{ label: 'Previous', event: tide.previous }, { label: 'Next', event: tide.next }] as entry}
+				{#each [{ label: 'Previous', event: viewTide.previous }, { label: 'Next', event: viewTide.next }] as entry}
 					<div>
 						<p class="text-xs text-muted-foreground">
 							{entry.label}
@@ -258,12 +324,19 @@
 			</div>
 			{#if type !== 'simple'}
 				<div class="divide-y border-t">
-					{#each tide.events
-						.filter((p) => tideTimestamp(p.time) > now)
+					{#each viewTide.events
+						.filter((p) => tideTimestamp(p.time) > viewNow)
 						.slice(0, type === 'detailed' ? 6 : density === 'compact' ? 2 : 4) as event}<div
 							class={`flex justify-between gap-2 text-xs ${density === 'compact' ? 'py-2' : 'py-3'}`}
 						>
-							<span>{event.type === 'H' ? 'High tide' : 'Low tide'}</span><span
+							{#if interactive && !day}<button
+									type="button"
+									class="min-h-8 text-left underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
+									aria-label={`View tide details for ${dateTime(event)}`}
+									onclick={(e) =>
+										openDay(new Date(tideTimestamp(event.time)).toISOString(), e.currentTarget)}
+									>{event.type === 'H' ? 'High tide' : 'Low tide'}</button
+								>{:else}<span>{event.type === 'H' ? 'High tide' : 'Low tide'}</span>{/if}<span
 								class="ml-auto text-muted-foreground">{dateTime(event)}</span
 							><span class="tabular-nums">{height(Number(event.height))} {symbol}</span>
 						</div>{/each}
@@ -274,4 +347,29 @@
 			</p>{/if}
 		{#if sourceLabel}<p class="text-[10px] text-muted-foreground">{sourceLabel}</p>{/if}
 	</Card.Content>
+{/snippet}
+
+<Card.Root
+	style="container-type: inline-size"
+	size={size === 'sm' ? 'sm' : 'default'}
+	data-density={density}
+	data-card-size={size}
+	class={`relative isolate min-w-0 overflow-hidden ${className}`}
+>
+	<ForecastScreens
+		{interactive}
+		{days}
+		title="Tide"
+		{density}
+		{sourceLabel}
+		{iconType}
+		showWeek={size === 'sm' || type === 'simple'}
+	>
+		{#snippet children(openDay, action, visible)}
+			{@render cardView(undefined, action, openDay)}
+		{/snippet}
+		{#snippet detail(day, action)}
+			{@render cardView(day, action, () => {})}
+		{/snippet}
+	</ForecastScreens>
 </Card.Root>

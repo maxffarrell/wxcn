@@ -161,19 +161,18 @@ export function WeatherForecast({
 			)
 			.toSorted((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime));
 	}
+	function dayPeriods(day: ForecastDay) {
+		return forecast
+			.filter((period) => day.entries.some((entry) => entry.time === Date.parse(period.startTime)))
+			.toSorted((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime));
+	}
 	function cardView(
 		day: ForecastDay | undefined,
 		action: ForecastAction,
 		overviewVisible: boolean,
 		openDay: OpenForecastDay
 	) {
-		const displayedPeriods = day
-			? forecast
-					.filter((period) =>
-						day.entries.some((entry) => entry.time === Date.parse(period.startTime))
-					)
-					.toSorted((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime))
-			: periods;
+		const displayedPeriods = day ? dayPeriods(day) : periods;
 		const view = day
 			? (displayedPeriods.find((period) => period.isDaytime) ?? displayedPeriods[0])
 			: current;
@@ -416,6 +415,50 @@ export function WeatherForecast({
 				iconType={iconType}
 				showWeek={size === 'sm' || type === 'simple'}
 				flush
+				daySummary={(day) => {
+					const values = dayPeriods(day);
+					const daytime = values.find((period) => period.isDaytime);
+					const overnight = values.find((period) => !period.isDaytime);
+					const representative = daytime ?? overnight;
+					return (
+						<span className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_1.25rem_3rem_3rem] items-center gap-2">
+							<span className="truncate font-medium">{day.label}</span>
+							{representative ? (
+								<span
+									className="flex justify-center"
+									title={representative.shortForecast}
+									aria-label={representative.shortForecast}
+								>
+									<ForecastIcon
+										name={periodIcon(representative)}
+										iconSet={iconType}
+										className="size-4 text-muted-foreground"
+									/>
+								</span>
+							) : (
+								<span />
+							)}
+							<span
+								className="flex items-center justify-end gap-1 tabular-nums"
+								aria-label={daytime ? `High ${temperature(daytime)} degrees` : 'High unavailable'}
+							>
+								<ForecastIcon
+									name="arrowUp"
+									iconSet={iconType}
+									className="size-3 text-muted-foreground"
+								/>
+								{daytime ? `${temperature(daytime)}°` : '—'}
+							</span>
+							<span
+								className="flex items-center justify-end gap-1 text-muted-foreground tabular-nums"
+								aria-label={overnight ? `Low ${temperature(overnight)} degrees` : 'Low unavailable'}
+							>
+								<ForecastIcon name="arrowDown" iconSet={iconType} className="size-3" />
+								{overnight ? `${temperature(overnight)}°` : '—'}
+							</span>
+						</span>
+					);
+				}}
 				detail={(day, action) => (
 					<div
 						className={cn(

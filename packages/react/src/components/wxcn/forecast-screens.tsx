@@ -14,6 +14,7 @@ export interface ForecastScreensProps {
 	density: string;
 	sourceLabel: string;
 	summary?: (availableHeight: number) => ReactNode;
+	daySummary?: (day: ForecastDay) => ReactNode;
 	actionLabel?: string;
 	showWeek?: boolean;
 	iconType?: IconSet;
@@ -30,6 +31,7 @@ export function ForecastScreens({
 	days,
 	title,
 	summary,
+	daySummary,
 	actionLabel = 'View week',
 	showWeek = true,
 	iconType,
@@ -160,7 +162,7 @@ export function ForecastScreens({
 					aria-label={
 						active === 'day'
 							? `${selected?.label} ${title.toLowerCase()} forecast`
-							: `${title} week`
+							: `${title} • Week`
 					}
 					data-slot="forecast-screen"
 					onKeyDown={(event) => {
@@ -177,7 +179,7 @@ export function ForecastScreens({
 						<>
 							<CardHeader className="shrink-0">
 								<CardTitle className="truncate">
-									{summary ? 'Upcoming tides' : `${title} week`}
+									{summary ? 'Upcoming tides' : `${title} • Week`}
 								</CardTitle>
 								{backAction(false)}
 							</CardHeader>
@@ -187,7 +189,7 @@ export function ForecastScreens({
 										summary(availableHeight)
 									) : (
 										<div
-											className={`grid h-full content-start gap-x-3 ${availableHeight < days.length * 28 ? 'grid-cols-2' : 'grid-cols-1'}`}
+											className={`grid h-full content-start gap-x-3 ${!daySummary && availableHeight < days.length * 28 ? 'grid-cols-2' : 'grid-cols-1'}`}
 										>
 											{days.map((day) => (
 												<button
@@ -198,7 +200,7 @@ export function ForecastScreens({
 														height: Math.min(
 															28,
 															availableHeight /
-																(availableHeight < days.length * 28
+																(!daySummary && availableHeight < days.length * 28
 																	? Math.ceil(days.length / 2)
 																	: days.length)
 														)
@@ -207,13 +209,19 @@ export function ForecastScreens({
 													aria-label={`View details for ${day.label}`}
 													onClick={(event) => open('day', event.currentTarget, day.key)}
 												>
-													<span className="shrink-0 font-medium">{day.label}</span>
-													<span
-														className="truncate text-muted-foreground"
-														title={day.entries.map((entry) => entry.summary).join(' · ')}
-													>
-														{day.entries.map((entry) => entry.summary).join(' · ')}
-													</span>
+													{daySummary ? (
+														daySummary(day)
+													) : (
+														<>
+															<span className="shrink-0 font-medium">{day.label}</span>
+															<span
+																className="truncate text-muted-foreground"
+																title={day.entries.map((entry) => entry.summary).join(' · ')}
+															>
+																{day.entries.map((entry) => entry.summary).join(' · ')}
+															</span>
+														</>
+													)}
 												</button>
 											))}
 										</div>

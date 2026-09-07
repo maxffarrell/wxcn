@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import MoonDisc from './MoonDisc.svelte';
 	import * as Card from '../ui/card/index.js';
 	import type {
@@ -9,6 +10,7 @@
 	} from '@wxcn/core/types.js';
 	import { sampleMoon } from '@wxcn/core/moon.js';
 	let {
+		timeZone,
 		type = 'summary',
 		size = 'default',
 		density = 'comfortable',
@@ -18,6 +20,7 @@
 		forecast = sampleMoon,
 		sourceLabel = ''
 	}: {
+		timeZone?: string;
 		type?: ForecastType;
 		size?: 'sm' | 'default' | 'lg';
 		density?: 'compact' | 'comfortable';
@@ -27,11 +30,16 @@
 		forecast?: MoonData;
 		sourceLabel?: string;
 	} = $props();
+	let visitorTimeZone = $state('UTC');
+	onMount(() => {
+		visitorTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+	});
+	const displayTimeZone = $derived(timeZone ?? visitorTimeZone);
 	const date = (v: string) =>
 		new Intl.DateTimeFormat('en-US', {
 			month: 'short',
 			day: 'numeric',
-			timeZone: location.timeZone ?? 'UTC'
+			timeZone: displayTimeZone
 		}).format(new Date(v));
 	const phase = $derived(forecast.age / 29.530588853);
 </script>

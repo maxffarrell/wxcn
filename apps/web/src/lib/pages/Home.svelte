@@ -117,6 +117,7 @@
 			presetInput = '';
 		}
 	}
+	let visitorTimeZone = $state('UTC');
 	let codeOpen = $state(false),
 		ready = $state(false);
 	const item = $derived(
@@ -282,7 +283,7 @@
 					}
 				: { ...coords, label: 'No nearby coastal station' };
 			tideSource = data.station
-				? `NOAA · ${data.station.distanceKm} km from ${coords.latitude === location.latitude && coords.longitude === location.longitude ? (location.label ?? 'your location') : 'your location'} · UTC`
+				? `NOAA · ${data.station.distanceKm} km from ${coords.latitude === location.latitude && coords.longitude === location.longitude ? (location.label ?? 'your location') : 'your location'}`
 				: 'No coastal tide station available';
 		} catch {
 			if (request !== tideRequest) return;
@@ -347,6 +348,7 @@
 	onMount(() => {
 		const saved = decodePreset(page.url.searchParams.get('preset') ?? '');
 		if (saved) applyPreset(saved);
+		visitorTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 		ready = true;
 		moon = getMoonForecast(new Date());
 		useLocation();
@@ -417,7 +419,7 @@
 			series={tideSeries}
 			reading={tideReading}
 			location={tideLocation}
-			sourceLabel={tideSource}
+			sourceLabel={`${tideSource.replace(' · station time', '')} · ${visitorTimeZone}`}
 		/>{/if}
 {/snippet}
 <main
@@ -430,10 +432,8 @@
 			class={`preview-surface style-${style} relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl ring ring-foreground/10`}
 			style={previewStyle}
 		>
-			<div
-				class="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b bg-background px-3 py-2"
-			>
-				<nav class="flex gap-1" aria-label="Card collection">
+			<div class="flex shrink-0 flex-nowrap items-center gap-2 border-b bg-background px-3 py-2">
+				<nav class="flex min-w-0 flex-1 gap-1 overflow-x-auto" aria-label="Card collection">
 					{#each [{ value: 'all', label: 'All cards' }, { value: 'weather', label: 'Weather' }, { value: 'moon', label: 'Moon' }, { value: 'tides', label: 'Tides' }] as entry}<Button
 							size="sm"
 							variant={item === entry.value ? 'secondary' : 'ghost'}

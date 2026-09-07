@@ -11,6 +11,7 @@
 	} from '@wxcn/core/types.js';
 
 	let {
+		timeZone,
 		type = 'summary',
 		size = 'default',
 		density = 'comfortable',
@@ -30,6 +31,7 @@
 			timeZone: 'America/Chicago'
 		}
 	}: {
+		timeZone?: string;
 		type?: ForecastType;
 		size?: 'sm' | 'default' | 'lg';
 		density?: 'compact' | 'comfortable';
@@ -52,6 +54,7 @@
 	>
 		<div class="min-w-0 @min-[38rem]/dashboard:col-span-2 @min-[52rem]/dashboard:col-span-1">
 			<WeatherForecast
+				{timeZone}
 				{type}
 				{size}
 				{density}
@@ -65,7 +68,15 @@
 				{currentWeather}
 			/>
 		</div>
-		<TideForecast {type} {size} {density} unit={tideUnit} {iconType} location={tideLocation} />
-		<MoonForecast {type} {size} {density} {iconType} {location} />
+		<TideForecast
+			{timeZone}
+			{type}
+			{size}
+			{density}
+			unit={tideUnit}
+			{iconType}
+			location={tideLocation}
+		/>
+		<MoonForecast {timeZone} {type} {size} {density} {iconType} {location} />
 	</div>
 </div>

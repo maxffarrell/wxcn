@@ -46,8 +46,8 @@
 				<code>unit</code>.
 			</p>
 			<p>
-				Set <code>location.timeZone</code> for the local calendar day. The example uses both options with
-				sample observations.
+				Set <code>timeZone</code> for the local calendar day. The example uses both options with sample
+				observations.
 			</p>
 		{/if}
 		<H3 id={`${item.name}-installation`}>Installation</H3>

@@ -16,6 +16,7 @@
 	import { sampleWeather, sampleCurrentWeather, convertWindSpeed } from '@wxcn/core/weather.js';
 	import { weatherOutlook } from '@wxcn/core/weather-outlook.js';
 	let {
+		timeZone,
 		type = 'summary',
 		size = 'default',
 		density = 'comfortable',
@@ -37,6 +38,7 @@
 		windUnit = 'mph',
 		animatedBackground = false
 	}: {
+		timeZone?: string;
 		type?: ForecastType;
 		size?: 'sm' | 'default' | 'lg';
 		density?: 'compact' | 'comfortable';
@@ -53,6 +55,11 @@
 		windUnit?: 'mph' | 'km/h' | 'm/s' | 'knots';
 		animatedBackground?: boolean;
 	} = $props();
+	let visitorTimeZone = $state('UTC');
+	onMount(() => {
+		visitorTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+	});
+	const displayTimeZone = $derived(timeZone ?? visitorTimeZone);
 	let clock = $state(Date.now());
 	onMount(() => {
 		const timer = setInterval(() => {
@@ -64,9 +71,7 @@
 		at ?? (forecast === sampleWeather ? Date.parse(sampleCurrentWeather.observedAt) : clock)
 	);
 	const current = $derived(currentWeather);
-	const outlook = $derived(
-		weatherOutlook(current, forecast, unit, location.timeZone ?? 'UTC', effectiveTime)
-	);
+	const outlook = $derived(weatherOutlook(current, forecast, unit, displayTimeZone, effectiveTime));
 	const periods = $derived(
 		forecast.slice(0, type === 'detailed' ? 8 : density === 'compact' ? 3 : 5)
 	);

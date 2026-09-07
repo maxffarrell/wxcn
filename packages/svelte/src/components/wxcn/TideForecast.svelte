@@ -17,6 +17,7 @@
 	import { sampleTides, sampleTideSeries, sampleTideTime } from '@wxcn/core/tides.js';
 	import { tideState, tideTimestamp } from '@wxcn/core/tide-state.js';
 	let {
+		timeZone,
 		type = 'summary',
 		size = 'default',
 		density = 'comfortable',
@@ -35,8 +36,9 @@
 		series,
 		reading = null,
 		at,
-		sourceLabel = 'Sample tides · station time'
+		sourceLabel = 'Sample tides'
 	}: {
+		timeZone?: string;
 		type?: ForecastType;
 		size?: 'sm' | 'default' | 'lg';
 		density?: 'compact' | 'comfortable';
@@ -51,6 +53,11 @@
 		at?: number;
 		sourceLabel?: string;
 	} = $props();
+	let visitorTimeZone = $state('UTC');
+	onMount(() => {
+		visitorTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+	});
+	const displayTimeZone = $derived(timeZone ?? visitorTimeZone);
 	let clock = $state(Date.now());
 	onMount(() => {
 		clock = Date.now();
@@ -79,7 +86,7 @@
 		new Intl.DateTimeFormat('en-US', {
 			hour: 'numeric',
 			minute: '2-digit',
-			timeZone: location.timeZone ?? 'UTC'
+			timeZone: displayTimeZone
 		}).formatToParts(displayedTime)
 	);
 	const domain = $derived.by(() => {
@@ -95,7 +102,7 @@
 		new Intl.DateTimeFormat('en-US', {
 			hour: 'numeric',
 			minute: '2-digit',
-			timeZone: location.timeZone ?? 'UTC'
+			timeZone: displayTimeZone
 		}).format(typeof value === 'string' ? tideTimestamp(value) : value);
 	const dateTime = (p: TidePrediction) =>
 		new Intl.DateTimeFormat('en-US', {
@@ -103,7 +110,7 @@
 			day: 'numeric',
 			hour: 'numeric',
 			minute: '2-digit',
-			timeZone: location.timeZone ?? 'UTC'
+			timeZone: displayTimeZone
 		}).format(tideTimestamp(p.time));
 </script>
 

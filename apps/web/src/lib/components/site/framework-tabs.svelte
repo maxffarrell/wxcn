@@ -4,7 +4,7 @@
 </script>
 
 <div
-	class="inline-flex h-8 items-center gap-1 rounded-lg bg-muted p-1"
+	class="inline-flex h-8 shrink-0 items-center gap-1 rounded-lg bg-muted p-1"
 	role="tablist"
 	aria-label="Framework"
 >

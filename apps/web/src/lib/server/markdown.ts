@@ -17,7 +17,7 @@ export async function pageMarkdown(path: string, origin: string): Promise<string
 	if (path === '/docs/components') {
 		const { examples } = await load();
 		return (
-			'# Components\n\nTheme-aware weather, moon, and tide cards for shadcn-svelte.\n\n' +
+			'# Components\n\nTheme-aware weather, moon, and tide cards for shadcn-svelte.\n\n## Time zones\n\nCards default to the visitor browser time zone after hydration (UTC during SSR). Override with the optional IANA timeZone prop, for example timeZone="America/Chicago". ForecastDashboard forwards this prop to every card.\n\n' +
 			examples
 				.map((item) =>
 					[
@@ -27,7 +27,7 @@ export async function pageMarkdown(path: string, origin: string): Promise<string
 						'```svelte\n' + item.code + '\n```',
 						...(item.name === 'weather-forecast'
 							? [
-									'Pass currentWeather observations separately from forecast periods. showTemperatureTrend adds a sentence about today’s high or tonight’s low. Supply currentWeather.highToday to stop the rise sentence after the high has been reached. showHighLow independently displays arrows. Both default to false and respect unit. Set location.timeZone to the IANA time zone. Pass null when observations are unavailable.'
+									'Pass currentWeather observations separately from forecast periods. showTemperatureTrend adds a sentence about today’s high or tonight’s low. Supply currentWeather.highToday to stop the rise sentence after the high has been reached. showHighLow independently displays arrows. Both default to false and respect unit. Set timeZone to the IANA time zone. Pass null when observations are unavailable.'
 								]
 							: []),
 						'### Command installation',

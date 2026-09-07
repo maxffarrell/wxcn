@@ -33,7 +33,7 @@ try {
 	const chart = page.locator('.recharts-wrapper');
 	const box = await chart.boundingBox();
 	assert.ok(box);
-	await page.mouse.move(box.x + box.width * 0.65, box.y + box.height * 0.5);
+	await chart.hover({ position: { x: box.width * 0.65, y: box.height * 0.5 } });
 	await page.getByText('Selected time', { exact: true }).waitFor();
 	await page.getByText('Predicted water level', { exact: true }).waitFor();
 	assert.match(await page.locator('.recharts-tooltip-wrapper').innerText(), /\d+\.\d+\s*m/);

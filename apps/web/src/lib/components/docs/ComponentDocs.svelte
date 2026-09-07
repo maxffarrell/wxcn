@@ -35,9 +35,12 @@
 			<p>
 				Use <code>background</code> on WeatherForecast or ForecastDashboard:
 				<code>"none"</code> (default) keeps the plain card, <code>"realistic"</code>
-				animates the sky, <code>"dithered"</code> adds a fixed retro pixel pattern, and
-				<code>"gradient"</code> uses a still, condition-aware color gradient. Animated styles respect
-				reduced motion and pause offscreen.
+				animates the sky, <code>"dithered"</code> adds a fixed monochrome pixel pattern tinted by
+				the base color, and
+				<code>"gradient"</code> uses a still, condition-aware color gradient. Animated styles
+				respect reduced motion and pause offscreen. Dithered ink uses
+				<code>--weather-base-color</code>, falling back to your theme's
+				<code>--muted-foreground</code>.
 			</p>
 			<H3 id="weather-temperature-outlook">Current conditions and temperature outlook</H3>
 			<p>

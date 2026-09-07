@@ -2,4 +2,4 @@
 	import MoonForecast from '@wxcn/svelte/components/wxcn/MoonForecast.svelte';
 </script>
 
-<div class="w-full max-w-sm"><MoonForecast /></div>
+<div class="w-full max-w-sm"><MoonForecast interactive /></div>

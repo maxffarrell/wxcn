@@ -30,6 +30,12 @@ async function file(path, type, target) {
 	return { path, type, target, content };
 }
 const common = await Promise.all([
+	file('packages/core/src/forecast-days.ts', 'registry:lib', 'data/forecast-days.ts'),
+	file(
+		'packages/svelte/src/components/wxcn/ForecastScreens.svelte',
+		'registry:component',
+		'wxcn/ForecastScreens.svelte'
+	),
 	file('packages/core/src/types.ts', 'registry:lib', 'data/types.ts'),
 	file(
 		'packages/svelte/src/icons/forecast-icons.svelte',
@@ -43,21 +49,21 @@ const definitions = [
 		'WeatherForecast',
 		'weather',
 		'Weather forecast with optional atmospheric backgrounds.',
-		['card']
+		['card', 'button']
 	],
 	[
 		'moon-forecast',
 		'MoonForecast',
 		'moon',
 		'Lunar phase card with local cycle estimates.',
-		['card']
+		['card', 'button']
 	],
 	[
 		'tide-forecast',
 		'TideForecast',
 		'tides',
 		'Coastal tide predictions with a theme-aware chart.',
-		['card', 'chart']
+		['card', 'chart', 'button']
 	]
 ];
 const items = [];

@@ -11,6 +11,7 @@
 	} from '@wxcn/core/types.js';
 
 	let {
+		interactive = false,
 		timeZone,
 		type = 'summary',
 		size = 'default',
@@ -31,6 +32,7 @@
 			timeZone: 'America/Chicago'
 		}
 	}: {
+		interactive?: boolean;
 		timeZone?: string;
 		type?: ForecastType;
 		size?: 'sm' | 'default' | 'lg';
@@ -54,6 +56,7 @@
 	>
 		<div class="min-w-0 @min-[38rem]/dashboard:col-span-2 @min-[52rem]/dashboard:col-span-1">
 			<WeatherForecast
+				{interactive}
 				{timeZone}
 				{type}
 				{size}
@@ -69,6 +72,7 @@
 			/>
 		</div>
 		<TideForecast
+			{interactive}
 			{timeZone}
 			{type}
 			{size}
@@ -77,6 +81,6 @@
 			{iconType}
 			location={tideLocation}
 		/>
-		<MoonForecast {timeZone} {type} {size} {density} {iconType} {location} />
+		<MoonForecast {interactive} {timeZone} {type} {size} {density} {iconType} {location} />
 	</div>
 </div>

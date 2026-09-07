@@ -1,3 +1,4 @@
+import { tideState } from '@wxcn/core/tide-state.js';
 import { loadCurrentWeather } from './current-weather.ts';
 import type { LocationInput, TidePrediction, WeatherPeriod } from '@wxcn/core/types.js';
 export function coordinates(url: URL) {
@@ -65,7 +66,7 @@ export type Station = {
 	type?: string;
 	reference_id?: string;
 };
-export function nearestStation(location: LocationInput, stations: Station[], maxKm = 100) {
+function rankedStations(location: LocationInput, stations: Station[], maxKm = Infinity) {
 	const rad = (n: number) => (n * Math.PI) / 180;
 	const distance = (s: Station) => {
 		const dLat = rad(s.lat - location.latitude),
@@ -75,12 +76,14 @@ export function nearestStation(location: LocationInput, stations: Station[], max
 			Math.cos(rad(location.latitude)) * Math.cos(rad(s.lat)) * Math.sin(dLon / 2) ** 2;
 		return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0, 1 - a)));
 	};
-	return (
-		stations
-			.map((s) => ({ ...s, distance: distance(s) }))
-			.filter((s) => s.distance <= maxKm)
-			.sort((a, b) => a.distance - b.distance)[0] ?? null
-	);
+	return stations
+		.filter((s) => Number.isFinite(s.lat) && Number.isFinite(s.lng))
+		.map((s) => ({ ...s, distance: distance(s) }))
+		.filter((s) => s.distance <= maxKm)
+		.sort((a, b) => a.distance - b.distance);
+}
+export function nearestStation(location: LocationInput, stations: Station[], maxKm = 100) {
+	return rankedStations(location, stations, maxKm)[0] ?? null;
 }
 // For high/low-only stations, NOAA identifies the harmonic reference used to
 // produce their predictions. Use that related station only when it is nearby;
@@ -97,7 +100,12 @@ export function tideStation(location: LocationInput, stations: Station[]) {
 	);
 }
 const stationCaches = new WeakMap<typeof fetch, { expires: number; stations: Station[] }>();
-export async function loadTides(location: LocationInput, fetcher: typeof fetch = fetch) {
+export async function loadTides(
+	location: LocationInput,
+	fetcher: typeof fetch = fetch,
+	options: { nearestUsable?: boolean } = {}
+) {
+	const searchSignal = AbortSignal.timeout(22000);
 	let stationsCache = stationCaches.get(fetcher);
 	if (!stationsCache || stationsCache.expires < Date.now()) {
 		const response = await fetcher(
@@ -110,9 +118,57 @@ export async function loadTides(location: LocationInput, fetcher: typeof fetch =
 		stationsCache = { stations: data.stations, expires: Date.now() + 86400000 };
 		stationCaches.set(fetcher, stationsCache);
 	}
+	if (options.nearestUsable) {
+		const response = await fetcher(
+			'https://api.tidesandcurrents.noaa.gov/mdapi/prod/webapi/stations.json?type=waterlevels',
+			{ signal: searchSignal }
+		);
+		if (!response.ok) throw new Error('The tide station service is unavailable.');
+		const data = await response.json();
+		if (!Array.isArray(data.stations)) throw new Error('No water-level stations were returned.');
+		const active = new Set(
+			data.stations
+				.filter((s: { tidal?: boolean; greatlakes?: boolean }) => s.tidal === true && !s.greatlakes)
+				.map((s: Station) => s.id)
+		);
+		const candidates = rankedStations(
+			location,
+			stationsCache.stations.filter((s) => s.type === 'R' && active.has(s.id))
+		);
+		// Probe in distance order. Wait for each batch so response speed cannot select
+		// a farther station over a nearer station with complete, fresh data.
+		for (let i = 0; i < candidates.length && !searchSignal.aborted; i += 3) {
+			const results = await Promise.all(
+				candidates.slice(i, i + 3).map(async (station) => {
+					try {
+						const result = await stationTides(location, station, fetcher, searchSignal);
+						const state = tideState(result.predictions, result.series, result.reading, Date.now());
+						return state.observed && state.predicted !== null && state.previous && state.next
+							? result
+							: null;
+					} catch {
+						return null;
+					}
+				})
+			);
+			const result = results.find((result) => result !== null);
+			if (result) return result;
+		}
+		throw new Error(
+			'No station returned a fresh reading and complete tide predictions. Please retry.'
+		);
+	}
 	const station = tideStation(location, stationsCache.stations);
 	if (!station) return { station: null, predictions: [], series: [], reading: null };
 
+	return stationTides(location, station, fetcher, searchSignal);
+}
+async function stationTides(
+	location: LocationInput,
+	station: Station & { distance: number },
+	fetcher: typeof fetch,
+	searchSignal: AbortSignal
+) {
 	const date = new Date();
 	const begin = new Date(date.getTime() - 24 * 3600000)
 		.toISOString()
@@ -124,13 +180,15 @@ export async function loadTides(location: LocationInput, fetcher: typeof fetch =
 		url.search = new URLSearchParams({
 			application: 'wxcn',
 			datum: 'MLLW',
-			station: station!.id,
+			station: station.id,
 			time_zone: 'gmt',
 			units: 'english',
 			format: 'json',
 			...extra
 		}).toString();
-		const response = await fetcher(url, { signal: AbortSignal.timeout(12000) });
+		const response = await fetcher(url, {
+			signal: AbortSignal.any([searchSignal, AbortSignal.timeout(4000)])
+		});
 		if (!response.ok) throw new Error('Tide data is temporarily unavailable.');
 		return response.json();
 	}

@@ -351,7 +351,7 @@
 			{@const representative = daytime ?? overnight}
 			{@const high = weatherDayHigh(day.key, values, current, unit, displayTimeZone)}
 			<span
-				class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_1.25rem_3rem_3rem] items-center gap-2"
+				class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_1.5em_3.75em_3.75em] items-center gap-2"
 			>
 				<span class="truncate font-medium">{day.label}</span>
 				{#if representative}<span
@@ -361,22 +361,22 @@
 						><ForecastIcon
 							name={icon(representative)}
 							iconSet={iconType}
-							class="size-4 text-muted-foreground"
+							class="size-[1.4em] text-muted-foreground"
 						/></span
 					>{:else}<span></span>{/if}
 				<span
-					class="grid grid-cols-[0.75rem_minmax(0,1fr)] items-center gap-1 text-right tabular-nums"
+					class="grid grid-cols-[0.85em_minmax(0,1fr)] items-center gap-1 text-right tabular-nums"
 					aria-label={high !== null ? `High ${high} degrees` : 'High unavailable'}
 					><ForecastIcon
 						name="arrowUp"
 						iconSet={iconType}
-						class="size-3 text-muted-foreground"
+						class="size-[1em] text-muted-foreground"
 					/><span>{high !== null ? `${high}°` : '—'}</span></span
 				>
 				<span
-					class="grid grid-cols-[0.75rem_minmax(0,1fr)] items-center gap-1 text-right text-muted-foreground tabular-nums"
+					class="grid grid-cols-[0.85em_minmax(0,1fr)] items-center gap-1 text-right text-muted-foreground tabular-nums"
 					aria-label={overnight ? `Low ${temperature(overnight)} degrees` : 'Low unavailable'}
-					><ForecastIcon name="arrowDown" iconSet={iconType} class="size-3" /><span
+					><ForecastIcon name="arrowDown" iconSet={iconType} class="size-[1em]" /><span
 						>{overnight ? `${temperature(overnight)}°` : '—'}</span
 					></span
 				>

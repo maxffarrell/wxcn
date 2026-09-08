@@ -308,7 +308,7 @@ const TideView = defineComponent({
 													useGrouping: false
 												}
 											})
-										: part.value
+										: part.value.replace(/[\u00a0\u202f]/g, ' ')
 								)
 							)
 						])

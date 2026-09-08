@@ -385,7 +385,7 @@ export function TideForecast({
 														}}
 													/>
 												) : (
-													part.value
+													part.value.replace(/[\u00a0\u202f]/g, ' ')
 												)
 											)}
 										</span>

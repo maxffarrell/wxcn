@@ -176,3 +176,26 @@ test('legacy background values follow Svelte while those designs are disabled', 
 			/data-background-style=/
 		);
 });
+
+test('tide time markup is stable across server and browser ICU whitespace', () => {
+	const original = Intl.DateTimeFormat.prototype.formatToParts;
+	const render = (separator: string) => {
+		Intl.DateTimeFormat.prototype.formatToParts = function (value) {
+			return original
+				.call(this, value)
+				.map((part) =>
+					part.type === 'literal'
+						? { ...part, value: part.value.replace(/[ \u00a0\u202f]/g, separator) }
+						: part
+				);
+		};
+		return renderToString(<TideForecast />);
+	};
+	try {
+		const standard = render(' ');
+		assert.equal(render('\u202f'), standard);
+		assert.equal(render('\u00a0'), standard);
+	} finally {
+		Intl.DateTimeFormat.prototype.formatToParts = original;
+	}
+});

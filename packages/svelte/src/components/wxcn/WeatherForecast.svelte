@@ -19,7 +19,7 @@
 		WeatherBackground
 	} from '@wxcn/core/types.js';
 	import { sampleWeather, sampleCurrentWeather, convertWindSpeed } from '@wxcn/core/weather.js';
-	import { weatherOutlook } from '@wxcn/core/weather-outlook.js';
+	import { weatherOutlook, weatherDayHigh } from '@wxcn/core/weather-outlook.js';
 	let {
 		interactive = false,
 		timeZone,
@@ -341,6 +341,7 @@
 			{@const daytime = values.find((period) => period.isDaytime)}
 			{@const overnight = values.find((period) => !period.isDaytime)}
 			{@const representative = daytime ?? overnight}
+			{@const high = weatherDayHigh(day.key, values, current, unit, displayTimeZone)}
 			<span
 				class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_1.25rem_3rem_3rem] items-center gap-2"
 			>
@@ -356,20 +357,20 @@
 						/></span
 					>{:else}<span></span>{/if}
 				<span
-					class="flex items-center justify-end gap-1 tabular-nums"
-					aria-label={daytime ? `High ${temperature(daytime)} degrees` : 'High unavailable'}
+					class="grid grid-cols-[0.75rem_minmax(0,1fr)] items-center gap-1 text-right tabular-nums"
+					aria-label={high !== null ? `High ${high} degrees` : 'High unavailable'}
 					><ForecastIcon
 						name="arrowUp"
 						iconSet={iconType}
 						class="size-3 text-muted-foreground"
-					/>{daytime ? `${temperature(daytime)}°` : '—'}</span
+					/><span>{high !== null ? `${high}°` : '—'}</span></span
 				>
 				<span
-					class="flex items-center justify-end gap-1 text-muted-foreground tabular-nums"
+					class="grid grid-cols-[0.75rem_minmax(0,1fr)] items-center gap-1 text-right text-muted-foreground tabular-nums"
 					aria-label={overnight ? `Low ${temperature(overnight)} degrees` : 'Low unavailable'}
-					><ForecastIcon name="arrowDown" iconSet={iconType} class="size-3" />{overnight
-						? `${temperature(overnight)}°`
-						: '—'}</span
+					><ForecastIcon name="arrowDown" iconSet={iconType} class="size-3" /><span
+						>{overnight ? `${temperature(overnight)}°` : '—'}</span
+					></span
 				>
 			</span>
 		{/snippet}

@@ -43,7 +43,10 @@ await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
 
 async function file(path, content) {
 	await mkdir(join(directory, path, '..'), { recursive: true });
-	await writeFile(join(directory, path), typeof content === 'string' ? content : JSON.stringify(content));
+	await writeFile(
+		join(directory, path),
+		typeof content === 'string' ? content : JSON.stringify(content)
+	);
 }
 
 try {
@@ -69,7 +72,7 @@ try {
 			'vue-tsc': '^3.2.5'
 		}
 	});
-	await file('pnpm-workspace.yaml', "allowBuilds:\n  esbuild: true\n  vue-demi: true\n");
+	await file('pnpm-workspace.yaml', 'allowBuilds:\n  esbuild: true\n  vue-demi: true\n');
 	await file('components.json', {
 		$schema: 'https://shadcn-vue.com/schema.json',
 		style: 'new-york',
@@ -160,6 +163,7 @@ try {
 	await run(['install', '--no-frozen-lockfile']);
 	await run([
 		'dlx',
+		'--allow-build=vue-demi',
 		'shadcn-vue@2.8.2',
 		'add',
 		`http://127.0.0.1:${server.address().port}/r/vue/forecast-dashboard.json`,
@@ -174,7 +178,9 @@ try {
 	assert.doesNotMatch(icons, /ActivityIcon|CircleDashedIcon/);
 	await run(['check']);
 	await run(['build']);
-	console.log('Vue clean-consumer CLI install, custom aliases, icon transform, typecheck and build passed.');
+	console.log(
+		'Vue clean-consumer CLI install, custom aliases, icon transform, typecheck and build passed.'
+	);
 } finally {
 	server.close();
 	await rm(directory, { recursive: true, force: true });

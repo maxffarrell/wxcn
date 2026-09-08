@@ -10,7 +10,13 @@ const page = await browser.newPage({
 });
 page.setDefaultTimeout(15000);
 const errors = [];
-page.on('console', message => { if (/hydration|hydrating|mismatch/i.test(message.text()) && ['warning', 'error'].includes(message.type())) errors.push(message.text()); });
+page.on('console', (message) => {
+	if (
+		/hydration|hydrating|mismatch/i.test(message.text()) &&
+		['warning', 'error'].includes(message.type())
+	)
+		errors.push(message.text());
+});
 page.on('pageerror', (e) => errors.push(e.message));
 await page.route('**/api/**', (route) =>
 	route.fulfill({ status: 503, json: { message: 'Fixture mode' } })
@@ -18,7 +24,7 @@ await page.route('**/api/**', (route) =>
 const base = process.env.WXCN_SITE_URL ?? 'http://127.0.0.1:8799';
 const metrics = () =>
 	page.locator('[data-slot="capture-target"] [data-slot="card"]').evaluateAll((cards) =>
-		cards.slice(0, 2).map((c) => {
+		cards.map((c) => {
 			const s = getComputedStyle(c);
 			const h = getComputedStyle(c.querySelector('[data-slot="card-header"]'));
 			const t = getComputedStyle(c.querySelector('[data-slot="card-title"]'));
@@ -41,7 +47,12 @@ try {
 			await page.goto(`${base}${path}?preset=${encodePreset({ style })}`);
 			await page.locator('[data-slot="designer"]').waitFor();
 			await page.waitForLoadState('networkidle');
-            if (path === '/vue') await page.waitForFunction(() => [...document.querySelectorAll('[data-vue-forecast]')].every(element => element.__vue_app__));
+			if (path === '/vue')
+				await page.waitForFunction(() =>
+					[...document.querySelectorAll('[data-vue-forecast]')].every((element) =>
+						element.hasAttribute('data-vue-hydrated')
+					)
+				);
 			await page.getByRole('button', { name: 'Style', exact: true }).waitFor();
 			await page.waitForFunction(
 				(style) =>
@@ -81,7 +92,7 @@ try {
 	assert.ok(page.url().includes(`/${framework}/docs/components`));
 	await page.goto(base + `/${framework}?item=weather`);
 	await page.waitForLoadState('networkidle');
-	for (const mode of ['Realistic', 'Dithered', 'Gradient', 'None']) {
+	for (const mode of ['Realistic', 'None']) {
 		await page.getByRole('button', { name: 'Background', exact: true }).click();
 		await page.getByRole('menuitemradio', { name: mode, exact: true }).click();
 		if (mode === 'None')

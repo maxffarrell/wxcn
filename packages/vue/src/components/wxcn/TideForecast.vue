@@ -7,6 +7,7 @@ import {
 	onMounted,
 	ref,
 	type PropType,
+	type VNode,
 	type VNodeRef
 } from 'vue';
 import NumberFlow from '@number-flow/vue';
@@ -22,7 +23,7 @@ import type {
 	TideReading,
 	TideUnit
 } from '@wxcn/core/types.js';
-import ForecastIcon, { type IconSet } from '../../icons/ForecastIcon.vue';
+import type { IconSet } from '../../icons/ForecastIcon.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import ForecastScreens from './ForecastScreens.vue';
 
@@ -147,7 +148,11 @@ function domain(data: Point[], extra: number | null = null): [number, number] {
 }
 
 const TideView = defineComponent({
-	props: { day: Object as PropType<ForecastDay>, openDay: Function as PropType<OpenDay> },
+	props: {
+		day: Object as PropType<ForecastDay>,
+		openDay: Function as PropType<OpenDay>,
+		action: Function as PropType<() => VNode | null>
+	},
 	setup(p) {
 		const chartSize = ref({ width: 320, height: 112 });
 		let chartObserver: ResizeObserver | undefined;
@@ -260,7 +265,10 @@ const TideView = defineComponent({
 						h(
 							'p',
 							{
-								style: { fontSize: 'clamp(1.5rem, 12cqw, 2.5rem)' },
+								style:
+									props.size === 'sm'
+										? { fontSize: 'clamp(1.25rem, 8cqw, 1.875rem)', lineHeight: '1.1' }
+										: { fontSize: 'clamp(1.5rem, 12cqw, 2.5rem)' },
 								class: `${props.size === 'sm' ? 'text-3xl' : 'text-4xl'} font-medium tracking-tight tabular-nums`
 							},
 							[
@@ -317,7 +325,7 @@ const TideView = defineComponent({
 										ref: setChartElement,
 										viewBox: `0 0 ${W} ${H}`,
 										preserveAspectRatio: 'none',
-										class: `aspect-auto w-full overflow-visible ${props.size === 'sm' ? 'h-20' : props.size === 'lg' ? 'h-36' : 'h-28'}`,
+										class: `aspect-auto w-full overflow-visible ${props.size === 'sm' ? 'h-16' : props.size === 'lg' ? 'h-36' : 'h-28'}`,
 										role: 'img',
 										tabindex: 0,
 										'aria-label':
@@ -409,16 +417,33 @@ const TideView = defineComponent({
 										)
 									: null
 							]),
-							h('div', { class: '-mt-2 flex justify-between text-[10px] text-muted-foreground' }, [
-								h('span', time(data[0].time)),
-								h('span', `MLLW · ${viewTide.points.length ? 'predicted curve' : 'extrema only'}`),
-								h('span', time(data.at(-1)!.time))
-							])
+							h(
+								'div',
+								{
+									class: `flex justify-between gap-1 text-[10px] text-muted-foreground ${props.size === 'sm' ? '' : '-mt-2'}`
+								},
+								[
+									h('span', time(data[0].time)),
+									props.size !== 'sm'
+										? h(
+												'span',
+												`MLLW · ${viewTide.points.length ? 'predicted curve' : 'extrema only'}`
+											)
+										: null,
+									h('span', time(data.at(-1)!.time))
+								]
+							)
 						])
 					: null;
-			const previousNext = h(
+			const neighbors = h(
 				'div',
-				{ class: 'grid grid-cols-2 gap-3 border-t pt-3' },
+				{
+					'data-slot': 'tide-neighbors',
+					class:
+						props.size === 'sm'
+							? 'grid content-center gap-3'
+							: 'grid grid-cols-2 gap-3 border-t pt-3'
+				},
 				[
 					{ label: 'Previous', event: viewTide.previous },
 					{ label: 'Next', event: viewTide.next }
@@ -426,21 +451,45 @@ const TideView = defineComponent({
 					h('div', { key: caption }, [
 						h(
 							'p',
-							{ class: 'text-xs text-muted-foreground' },
+							{
+								class:
+									props.size === 'sm'
+										? 'text-[10px] text-muted-foreground'
+										: 'text-xs text-muted-foreground'
+							},
 							`${caption} ${event ? (event.type === 'H' ? 'high tide' : 'low tide') : 'tide'}`
 						),
 						h(
-							'p',
-							{ class: 'mt-1 text-sm font-medium tabular-nums' },
-							event ? time(event.time) : 'Unavailable'
-						),
-						event
-							? h(
+							'div',
+							{
+								class:
+									props.size === 'sm' ? 'mt-0.5 flex flex-wrap items-baseline gap-x-2' : 'contents'
+							},
+							[
+								h(
 									'p',
-									{ class: 'mt-1 text-xs text-muted-foreground' },
-									`${level(+event.height)} ${symbol.value}`
-								)
-							: null
+									{
+										class:
+											props.size === 'sm'
+												? 'text-xs font-medium tabular-nums'
+												: 'mt-1 text-sm font-medium tabular-nums'
+									},
+									event ? time(event.time) : 'Unavailable'
+								),
+								event
+									? h(
+											'p',
+											{
+												class:
+													props.size === 'sm'
+														? 'text-[10px] text-muted-foreground'
+														: 'mt-1 text-xs text-muted-foreground'
+											},
+											`${level(+event.height)} ${symbol.value}`
+										)
+									: null
+							]
+						)
 					])
 				)
 			);
@@ -457,26 +506,10 @@ const TideView = defineComponent({
 										'div',
 										{
 											key: `${e.time}-${e.type}`,
-											class: `flex justify-between gap-2 text-xs ${props.density === 'compact' ? 'py-2' : 'py-3'}`
+											class: `grid grid-cols-[auto_1fr_auto] items-center gap-3 text-xs ${props.density === 'compact' ? 'py-2' : 'py-3'}`
 										},
 										[
-											props.interactive && props.size !== 'lg' && !day
-												? h(
-														'button',
-														{
-															type: 'button',
-															class:
-																'min-h-8 text-left underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring',
-															'aria-label': `View tide details for ${dateTime(e.time)}`,
-															onClick: (v: MouseEvent) =>
-																p.openDay?.(
-																	new Date(tideTimestamp(e.time)).toISOString(),
-																	v.currentTarget as HTMLElement
-																)
-														},
-														e.type === 'H' ? 'High tide' : 'Low tide'
-													)
-												: h('span', e.type === 'H' ? 'High tide' : 'Low tide'),
+											h('span', e.type === 'H' ? 'High tide' : 'Low tide'),
 											h('span', { class: 'ml-auto text-muted-foreground' }, dateTime(e.time)),
 											h('span', { class: 'tabular-nums' }, `${level(+e.height)} ${symbol.value}`)
 										]
@@ -485,22 +518,46 @@ const TideView = defineComponent({
 						)
 					: null;
 			return [
-				h(CardHeader, null, {
-					default: () => [
-						h(CardTitle, null, { default: () => day?.label ?? 'Tides' }),
-						h(CardDescription, null, { default: () => props.location.label })
-					]
-				}),
+				h(
+					CardHeader,
+					{ class: props.size === 'sm' ? 'flex items-baseline justify-between gap-2' : undefined },
+					{
+						default: () => [
+							h(CardTitle, null, { default: () => day?.label ?? 'Tides' }),
+							h(CardDescription, null, { default: () => props.location.label }),
+							p.action?.()
+						]
+					}
+				),
 				h(
 					CardContent,
-					{ class: props.density === 'compact' ? 'grid gap-3' : 'grid gap-5' },
+					{
+						class: props.size === 'sm' || props.density === 'compact' ? 'grid gap-3' : 'grid gap-5'
+					},
 					{
 						default: () =>
 							viewTide.events.length || viewTide.points.length
 								? [
 										headline,
-										graph,
-										previousNext,
+										h(
+											'div',
+											{
+												'data-slot': 'tide-chart-layout',
+												class:
+													props.size === 'sm'
+														? 'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3'
+														: 'contents'
+											},
+											[
+												props.size === 'sm' ? neighbors : null,
+												h(
+													'div',
+													{ class: props.size === 'sm' ? 'grid min-w-0 gap-1' : 'contents' },
+													[graph]
+												)
+											]
+										),
+										props.size !== 'sm' ? neighbors : null,
 										list,
 										!day && props.sourceLabel
 											? h('p', { class: 'text-[10px] text-muted-foreground' }, props.sourceLabel)
@@ -550,7 +607,7 @@ const loading = computed(
 		>
 		<ForecastScreens
 			v-else
-			:interactive="interactive && size !== 'lg'"
+			:interactive="interactive"
 			:days="days"
 			title="Tide"
 			:density="density"
@@ -560,26 +617,39 @@ const loading = computed(
 			action-label="Upcoming tides"
 			has-summary
 		>
-			<template #overview="{ openDay }"><TideView :open-day="openDay" /></template
-			><template #detail="{ day }"><TideView :day="day" /></template>
+			<template #overview="{ openDay, action }"
+				><TideView :open-day="openDay" :action="action" /></template
+			><template #detail="{ day, action }"><TideView :day="day" :action="action" /></template>
 			<template #summary="{ height: availableHeight }"
-				><div class="divide-y" data-slot="upcoming-tides">
+				><div
+					class="grid h-full w-full overflow-y-auto"
+					:style="{ gridAutoRows: `minmax(${size === 'lg' ? 40 : 36}px, 1fr)` }"
+					data-slot="upcoming-tides"
+				>
 					<div
 						v-for="event in tide.events
 							.filter((e) => tideTimestamp(e.time) >= now)
-							.slice(0, Math.max(1, Math.floor(availableHeight / 32)))"
+							.slice(0, size === 'lg' ? 12 : Math.max(1, Math.floor(availableHeight / 36)))"
 						:key="`${event.time}-${event.type}`"
-						class="flex h-8 items-center justify-between gap-2 text-xs"
+						:class="[
+							'grid min-w-0 grid-cols-[auto_1fr_auto] items-center gap-3 border-b last:border-0',
+							size === 'lg' ? 'text-sm' : 'text-xs'
+						]"
 					>
-						<span class="flex shrink-0 items-center gap-1"
-							><ForecastIcon
-								:name="event.type === 'H' ? 'arrowUp' : 'arrowDown'"
-								:icon-set="iconType"
-								class="size-3"
-							/>{{ event.type === 'H' ? 'High' : 'Low' }}</span
-						><span class="truncate text-muted-foreground">{{ time(event.time) }}</span
-						><span class="shrink-0 tabular-nums">{{ level(+event.height) }} {{ symbol }}</span>
+						<span class="font-medium">{{ event.type === 'H' ? 'High tide' : 'Low tide' }}</span>
+						<time
+							:datetime="new Date(tideTimestamp(event.time)).toISOString()"
+							class="text-right text-muted-foreground"
+							>{{ dateTime(event.time) }}</time
+						>
+						<span class="text-right tabular-nums">{{ level(+event.height) }} {{ symbol }}</span>
 					</div>
+					<p
+						v-if="!tide.events.some((event) => tideTimestamp(event.time) >= now)"
+						class="py-4 text-sm text-muted-foreground"
+					>
+						No upcoming tide predictions available.
+					</p>
 				</div></template
 			>
 		</ForecastScreens>

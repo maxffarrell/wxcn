@@ -17,9 +17,9 @@ wxcn distributes editable source through each framework's native shadcn registry
 
 Install with `pnpm install`, then run `pnpm dev` from the repository root. Use Node.js 24 or later and the pnpm version declared in `package.json`.
 
-Run `pnpm check`, `pnpm test`, `pnpm test:react`, `pnpm lint`, `pnpm build`, `pnpm build:react`, and `pnpm test:consumer:react` before submitting changes. Registry JSON is generated: update source and run `pnpm registry:build` rather than editing generated files.
+Run `pnpm check`, `pnpm test`, `pnpm test:react`, `pnpm test:vue`, `pnpm lint`, `pnpm build`, `pnpm build:react`, `pnpm build:vue`, `pnpm test:consumer:react`, and `pnpm test:consumer:vue` before submitting changes. Registry JSON is generated: update source and run `pnpm registry:build` rather than editing generated files.
 
-Project type checks use TypeScript 7 and `svelte-check-native`. Astro’s checker still requires the TypeScript 6 JavaScript API, so its compatibility dependency is isolated in the website tooling; the native checker uses the root TypeScript 7 compiler for all Svelte sources and consumer checks. `tooling/check-svelte.mjs` preserves pnpm workspace dependency resolution in the native checker’s generated overlays.
+Project type checks use TypeScript 7 and `svelte-check-native`. Astro’s checker and `vue-tsc` still require the TypeScript 6 JavaScript API, so their compatibility dependencies are isolated in the website and Vue tooling; the native checker uses the root TypeScript 7 compiler for all Svelte sources and consumer checks. `tooling/check-svelte.mjs` preserves pnpm workspace dependency resolution in the native checker’s generated overlays.
 
 ## Adding a framework
 

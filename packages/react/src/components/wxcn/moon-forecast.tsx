@@ -5,7 +5,7 @@ import type { IconSet } from '../../icons/forecast-icons';
 
 import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 import type { ForecastType, LocationInput, MoonForecast as MoonData } from '@wxcn/core/types.js';
-import { getMoonForecast, sampleMoon } from '@wxcn/core/moon.js';
+import { getMoonForecast, getUpcomingMoonPhases, sampleMoon } from '@wxcn/core/moon.js';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { ForecastScreens } from './forecast-screens';
@@ -160,24 +160,22 @@ export function MoonForecast({
 			}).format(new Date(value)),
 		[displayTimeZone]
 	);
+	const phases = React.useMemo(
+		() => getUpcomingMoonPhases(new Date(forecast.date)),
+		[forecast.date]
+	);
 	const days = React.useMemo(
 		() =>
 			forecastDays(
-				Array.from({ length: 7 }, (_, index) => {
-					const value =
-						index === 0
-							? forecast
-							: getMoonForecast(new Date(Date.parse(forecast.date) + index * 86400000));
-					return {
-						time: Date.parse(value.date),
-						label: value.phaseName,
-						summary: `${value.illumination}% illuminated`,
-						details: `Moon age: ${value.age} days. Next full moon: ${date(value.nextFullMoon)}. Next new moon: ${date(value.nextNewMoon)}.`
-					};
-				}),
+				phases.map((value) => ({
+					time: Date.parse(value.date),
+					label: value.phaseName,
+					summary: `${value.illumination}% illuminated`,
+					details: ''
+				})),
 				displayTimeZone
 			),
-		[date, displayTimeZone, forecast]
+		[displayTimeZone, phases]
 	);
 
 	return (
@@ -200,6 +198,32 @@ export function MoonForecast({
 				title="Moon"
 				density={density}
 				sourceLabel={sourceLabel}
+				actionLabel="Next phases"
+				summaryTitle="Next phases"
+				summary={(availableHeight) => (
+					<div
+						className="grid h-full auto-rows-[minmax(32px,1fr)] overflow-y-auto"
+						data-slot="upcoming-moon-phases"
+					>
+						{phases.map((phase) => (
+							<div
+								key={phase.date}
+								className="flex min-h-0 items-center gap-3 border-b text-xs last:border-0"
+							>
+								<div
+									className="shrink-0"
+									style={{ width: Math.max(16, Math.min(32, availableHeight / 7 - 4)) }}
+								>
+									<MoonDisc phase={phase.phase} label={phase.phaseName} className="size-full" />
+								</div>
+								<span className="min-w-0 flex-1 font-medium">{phase.phaseName}</span>
+								<time dateTime={phase.date} className="shrink-0 text-muted-foreground">
+									{date(phase.date)}
+								</time>
+							</div>
+						))}
+					</div>
+				)}
 				detail={(day, action) => (
 					<MoonCardView
 						day={day}

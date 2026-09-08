@@ -42,7 +42,9 @@ ${Object.entries(vueIcons)
 `;
 
 async function file(path, type, registryPath) {
-	let content = path.endsWith('ForecastIcon.vue') ? iconSource : await readFile(new URL(path, root), 'utf8');
+	let content = path.endsWith('ForecastIcon.vue')
+		? iconSource
+		: await readFile(new URL(path, root), 'utf8');
 	content = content.replaceAll(/@wxcn\/core\/([\w-]+)\.js/g, `${libImport}$1`);
 	if (path.startsWith('packages/core/')) {
 		content = content.replaceAll(/from\s*(['"])\.\/([\w-]+)\.js\1/g, `from '${libImport}$2'`);
@@ -106,8 +108,26 @@ const definitions = [
 ];
 
 const items = [];
-for (const [name, component, description, helpers, components, registryDependencies] of definitions) {
+for (const [
+	name,
+	component,
+	description,
+	helpers,
+	components,
+	registryDependencies
+] of definitions) {
 	const files = [
+		...(name === 'weather-forecast'
+			? await Promise.all(
+					['cloud-texture', 'weather-scenes'].map((helper) =>
+						file(
+							`packages/vue/src/components/wxcn/${helper}.ts`,
+							'registry:component',
+							`registry/components/wxcn/${helper}.ts`
+						)
+					)
+				)
+			: []),
 		await file(
 			`packages/vue/src/components/wxcn/${component}.vue`,
 			'registry:component',
@@ -149,9 +169,9 @@ for (const [name, component, description, helpers, components, registryDependenc
 						'@lucide/vue',
 						'wxcn-lucide@npm:@lucide/vue@^1.42.0',
 						'@number-flow/vue@^0.5.2',
-                        'd3-shape@^3.2.0'
+						'd3-shape@^3.2.0'
 					],
-                    devDependencies: ['@types/d3-shape@^3.2.0']
+					devDependencies: ['@types/d3-shape@^3.2.0']
 				}
 			: {}),
 		files

@@ -11,7 +11,7 @@ import {
 	XAxis,
 	YAxis
 } from 'recharts';
-import { ForecastIcon, type IconSet } from '../../icons/forecast-icons';
+import type { IconSet } from '../../icons/forecast-icons';
 import { ForecastScreens, type ForecastAction, type OpenForecastDay } from './forecast-screens';
 import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 import type {
@@ -165,7 +165,7 @@ export function TideForecast({
 	}, [chartData, tide.level]);
 	const height = (value: number) => (value * (unit === 'meter' ? 0.3048 : 1)).toFixed(1);
 	const symbol = unit === 'meter' ? 'm' : 'ft';
-	const chartHeight = size === 'sm' ? 80 : size === 'lg' ? 144 : 112;
+	const chartHeight = size === 'sm' ? 64 : size === 'lg' ? 144 : 112;
 	const handleHover = useCallback((point: ChartPoint | null) => setHovered(point), []);
 	const handleDayHover = useCallback((point: ChartPoint | null) => setDayHovered(point), []);
 	const days = useMemo(
@@ -262,14 +262,69 @@ export function TideForecast({
 			minute: '2-digit',
 			timeZone: displayTimeZone
 		}).formatToParts(viewDisplayedTime);
+		const neighbors = (
+			<div
+				data-slot="tide-neighbors"
+				className={
+					size === 'sm' ? 'grid content-center gap-3' : 'grid grid-cols-2 gap-3 border-t pt-3'
+				}
+			>
+				{[
+					{ label: 'Previous', event: viewTide.previous },
+					{ label: 'Next', event: viewTide.next }
+				].map(({ label, event }) => (
+					<div key={label}>
+						<p
+							className={
+								size === 'sm'
+									? 'text-[10px] text-muted-foreground'
+									: 'text-xs text-muted-foreground'
+							}
+						>
+							{label} {event ? (event.type === 'H' ? 'high tide' : 'low tide') : 'tide'}
+						</p>
+						<div
+							className={
+								size === 'sm' ? 'mt-0.5 flex flex-wrap items-baseline gap-x-2' : 'contents'
+							}
+						>
+							<p
+								className={
+									size === 'sm'
+										? 'text-xs font-medium tabular-nums'
+										: 'mt-1 text-sm font-medium tabular-nums'
+								}
+							>
+								{event ? formatTime(event.time, displayTimeZone) : 'Unavailable'}
+							</p>
+							{event ? (
+								<p
+									className={
+										size === 'sm'
+											? 'text-[10px] text-muted-foreground'
+											: 'mt-1 text-xs text-muted-foreground'
+									}
+								>
+									{height(Number(event.height))} {symbol}
+								</p>
+							) : null}
+						</div>
+					</div>
+				))}
+			</div>
+		);
 		return (
 			<>
-				<CardHeader>
+				<CardHeader
+					className={size === 'sm' ? 'flex items-baseline justify-between gap-2' : undefined}
+				>
 					<CardTitle>{day?.label ?? 'Tides'}</CardTitle>
 					<CardDescription>{location.label}</CardDescription>
 					{action(false)}
 				</CardHeader>
-				<CardContent className={`${density === 'compact' ? 'grid gap-3' : 'grid gap-5'}`}>
+				<CardContent
+					className={`${size === 'sm' || density === 'compact' ? 'grid gap-3' : 'grid gap-5'}`}
+				>
 					{viewTide.events.length || viewTide.points.length ? (
 						<>
 							<div className={`flex items-end justify-between gap-3 ${day ? '' : 'flex-wrap'}`}>
@@ -286,7 +341,11 @@ export function TideForecast({
 														: 'High/low predictions only'}
 									</p>
 									<p
-										style={{ fontSize: 'clamp(1.5rem, 12cqw, 2.5rem)' }}
+										style={
+											size === 'sm'
+												? { fontSize: 'clamp(1.25rem, 8cqw, 1.875rem)', lineHeight: 1.1 }
+												: { fontSize: 'clamp(1.5rem, 12cqw, 2.5rem)' }
+										}
 										className={`${size === 'sm' ? 'text-3xl' : 'text-4xl'} font-medium tracking-tight tabular-nums`}
 									>
 										{viewDisplayedLevel === null ? (
@@ -333,111 +392,110 @@ export function TideForecast({
 									</p>
 								</div>
 							</div>
-							{viewChartData.length > 1 ? (
-								<>
-									<ChartContainer
-										config={chartConfig}
-										className={`aspect-auto w-full ${size === 'sm' ? 'h-20' : size === 'lg' ? 'h-36' : 'h-28'}`}
-										role="img"
-										aria-label="Tide prediction curve with predicted water level marker"
-									>
-										<AreaChart
-											data={viewChartData}
-											height={chartHeight}
-											margin={{ top: 8, right: 8, bottom: 4, left: 8 }}
-											onMouseMove={(state) => {
-												const index = Number(state.activeTooltipIndex);
-												const point = Number.isInteger(index) ? viewChartData[index] : undefined;
-												updateHover(point ?? null);
-											}}
-											onMouseLeave={() => updateHover(null)}
-										>
-											<CartesianGrid
-												vertical={false}
-												stroke="var(--border)"
-												strokeDasharray="3 4"
-											/>
-											<XAxis
-												dataKey="time"
-												type="number"
-												domain={[
-													viewChartData[0].time,
-													viewChartData[viewChartData.length - 1].time
-												]}
-												hide
-											/>
-											<YAxis hide domain={viewDomain} />
-											<ChartTooltip
-												content={
-													<TideTooltipContent
-														indicator="line"
-														onHover={updateHover}
-														displayTimeZone={displayTimeZone}
-														unit={unit}
-													/>
-												}
-											/>
-											<Area
-												type="monotone"
-												dataKey="height"
-												name="Tide level"
-												stroke="var(--chart-1)"
-												fill="var(--chart-1)"
-												fillOpacity={0.12}
-												strokeWidth={2}
-												isAnimationActive={false}
-											/>
-											{viewIndicatorLevel !== null &&
-											viewIndicatorTime >= viewChartData[0].time &&
-											viewIndicatorTime <= viewChartData[viewChartData.length - 1].time ? (
-												<>
-													<ReferenceLine
-														x={viewIndicatorTime}
-														stroke="var(--muted-foreground)"
+							<div
+								data-slot="tide-chart-layout"
+								className={
+									size === 'sm'
+										? 'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3'
+										: 'contents'
+								}
+							>
+								{size === 'sm' ? neighbors : null}
+								<div className={size === 'sm' ? 'grid min-w-0 gap-1' : 'contents'}>
+									{viewChartData.length > 1 ? (
+										<>
+											<ChartContainer
+												config={chartConfig}
+												className={`aspect-auto w-full ${size === 'sm' ? 'h-16' : size === 'lg' ? 'h-36' : 'h-28'}`}
+												role="img"
+												aria-label="Tide prediction curve with predicted water level marker"
+											>
+												<AreaChart
+													data={viewChartData}
+													height={chartHeight}
+													margin={{ top: 8, right: 8, bottom: 4, left: 8 }}
+													onMouseMove={(state) => {
+														const index = Number(state.activeTooltipIndex);
+														const point = Number.isInteger(index)
+															? viewChartData[index]
+															: undefined;
+														updateHover(point ?? null);
+													}}
+													onMouseLeave={() => updateHover(null)}
+												>
+													<CartesianGrid
+														vertical={false}
+														stroke="var(--border)"
 														strokeDasharray="3 4"
 													/>
-													<ReferenceDot
-														x={viewIndicatorTime}
-														y={viewIndicatorLevel}
-														r={4.5}
-														fill="var(--chart-1)"
-														stroke="var(--card)"
-														strokeWidth={2}
-														data-slot="current-tide-marker"
+													<XAxis
+														dataKey="time"
+														type="number"
+														domain={[
+															viewChartData[0].time,
+															viewChartData[viewChartData.length - 1].time
+														]}
+														hide
 													/>
-												</>
-											) : null}
-										</AreaChart>
-									</ChartContainer>
-									<div className="-mt-2 flex justify-between text-[10px] text-muted-foreground">
-										<span>{formatTime(viewChartData[0].time, displayTimeZone)}</span>
-										<span>
-											MLLW · {viewTide.points.length ? 'predicted curve' : 'extrema only'}
-										</span>
-										<span>{formatTime(viewChartData.at(-1)!.time, displayTimeZone)}</span>
-									</div>
-								</>
-							) : null}
-							<div className="grid grid-cols-2 gap-3 border-t pt-3">
-								{[
-									{ label: 'Previous', event: viewTide.previous },
-									{ label: 'Next', event: viewTide.next }
-								].map(({ label, event }) => (
-									<div key={label}>
-										<p className="text-xs text-muted-foreground">
-											{label} {event ? (event.type === 'H' ? 'high tide' : 'low tide') : 'tide'}
-										</p>
-										<p className="mt-1 text-sm font-medium tabular-nums">
-											{event ? formatTime(event.time, displayTimeZone) : 'Unavailable'}
-										</p>
-										{event ? (
-											<p className="mt-1 text-xs text-muted-foreground">
-												{height(Number(event.height))} {symbol}
-											</p>
-										) : null}
-									</div>
-								))}
+													<YAxis hide domain={viewDomain} />
+													<ChartTooltip
+														content={
+															<TideTooltipContent
+																indicator="line"
+																onHover={updateHover}
+																displayTimeZone={displayTimeZone}
+																unit={unit}
+															/>
+														}
+													/>
+													<Area
+														type="monotone"
+														dataKey="height"
+														name="Tide level"
+														stroke="var(--chart-1)"
+														fill="var(--chart-1)"
+														fillOpacity={0.12}
+														strokeWidth={2}
+														isAnimationActive={false}
+													/>
+													{viewIndicatorLevel !== null &&
+													viewIndicatorTime >= viewChartData[0].time &&
+													viewIndicatorTime <= viewChartData[viewChartData.length - 1].time ? (
+														<>
+															<ReferenceLine
+																x={viewIndicatorTime}
+																stroke="var(--muted-foreground)"
+																strokeDasharray="3 4"
+															/>
+															<ReferenceDot
+																x={viewIndicatorTime}
+																y={viewIndicatorLevel}
+																r={4.5}
+																fill="var(--chart-1)"
+																stroke="var(--card)"
+																strokeWidth={2}
+																data-slot="current-tide-marker"
+															/>
+														</>
+													) : null}
+												</AreaChart>
+											</ChartContainer>
+											<div
+												className={`flex justify-between gap-1 text-[10px] text-muted-foreground ${size === 'sm' ? '' : '-mt-2'}`}
+											>
+												<span>{formatTime(viewChartData[0].time, displayTimeZone)}</span>
+												{size !== 'sm' ? (
+													<span>
+														MLLW · {viewTide.points.length ? 'predicted curve' : 'extrema only'}
+													</span>
+												) : null}
+												<span>{formatTime(viewChartData.at(-1)!.time, displayTimeZone)}</span>
+											</div>
+										</>
+									) : null}
+								</div>
 							</div>
+							{size !== 'sm' ? neighbors : null}
 							{type !== 'simple' ? (
 								<div className="divide-y border-t">
 									{(viewTide.events as TidePrediction[])
@@ -446,25 +504,9 @@ export function TideForecast({
 										.map((event: TidePrediction) => (
 											<div
 												key={`${event.time}-${event.type}`}
-												className={`flex justify-between gap-2 text-xs ${density === 'compact' ? 'py-2' : 'py-3'}`}
+												className={`grid grid-cols-[auto_1fr_auto] items-center gap-3 text-xs ${density === 'compact' ? 'py-2' : 'py-3'}`}
 											>
-												{interactive && size !== 'lg' && !day ? (
-													<button
-														type="button"
-														className="min-h-8 text-left underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
-														aria-label={`View tide details for ${formatDateTime(event.time, displayTimeZone)}`}
-														onClick={(eventClick) =>
-															openDay(
-																new Date(tideTimestamp(event.time)).toISOString(),
-																eventClick.currentTarget
-															)
-														}
-													>
-														{event.type === 'H' ? 'High tide' : 'Low tide'}
-													</button>
-												) : (
-													<span>{event.type === 'H' ? 'High tide' : 'Low tide'}</span>
-												)}
+												<span>{event.type === 'H' ? 'High tide' : 'Low tide'}</span>
 												<span className="ml-auto text-muted-foreground">
 													{formatDateTime(event.time, displayTimeZone)}
 												</span>
@@ -488,34 +530,42 @@ export function TideForecast({
 			</>
 		);
 	}
-	const upcomingSummary = (availableHeight: number) => (
-		<div className="divide-y" data-slot="upcoming-tides">
-			{tide.events
-				.filter((event) => tideTimestamp(event.time) >= now)
-				.slice(0, Math.max(1, Math.floor(availableHeight / 32)))
-				.map((event) => (
-					<div
-						className="flex h-8 items-center justify-between gap-2 text-xs"
-						key={`${event.time}-${event.type}`}
-					>
-						<span className="flex shrink-0 items-center gap-1">
-							<ForecastIcon
-								name={event.type === 'H' ? 'arrowUp' : 'arrowDown'}
-								iconSet={iconType}
-								className="size-3"
-							/>
-							{event.type === 'H' ? 'High' : 'Low'}
-						</span>
-						<span className="truncate text-muted-foreground">
-							{formatTime(event.time, displayTimeZone)}
-						</span>
-						<span className="shrink-0 tabular-nums">
-							{height(Number(event.height))} {symbol}
-						</span>
-					</div>
-				))}
-		</div>
-	);
+	const upcomingSummary = (availableHeight: number) => {
+		const events = tide.events
+			.filter((event) => tideTimestamp(event.time) >= now)
+			.slice(0, size === 'lg' ? 12 : Math.max(1, Math.floor(availableHeight / 36)));
+		return (
+			<div
+				className="grid h-full w-full overflow-y-auto"
+				style={{ gridAutoRows: `minmax(${size === 'lg' ? 40 : 36}px, 1fr)` }}
+				data-slot="upcoming-tides"
+			>
+				{events.length ? (
+					events.map((event) => (
+						<div
+							className={`grid min-w-0 grid-cols-[auto_1fr_auto] items-center gap-3 border-b last:border-0 ${size === 'lg' ? 'text-sm' : 'text-xs'}`}
+							key={`${event.time}-${event.type}`}
+						>
+							<span className="font-medium">{event.type === 'H' ? 'High tide' : 'Low tide'}</span>
+							<time
+								dateTime={new Date(tideTimestamp(event.time)).toISOString()}
+								className="text-right text-muted-foreground"
+							>
+								{formatDateTime(event.time, displayTimeZone)}
+							</time>
+							<span className="text-right tabular-nums">
+								{height(Number(event.height))} {symbol}
+							</span>
+						</div>
+					))
+				) : (
+					<p className="py-4 text-sm text-muted-foreground">
+						No upcoming tide predictions available.
+					</p>
+				)}
+			</div>
+		);
+	};
 
 	return (
 		<Card
@@ -526,7 +576,7 @@ export function TideForecast({
 			className={`relative isolate min-w-0 overflow-hidden ${className}`}
 		>
 			<ForecastScreens
-				interactive={interactive && size !== 'lg'}
+				interactive={interactive}
 				days={days}
 				title="Tide"
 				density={density}

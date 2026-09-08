@@ -64,7 +64,7 @@ A forecast at a glance, a view of the lunar cycle, or the next turn of the tide.
 
 Explore a wide canvas of mixed cards, or open a component collection to compare its variants. Resize a preview to see its typography adapt. Switch colors, fonts, icons, density, and units; use **Shuffle** to explore, **Open** to load a shadcn-svelte preset, and **Get Code** to install a component.
 
-- **Native to your project.** Registry installation follows `components.json`, including aliases and Lucide, Tabler, Hugeicons, Phosphor, or Remix icons.
+- **Native to your project.** Registry installation follows `components.json`, including aliases and supported icon mappings. Svelte and React support Lucide, Tabler, Hugeicons, Phosphor, or Remix icons; Vue applies those mappings to navigation arrows while weather glyphs retain their canonical Lucide shapes.
 - **Light and dark, naturally.** Cards inherit your theme tokens. The registry adds no global theme or font.
 - **Motion with restraint.** Atmospheric backgrounds sit behind readable information. Rain and snow respect reduced motion; offscreen animations pause.
 - **Location-aware previews.** Browser location loads local US weather and coastal tides. Tides automatically use the nearest coastal station, including for inland visitors. Unavailable data stays clearly labeled.
@@ -88,7 +88,7 @@ React items use the `/r/react/<component>.json` endpoints and the same component
 
 Vue items use `/r/vue/<component>.json` with `shadcn-vue@latest` and install native Vue components using the same component names and shared data contracts. Weather glyphs retain their canonical Lucide shapes where shadcn-vue has no equivalent icon mapping; navigation arrows follow the configured icon library.
 
-The CLI resolves the required `card` and `badge` primitives from your configuration. Icon selection happens **at installation time**; the playground's icon picker lets you preview those choices.
+The CLI resolves the required `card` and `badge` primitives from your configuration. Supported icon mappings are applied **at installation time**; the playground's icon picker lets you preview those choices. Vue weather glyphs retain their canonical Lucide shapes.
 
 ### Compose a forecast
 
@@ -160,24 +160,29 @@ Sun and Moon positions, lunar illumination, and full/new moon dates are calculat
 
 Use the pnpm version pinned in [`package.json`](package.json) to install dependencies, then start the playground with `pnpm dev`.
 
-| Command               | Purpose                                                    |
-| --------------------- | ---------------------------------------------------------- |
-| `pnpm dev`            | Start the playground and local registry                    |
-| `pnpm check`          | Run Svelte and TypeScript checks                           |
-| `pnpm test`           | Verify registry transforms, data handling, and presets     |
-| `pnpm lint`           | Check formatting                                           |
-| `pnpm build`          | Regenerate the registry and build the site                 |
-| `pnpm registry:build` | Generate installable Svelte, React, and Vue registry files |
-| `pnpm dev:react`      | Start the standalone React/Vite preview harness            |
-| `pnpm test:react`     | Run React SSR and semantic component tests                 |
-| `pnpm build:react`    | Typecheck and build the React preview                      |
+| Command                    | Purpose                                                    |
+| -------------------------- | ---------------------------------------------------------- |
+| `pnpm dev`                 | Start the playground and local registry                    |
+| `pnpm check`               | Run Svelte, React, Vue, and TypeScript checks              |
+| `pnpm test`                | Verify registry transforms, data handling, and presets     |
+| `pnpm lint`                | Check formatting                                           |
+| `pnpm build`               | Regenerate the registry and build the site                 |
+| `pnpm registry:build`      | Generate installable Svelte, React, and Vue registry files |
+| `pnpm dev:react`           | Start the standalone React/Vite preview harness            |
+| `pnpm test:react`          | Run React SSR and semantic component tests                 |
+| `pnpm build:react`         | Typecheck and build the React preview                      |
+| `pnpm test:consumer:react` | Verify React registry installation in a clean consumer     |
+| `pnpm dev:vue`             | Start the standalone Vue/Vite preview harness              |
+| `pnpm test:vue`            | Run Vue semantic component tests                           |
+| `pnpm build:vue`           | Typecheck and build the Vue preview                        |
+| `pnpm test:consumer:vue`   | Verify Vue registry installation in a clean consumer       |
 
-Component source lives in [`packages/svelte/src/components/wxcn`](packages/svelte/src/components/wxcn) and [`packages/react/src/components/wxcn`](packages/react/src/components/wxcn), with shared data and calculations in [`packages/core`](packages/core). [`tooling/registry/build.mjs`](tooling/registry/build.mjs) generates both installable registries from that source. For registry-only iteration, use the `registry:build` package script before testing an install.
+Component source lives in [`packages/svelte/src/components/wxcn`](packages/svelte/src/components/wxcn), [`packages/react/src/components/wxcn`](packages/react/src/components/wxcn), and [`packages/vue/src/components/wxcn`](packages/vue/src/components/wxcn), with shared data and calculations in [`packages/core`](packages/core). [`tooling/registry/build.mjs`](tooling/registry/build.mjs) generates all three installable registries from that source. For registry-only iteration, use the `registry:build` package script before testing an install.
 
 <details>
 <summary>About playground presets</summary>
 
-Presets use the native `shadcn-svelte/preset` encoder and settings, so the same code produces the same theme in both projects. Units and weather conditions remain separate playground controls. Load a code from shadcn-svelte with **Open**.
+The Svelte playground uses the native `shadcn-svelte/preset` encoder and can open codes from shadcn-svelte. React uses its native shadcn preset codec. Vue uses the wxcn designer because matching shadcn-vue preset-code compatibility has not been verified. Units and weather conditions remain separate playground controls.
 
 </details>
 

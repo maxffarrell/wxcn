@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
-import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
+import { forecastDayNoon, forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 import { sampleWeather, sampleCurrentWeather, convertWindSpeed } from '@wxcn/core/weather.js';
-import { weatherOutlook } from '@wxcn/core/weather-outlook.js';
+import { weatherDayHigh, weatherOutlook } from '@wxcn/core/weather-outlook.js';
 import { getSkyState } from '@wxcn/core/sky.js';
 import type {
 	ForecastType,
@@ -16,7 +16,6 @@ import type { IconSet, IconName } from '../../icons/ForecastIcon.vue';
 import ForecastIcon from '../../icons/ForecastIcon.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import ForecastScreens from './ForecastScreens.vue';
-import WeatherGradientBackground from './WeatherGradientBackground.vue';
 import WeatherShaderBackground, { type WeatherShaderMode } from './WeatherShaderBackground.vue';
 const props = withDefaults(
 	defineProps<{
@@ -69,7 +68,7 @@ onMounted(() => {
 });
 onBeforeUnmount(() => clearInterval(timer));
 const zone = computed(() => props.timeZone ?? props.location.timeZone ?? visitor.value),
-	current = computed(() =>
+	rawCurrent = computed(() =>
 		props.currentWeather === undefined
 			? props.forecast === sampleWeather
 				? sampleCurrentWeather
@@ -86,7 +85,12 @@ const zone = computed(() => props.timeZone ?? props.location.timeZone ?? visitor
 				? Date.parse(sampleCurrentWeather.observedAt)
 				: (clock.value ?? 0))
 	),
-	sky = computed(() => getSkyState(props.location.latitude, props.location.longitude, now.value));
+	sky = computed(() => getSkyState(props.location.latitude, props.location.longitude, now.value)),
+	current = computed(() =>
+		rawCurrent.value
+			? { ...rawCurrent.value, isDaytime: sky.value?.isDaytime ?? rawCurrent.value.isDaytime }
+			: rawCurrent.value
+	);
 const temp = (p: WeatherPeriod) =>
 	Math.round(
 		props.unit === 'celsius' && p.temperatureUnit === 'F'
@@ -154,167 +158,265 @@ function dayHours(d: ForecastDay) {
 		.filter((p) => key.format(new Date(p.startTime)) === d.key)
 		.sort((a, b) => Date.parse(a.startTime) - Date.parse(b.startTime));
 }
+function heroPeriod(d: ForecastDay) {
+	const values = dayPeriods(d);
+	return values.find((p) => p.isDaytime) ?? values[0];
+}
+function representative(d: ForecastDay) {
+	const values = dayPeriods(d);
+	return values.find((p) => p.isDaytime) ?? values.find((p) => !p.isDaytime);
+}
+function dayHigh(d: ForecastDay) {
+	return weatherDayHigh(d.key, dayPeriods(d), current.value, props.unit, zone.value);
+}
 import { defineComponent, h } from 'vue';
 const WeatherView = defineComponent({
-	props: { day: Object, openDay: Function, visible: Boolean },
+	props: { day: Object, openDay: Function, visible: Boolean, action: Function },
 	setup(p) {
 		return () => {
 			const day = p.day as ForecastDay | undefined,
 				shown = day ? dayPeriods(day) : periods.value,
-				view = day ? (shown.find((x) => x.isDaytime) ?? shown[0]) : current.value,
+				view = day ? heroPeriod(day) : current.value,
 				hours = day ? dayHours(day) : [],
 				viewSky =
 					day && view
 						? getSkyState(
 								props.location.latitude,
 								props.location.longitude,
-								Date.parse(view.startTime)
+								forecastDayNoon(day.key, zone.value)
 							)
-						: sky.value;
+						: sky.value,
+				skyMode = view
+					? condition(day && viewSky ? { ...view, isDaytime: viewSky.isDaytime } : view)
+					: 'clear';
 			return [
-				h('div', { class: 'relative isolate overflow-hidden' }, [
-					props.background !== 'none' && view
-						? h('div', { class: 'pointer-events-none absolute inset-0 -z-10' }, [
-								props.background === 'gradient'
-									? h(WeatherGradientBackground, { mode: condition(view), sky: viewSky })
-									: h(WeatherShaderBackground, {
-											mode: condition(view),
-											sky: viewSky,
-											paused: !p.visible,
-											dithered: props.background === 'dithered'
-										})
+				h(
+					'div',
+					{
+						class: [
+							day ? 'contents' : 'relative isolate overflow-hidden',
+							props.background === 'realistic' && view ? 'text-white' : 'text-card-foreground'
+						]
+					},
+					[
+						props.background === 'realistic' && view
+							? [
+									h(
+										'div',
+										{ class: 'pointer-events-none absolute inset-0 -z-10', 'aria-hidden': 'true' },
+										[
+											h(WeatherShaderBackground, {
+												mode: skyMode,
+												sky: viewSky,
+												paused: !p.visible
+											})
+										]
+									),
+									h('div', {
+										class:
+											'pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-black/35 via-black/15 to-black/55',
+										'aria-hidden': 'true'
+									})
+								]
+							: null,
+						h(
+							CardHeader,
+							{
+								class: 'relative pt-(--card-spacing)'
+							},
+							{
+								default: () => [
+									h(
+										CardTitle,
+										{ class: 'min-w-0 truncate' },
+										{ default: () => day?.label ?? 'Weather' }
+									),
+									h(
+										CardDescription,
+										{
+											class: [
+												'truncate',
+												props.background === 'realistic' && view ? 'text-white/80' : ''
+											]
+										},
+										{ default: () => props.location.label ?? 'Local forecast' }
+									),
+									p.action?.()
+								]
+							}
+						),
+						h(
+							CardContent,
+							{ class: 'relative grid min-w-0 shrink-0 grid-cols-1 gap-5 py-(--card-spacing)' },
+							{
+								default: () =>
+									view
+										? [
+												h('div', { class: 'min-w-0' }, [
+													h(
+														'p',
+														{
+															class: [
+																'mb-2 text-xs',
+																props.background === 'realistic'
+																	? 'text-white/75'
+																	: 'text-muted-foreground'
+															]
+														},
+														day ? (view.isDaytime ? 'Daytime' : 'Overnight') : 'Now'
+													),
+													h(
+														'p',
+														{
+															style: { fontSize: 'clamp(2.5rem,18cqw,5rem)' },
+															class: 'leading-none font-medium tracking-tighter tabular-nums'
+														},
+														[`${temp(view)}`, h('span', { class: 'align-top text-2xl' }, '°')]
+													),
+													h(
+														'p',
+														{
+															class: 'mt-3 line-clamp-2 min-h-10 text-sm wrap-break-word',
+															title: day ? view.shortForecast : undefined
+														},
+														view.shortForecast
+													),
+													!day && props.showTemperatureTrend && outlook.value.trend
+														? h(
+																'p',
+																{ class: 'mt-2 text-sm', 'data-slot': 'temperature-trend' },
+																outlook.value.trend
+															)
+														: null,
+													!day &&
+													props.showHighLow &&
+													(outlook.value.high !== null || outlook.value.low !== null)
+														? h(
+																'div',
+																{
+																	class: 'mt-3 flex gap-4 text-sm tabular-nums',
+																	'data-slot': 'temperature-range'
+																},
+																[
+																	outlook.value.high !== null
+																		? h(
+																				'span',
+																				{ 'aria-label': `High ${outlook.value.high} degrees` },
+																				[
+																					h(ForecastIcon, {
+																						name: 'arrowUp',
+																						iconSet: props.iconType,
+																						class: 'inline size-3.5'
+																					}),
+																					` ${outlook.value.high}°`
+																				]
+																			)
+																		: null,
+																	outlook.value.low !== null
+																		? h(
+																				'span',
+																				{ 'aria-label': `Low ${outlook.value.low} degrees` },
+																				[
+																					h(ForecastIcon, {
+																						name: 'arrowDown',
+																						iconSet: props.iconType,
+																						class: 'inline size-3.5'
+																					}),
+																					` ${outlook.value.low}°`
+																				]
+																			)
+																		: null
+																]
+															)
+														: null
 												]),
-											!day && props.type === 'simple' && source.value
-												? h('p', { class: 'mt-2 text-[10px] text-muted-foreground' }, source.value)
-												: null
-						: null,
-					h(
-						CardHeader,
-						{
-							class:
-								'relative px-[var(--card-spacing,var(--wxcn-spacing))] pt-[var(--card-spacing,var(--wxcn-spacing))]'
-						},
-						{
-							default: () => [
-								h(CardTitle, null, { default: () => day?.label ?? 'Weather' }),
-								h(
-									CardDescription,
-									{ class: props.background !== 'none' ? 'text-white/80' : '' },
-									{ default: () => props.location.label ?? 'Local forecast' }
-								)
-							]
-						}
-					),
-					h(
-						CardContent,
-						{ class: 'relative grid gap-5 py-[var(--wxcn-spacing)]' },
-						{
-							default: () =>
-								view
-									? [
-											h('div', null, [
 												h(
-													'p',
-													{ class: 'mb-2 text-xs opacity-75' },
-													day ? (view.isDaytime ? 'Daytime' : 'Overnight') : 'Now'
+													'div',
+													{ class: 'flex flex-wrap items-center justify-between gap-3 text-xs' },
+													[
+														h('span', { class: 'flex items-center gap-2 opacity-80' }, [
+															h(ForecastIcon, {
+																name: 'wind',
+																iconSet: props.iconType,
+																class: 'size-4'
+															}),
+															'Wind'
+														]),
+														h(
+															'span',
+															null,
+															`${view.windDirection} ${convertWindSpeed(view.windSpeed, props.windUnit)}`
+														)
+													]
 												),
-												h(
-													'p',
-													{
-														style: { fontSize: 'clamp(2.5rem,18cqw,5rem)' },
-														class: 'leading-none font-medium tracking-tighter tabular-nums'
-													},
-													[`${temp(view)}`, h('span', { class: 'align-top text-2xl' }, '°')]
-												),
-												h('p', { class: 'mt-3 text-sm' }, view.shortForecast),
-												!day && props.showTemperatureTrend && outlook.value.trend
+												!day && props.type === 'simple' && source.value
 													? h(
 															'p',
-															{ class: 'mt-2 text-sm', 'data-slot': 'temperature-trend' },
-															outlook.value.trend
-														)
-													: null,
-												!day &&
-												props.showHighLow &&
-												(outlook.value.high !== null || outlook.value.low !== null)
-													? h(
-															'div',
 															{
-																class: 'mt-3 flex gap-4 text-sm tabular-nums',
-																'data-slot': 'temperature-range'
+																class: [
+																	'text-[10px]',
+																	props.background === 'realistic' && view
+																		? 'text-white/70'
+																		: 'text-muted-foreground'
+																]
 															},
-															[
-																outlook.value.high !== null
-																	? h(
-																			'span',
-																			{ 'aria-label': `High ${outlook.value.high} degrees` },
-																			`↑ ${outlook.value.high}°`
-																		)
-																	: null,
-																outlook.value.low !== null
-																	? h(
-																			'span',
-																			{ 'aria-label': `Low ${outlook.value.low} degrees` },
-																			`↓ ${outlook.value.low}°`
-																		)
-																	: null
-															]
+															source.value
 														)
 													: null
-											]),
-											h('div', { class: 'flex justify-between text-xs' }, [
-												h('span', { class: 'flex gap-2' }, [
-													h(ForecastIcon, {
-														name: 'wind',
-														iconSet: props.iconType,
-														class: 'size-4'
-													}),
-													'Wind'
-												]),
-												h(
-													'span',
-													null,
-													`${view.windDirection} ${convertWindSpeed(view.windSpeed, props.windUnit)}`
-												)
-											])
-										]
-									: h('p', { role: 'status' }, 'Current conditions unavailable.')
-						}
-					)
-				]),
+											]
+										: h('p', { role: 'status' }, 'Current conditions unavailable.')
+							}
+						)
+					]
+				),
 				day && props.size === 'lg' && props.type !== 'simple' && hours.length
 					? h(
 							CardContent,
-							{ class: 'relative min-h-0 flex-1 pb-[var(--wxcn-spacing)]' },
+							{ class: 'relative flex min-h-0 flex-1 flex-col pb-[var(--wxcn-spacing)]' },
 							{
 								default: () => [
-									h('p', { class: 'mb-3 text-xs font-medium' }, 'Hourly forecast'),
+									h('p', { class: 'mb-3 shrink-0 text-base font-medium' }, 'Hourly forecast'),
 									h(
 										'div',
-										{ class: 'grid grid-cols-3 gap-x-4 gap-y-2', 'data-slot': 'hourly-forecast' },
-										hours.map((hour) =>
-											h(
-												'div',
-												{
-													class: 'flex min-w-0 items-center justify-between gap-1 text-xs',
-													title: hour.shortForecast
-												},
-												[
-													h(
-														'span',
-														{ class: 'opacity-75' },
-														new Intl.DateTimeFormat('en-US', {
-															timeZone: zone.value,
-															hour: 'numeric'
-														}).format(new Date(hour.startTime))
-													),
-													h(ForecastIcon, {
-														name: icon(hour),
-														iconSet: props.iconType,
-														class: 'size-3.5 shrink-0'
-													}),
-													h('span', { class: 'tabular-nums' }, `${temp(hour)}°`)
-												]
+										{
+											class: 'min-h-0 flex-1 overflow-y-auto overscroll-contain',
+											tabindex: 0,
+											role: 'region',
+											'aria-label': 'Hourly forecast',
+											'data-slot': 'hourly-forecast'
+										},
+										h(
+											'div',
+											{ class: 'grid min-h-full auto-rows-[minmax(3.5rem,1fr)] grid-cols-1' },
+											hours.map((hour) =>
+												h(
+													'div',
+													{
+														class:
+															'grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-current/15 text-lg last:border-0',
+														title: hour.shortForecast
+													},
+													[
+														h(
+															'span',
+															{ class: 'opacity-75' },
+															new Intl.DateTimeFormat('en-US', {
+																timeZone: zone.value,
+																hour: 'numeric'
+															}).format(new Date(hour.startTime))
+														),
+														h(ForecastIcon, {
+															name: icon(hour),
+															iconSet: props.iconType,
+															class: 'size-6 shrink-0'
+														}),
+														h(
+															'span',
+															{ class: 'text-right font-medium tabular-nums' },
+															`${temp(hour)}°`
+														)
+													]
+												)
 											)
 										)
 									)
@@ -324,7 +426,7 @@ const WeatherView = defineComponent({
 					: props.type !== 'simple'
 						? h(
 								CardContent,
-								{ class: 'pb-[var(--wxcn-spacing)]' },
+								{ class: 'relative min-h-0 min-w-0 pb-(--card-spacing)' },
 								{
 									default: () => [
 										h(
@@ -334,29 +436,46 @@ const WeatherView = defineComponent({
 												h(
 													'div',
 													{
-														class:
-															'grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 py-3 text-sm'
+														class: `grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 text-sm ${props.density === 'compact' ? 'py-2' : 'py-3'}`
 													},
 													[
-														props.interactive && !day
-															? h(
-																	'button',
-																	{
-																		type: 'button',
-																		class: 'text-left hover:underline',
-																		'aria-label': `View details for ${x.name}`,
-																		onClick: (e: MouseEvent) =>
-																			p.openDay?.(x.startTime, e.currentTarget)
-																	},
-																	x.name
-																)
-															: h('p', null, x.name),
+														h('div', null, [
+															props.interactive && !day
+																? h(
+																		'button',
+																		{
+																			type: 'button',
+																			class:
+																				'min-h-8 text-left underline-offset-4 hover:underline focus-visible:rounded-sm focus-visible:outline-2 focus-visible:outline-ring',
+																			'aria-label': `View details for ${x.name}`,
+																			onClick: (e: MouseEvent) =>
+																				p.openDay?.(x.startTime, e.currentTarget)
+																		},
+																		x.name
+																	)
+																: h('p', null, x.name),
+															props.type === 'detailed' || (day && props.size !== 'sm')
+																? h(
+																		'p',
+																		{
+																			class: [
+																				'mt-1 text-xs leading-5',
+																				day && 'line-clamp-2',
+																				day && props.background === 'realistic'
+																					? 'text-white/75'
+																					: 'text-muted-foreground'
+																			]
+																		},
+																		props.type === 'detailed' ? x.detailedForecast : x.shortForecast
+																	)
+																: null
+														]),
 														h(ForecastIcon, {
 															name: icon(x),
-															iconSet: props.iconType,
-															class: 'size-4 text-muted-foreground'
+															...(props.iconType ? { iconSet: props.iconType } : {}),
+															class: `size-4 ${day && props.background === 'realistic' ? 'text-white/75' : 'text-muted-foreground'}`
 														}),
-														h('span', { class: 'tabular-nums' }, `${temp(x)}°`)
+														h('span', { class: 'min-w-9 text-right tabular-nums' }, `${temp(x)}°`)
 													]
 												)
 											)
@@ -389,34 +508,69 @@ const WeatherView = defineComponent({
 			:source-label="source"
 			:icon-type="iconType"
 			:show-week="size === 'sm' || type === 'simple'"
+			:on-surface="background === 'realistic'"
 			flush
 			has-day-summary
 		>
-			<template #overview="{ openDay, visible }"
-				><WeatherView :open-day="openDay" :visible="visible"
+			<template #overview="{ openDay, visible, action }"
+				><WeatherView :open-day="openDay" :visible="visible" :action="action"
 			/></template>
-			<template #detail="{ day }"><WeatherView :day="day" :open-day="() => {}" visible /></template>
+			<template #detail="{ day, action }">
+				<div
+					:class="[
+						'relative isolate flex h-full min-h-0 w-full min-w-0 flex-col',
+						background === 'realistic' && 'text-white'
+					]"
+				>
+					<WeatherView :day="day" :open-day="() => {}" visible :action="action" />
+				</div>
+			</template>
 			<template #day-summary="{ day }">
 				<span
-					class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_1.25rem_3rem_3rem] items-center gap-2"
+					class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_1.5em_3.75em_3.75em] items-center gap-2"
 				>
 					<span class="truncate font-medium">{{ day.label }}</span>
-					<ForecastIcon
-						v-if="dayPeriods(day)[0]"
-						:name="icon(dayPeriods(day)[0])"
-						:icon-set="iconType"
-						class="size-4 text-muted-foreground"
-					/>
-					<span>{{
-						dayPeriods(day).find((p) => p.isDaytime)
-							? `${temp(dayPeriods(day).find((p) => p.isDaytime)!)}°`
-							: '—'
-					}}</span>
-					<span class="text-muted-foreground">{{
-						dayPeriods(day).find((p) => !p.isDaytime)
-							? `${temp(dayPeriods(day).find((p) => !p.isDaytime)!)}°`
-							: '—'
-					}}</span>
+					<span
+						v-if="representative(day)"
+						class="flex justify-center"
+						:title="representative(day)!.shortForecast"
+						:aria-label="representative(day)!.shortForecast"
+					>
+						<ForecastIcon
+							:name="icon(representative(day)!)"
+							:icon-set="iconType"
+							class="size-[1.4em] text-muted-foreground"
+						/>
+					</span>
+					<span v-else></span>
+					<span
+						class="grid grid-cols-[0.85em_minmax(0,1fr)] items-center gap-1 text-right tabular-nums"
+						:aria-label="
+							dayHigh(day) !== null ? `High ${dayHigh(day)} degrees` : 'High unavailable'
+						"
+					>
+						<ForecastIcon
+							name="arrowUp"
+							:icon-set="iconType"
+							class="size-[1em] text-muted-foreground"
+						/>
+						<span>{{ dayHigh(day) !== null ? `${dayHigh(day)}°` : '—' }}</span>
+					</span>
+					<span
+						class="grid grid-cols-[0.85em_minmax(0,1fr)] items-center gap-1 text-right text-muted-foreground tabular-nums"
+						:aria-label="
+							dayPeriods(day).find((p) => !p.isDaytime)
+								? `Low ${temp(dayPeriods(day).find((p) => !p.isDaytime)!)} degrees`
+								: 'Low unavailable'
+						"
+					>
+						<ForecastIcon name="arrowDown" :icon-set="iconType" class="size-[1em]" />
+						<span>{{
+							dayPeriods(day).find((p) => !p.isDaytime)
+								? `${temp(dayPeriods(day).find((p) => !p.isDaytime)!)}°`
+								: '—'
+						}}</span>
+					</span>
 				</span>
 			</template>
 		</ForecastScreens>

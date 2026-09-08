@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { ForecastScreens, type ForecastAction, type OpenForecastDay } from './forecast-screens';
-import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
+import { forecastDays, forecastDayNoon, type ForecastDay } from '@wxcn/core/forecast-days.js';
 import { ForecastIcon, type IconSet, type IconName } from '../../icons/forecast-icons';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { WeatherShaderBackground, type WeatherShaderMode } from './weather-shader-background';
-import { WeatherGradientBackground } from './weather-gradient-background';
 import type {
 	ForecastType,
 	LocationInput,
@@ -17,7 +16,7 @@ import type {
 	WeatherBackground
 } from '@wxcn/core/types.js';
 import { sampleWeather, sampleCurrentWeather, convertWindSpeed } from '@wxcn/core/weather.js';
-import { weatherOutlook } from '@wxcn/core/weather-outlook.js';
+import { weatherOutlook, weatherDayHigh } from '@wxcn/core/weather-outlook.js';
 import { getSkyState } from '@wxcn/core/sky.js';
 
 export interface WeatherForecastProps {
@@ -183,29 +182,27 @@ export function WeatherForecast({
 			: current;
 		const sky =
 			day && view
-				? getSkyState(location.latitude, location.longitude, Date.parse(view.startTime))
+				? getSkyState(
+						location.latitude,
+						location.longitude,
+						forecastDayNoon(day.key, timeZone ?? location.timeZone ?? visitorTimeZone)
+					)
 				: currentSky;
+		const skyMode = view
+			? condition(day && sky ? { ...view, isDaytime: sky.isDaytime } : view)
+			: 'clear';
 		return (
 			<>
 				<div
 					className={cn(
 						day ? 'contents' : 'relative isolate overflow-hidden',
-						background !== 'none' && view ? 'text-white' : 'text-card-foreground'
+						background === 'realistic' && view ? 'text-white' : 'text-card-foreground'
 					)}
 				>
-					{background !== 'none' && view && (
+					{background === 'realistic' && view && (
 						<>
 							<div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
-								{background === 'gradient' ? (
-									<WeatherGradientBackground mode={condition(view)} sky={sky} />
-								) : (
-									<WeatherShaderBackground
-										mode={condition(view)}
-										sky={sky}
-										paused={!overviewVisible}
-										dithered={background === 'dithered'}
-									/>
-								)}
+								<WeatherShaderBackground mode={skyMode} sky={sky} paused={!overviewVisible} />
 							</div>
 							<div
 								className="pointer-events-none absolute inset-0 -z-10 bg-linear-to-b from-black/35 via-black/15 to-black/55"
@@ -216,20 +213,20 @@ export function WeatherForecast({
 					<CardHeader className="relative px-[var(--card-spacing,var(--wxcn-spacing))] pt-[var(--card-spacing,var(--wxcn-spacing))]">
 						<CardTitle className="min-w-0 truncate">{day?.label ?? 'Weather'}</CardTitle>
 						<CardDescription
-							className={cn('truncate', background !== 'none' && view && 'text-white/80')}
+							className={cn('truncate', background === 'realistic' && view && 'text-white/80')}
 						>
 							{location.label ?? 'Local forecast'}
 						</CardDescription>
-						{action(background !== 'none' && !!view)}
+						{action(background === 'realistic' && !!view)}
 					</CardHeader>
-					<CardContent className="relative grid min-w-0 shrink-0 gap-5 px-[var(--card-spacing,var(--wxcn-spacing))] py-[var(--card-spacing,var(--wxcn-spacing))]">
+					<CardContent className="relative grid min-w-0 shrink-0 grid-cols-1 gap-5 px-[var(--card-spacing,var(--wxcn-spacing))] py-[var(--card-spacing,var(--wxcn-spacing))]">
 						{view ? (
 							<>
-								<div>
+								<div className="min-w-0">
 									<p
 										className={cn(
 											'mb-2 text-xs',
-											background !== 'none' ? 'text-white/75' : 'text-muted-foreground'
+											background === 'realistic' ? 'text-white/75' : 'text-muted-foreground'
 										)}
 									>
 										{day ? (view.isDaytime ? 'Daytime' : 'Overnight') : 'Now'}
@@ -242,7 +239,7 @@ export function WeatherForecast({
 										<span className="align-top text-2xl">°</span>
 									</p>
 									<p
-										className={`mt-3 text-sm ${day ? 'truncate' : ''}`}
+										className="mt-3 line-clamp-2 min-h-10 text-sm wrap-break-word"
 										title={day ? view.shortForecast : undefined}
 									>
 										{view.shortForecast}
@@ -299,7 +296,7 @@ export function WeatherForecast({
 							<p
 								className={cn(
 									'text-[10px]',
-									background !== 'none' && view ? 'text-white/70' : 'text-muted-foreground'
+									background === 'realistic' && view ? 'text-white/70' : 'text-muted-foreground'
 								)}
 							>
 								{sourceLabel}
@@ -308,29 +305,39 @@ export function WeatherForecast({
 					</CardContent>
 				</div>
 				{day && size === 'lg' && type !== 'simple' && dayHours(day).length > 0 ? (
-					<CardContent className="relative min-h-0 flex-1 px-[var(--card-spacing,var(--wxcn-spacing))] pb-[var(--card-spacing,var(--wxcn-spacing))]">
-						<p className="mb-3 text-xs font-medium">Hourly forecast</p>
-						<div className="grid grid-cols-3 gap-x-4 gap-y-2" data-slot="hourly-forecast">
-							{dayHours(day).map((hour) => (
-								<div
-									key={hour.startTime}
-									className="flex min-w-0 items-center justify-between gap-1 text-xs"
-									title={hour.shortForecast}
-								>
-									<span className="opacity-75">
-										{new Intl.DateTimeFormat('en-US', {
-											timeZone: timeZone ?? location.timeZone ?? visitorTimeZone,
-											hour: 'numeric'
-										}).format(new Date(hour.startTime))}
-									</span>
-									<ForecastIcon
-										name={periodIcon(hour)}
-										iconSet={iconType}
-										className="size-3.5 shrink-0"
-									/>
-									<span className="tabular-nums">{temperature(hour)}°</span>
-								</div>
-							))}
+					<CardContent className="relative flex min-h-0 flex-1 flex-col px-[var(--card-spacing,var(--wxcn-spacing))] pb-[var(--card-spacing,var(--wxcn-spacing))]">
+						<p className="mb-3 shrink-0 text-base font-medium">Hourly forecast</p>
+						<div
+							className="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+							tabIndex={0}
+							role="region"
+							aria-label="Hourly forecast"
+							data-slot="hourly-forecast"
+						>
+							<div className="grid min-h-full auto-rows-[minmax(3.5rem,1fr)] grid-cols-1">
+								{dayHours(day).map((hour) => (
+									<div
+										key={hour.startTime}
+										className="grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-current/15 text-lg last:border-0"
+										title={hour.shortForecast}
+									>
+										<span className="opacity-75">
+											{new Intl.DateTimeFormat('en-US', {
+												timeZone: timeZone ?? location.timeZone ?? visitorTimeZone,
+												hour: 'numeric'
+											}).format(new Date(hour.startTime))}
+										</span>
+										<ForecastIcon
+											name={periodIcon(hour)}
+											iconSet={iconType}
+											className="size-6 shrink-0"
+										/>
+										<span className="text-right font-medium tabular-nums">
+											{temperature(hour)}°
+										</span>
+									</div>
+								))}
+							</div>
 						</div>
 					</CardContent>
 				) : type !== 'simple' ? (
@@ -365,7 +372,7 @@ export function WeatherForecast({
 														className={cn(
 															'mt-1 text-xs leading-5',
 															day && 'line-clamp-2',
-															day && background !== 'none'
+															day && background === 'realistic'
 																? 'text-white/75'
 																: 'text-muted-foreground'
 														)}
@@ -379,7 +386,9 @@ export function WeatherForecast({
 												iconSet={iconType}
 												className={cn(
 													'size-4',
-													day && background !== 'none' ? 'text-white/75' : 'text-muted-foreground'
+													day && background === 'realistic'
+														? 'text-white/75'
+														: 'text-muted-foreground'
 												)}
 											/>
 											<span className="min-w-9 text-right tabular-nums">
@@ -430,8 +439,15 @@ export function WeatherForecast({
 					const daytime = values.find((period) => period.isDaytime);
 					const overnight = values.find((period) => !period.isDaytime);
 					const representative = daytime ?? overnight;
+					const high = weatherDayHigh(
+						day.key,
+						values,
+						current,
+						unit,
+						timeZone ?? location.timeZone ?? visitorTimeZone
+					);
 					return (
-						<span className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_1.25rem_3rem_3rem] items-center gap-2">
+						<span className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_1.5em_3.75em_3.75em] items-center gap-2">
 							<span className="truncate font-medium">{day.label}</span>
 							{representative ? (
 								<span
@@ -442,29 +458,29 @@ export function WeatherForecast({
 									<ForecastIcon
 										name={periodIcon(representative)}
 										iconSet={iconType}
-										className="size-4 text-muted-foreground"
+										className="size-[1.4em] text-muted-foreground"
 									/>
 								</span>
 							) : (
 								<span />
 							)}
 							<span
-								className="flex items-center justify-end gap-1 tabular-nums"
-								aria-label={daytime ? `High ${temperature(daytime)} degrees` : 'High unavailable'}
+								className="grid grid-cols-[0.85em_minmax(0,1fr)] items-center gap-1 text-right tabular-nums"
+								aria-label={high !== null ? `High ${high} degrees` : 'High unavailable'}
 							>
 								<ForecastIcon
 									name="arrowUp"
 									iconSet={iconType}
-									className="size-3 text-muted-foreground"
+									className="size-[1em] text-muted-foreground"
 								/>
-								{daytime ? `${temperature(daytime)}°` : '—'}
+								<span>{high !== null ? `${high}°` : '—'}</span>
 							</span>
 							<span
-								className="flex items-center justify-end gap-1 text-muted-foreground tabular-nums"
+								className="grid grid-cols-[0.85em_minmax(0,1fr)] items-center gap-1 text-right text-muted-foreground tabular-nums"
 								aria-label={overnight ? `Low ${temperature(overnight)} degrees` : 'Low unavailable'}
 							>
-								<ForecastIcon name="arrowDown" iconSet={iconType} className="size-3" />
-								{overnight ? `${temperature(overnight)}°` : '—'}
+								<ForecastIcon name="arrowDown" iconSet={iconType} className="size-[1em]" />
+								<span>{overnight ? `${temperature(overnight)}°` : '—'}</span>
 							</span>
 						</span>
 					);
@@ -472,8 +488,8 @@ export function WeatherForecast({
 				detail={(day, action) => (
 					<div
 						className={cn(
-							'relative isolate flex h-full min-h-0 flex-col',
-							background !== 'none' && 'text-white'
+							'relative isolate flex h-full min-h-0 w-full min-w-0 flex-col',
+							background === 'realistic' && 'text-white'
 						)}
 					>
 						{cardView(day, action, true, () => {})}

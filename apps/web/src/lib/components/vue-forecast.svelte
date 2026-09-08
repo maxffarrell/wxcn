@@ -34,20 +34,29 @@
 		app.config.idPrefix = prefix;
 		return app;
 	}
- let element: HTMLDivElement;
- const current = shallowRef(initial);
- let hydrated = $state(false);
- onMount(() => {
-  let active = true;
-  const app = createApp(current);
-  void settled().then(() => {
-   if (!active) return;
-   app.mount(element);
-   hydrated = true;
-  });
-  return () => { active = false; if (hydrated) app.unmount(); };
- });
- $effect(() => { const value = {kind, props: normalized()}; if (hydrated) current.value = value; });
- const markup = await renderToString(createApp({value: initial}));
+	let element: HTMLDivElement;
+	const current = shallowRef(initial);
+	let hydrated = $state(false);
+	onMount(() => {
+		let active = true;
+		const app = createApp(current);
+		void settled().then(() => {
+			if (!active) return;
+			app.mount(element.querySelector<HTMLElement>('[data-vue-root]')!);
+			hydrated = true;
+		});
+		return () => {
+			active = false;
+			if (hydrated) app.unmount();
+		};
+	});
+	$effect(() => {
+		const value = { kind, props: normalized() };
+		if (hydrated) current.value = value;
+	});
+	const markup = await renderToString(createApp({ value: initial }));
 </script>
-<div bind:this={element} data-vue-forecast={kind}>{@html markup}</div>
+
+<div bind:this={element} data-vue-forecast={kind} data-vue-hydrated={hydrated || undefined}>
+	{@html `<div data-vue-root style="display:contents">${markup}</div>`}
+</div>

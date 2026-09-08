@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, h, nextTick, onBeforeUnmount, ref, watch } from 'vue';
 import type { ForecastDay } from '@wxcn/core/forecast-days.js';
 import type { IconSet } from '../../icons/ForecastIcon.vue';
 import ForecastIcon from '../../icons/ForecastIcon.vue';
@@ -13,13 +13,15 @@ const props = withDefaults(
 		density: string;
 		sourceLabel: string;
 		actionLabel?: string;
+		summaryTitle?: string;
 		showWeek?: boolean;
 		iconType?: IconSet;
 		flush?: boolean;
 		hasSummary?: boolean;
 		hasDaySummary?: boolean;
+		onSurface?: boolean;
 	}>(),
-	{ actionLabel: 'View week', showWeek: true, flush: false }
+	{ actionLabel: 'View week', summaryTitle: 'Upcoming tides', showWeek: true, flush: false }
 );
 const screen = ref<'overview' | 'week' | 'day'>('overview'),
 	selectedKey = ref(''),
@@ -60,9 +62,9 @@ async function back() {
 	);
 }
 watch(
-	() => props.interactive,
-	(v) => {
-		if (!v) screen.value = 'overview';
+	[() => props.interactive, screen, selected],
+	([interactive, currentScreen, currentSelected]) => {
+		if (!interactive || (currentScreen === 'day' && !currentSelected)) screen.value = 'overview';
 	}
 );
 watch(table, (node) => {
@@ -74,6 +76,64 @@ watch(table, (node) => {
 	}
 });
 onBeforeUnmount(() => observer?.disconnect());
+const weekAction =
+	(onSurface = false) =>
+	() =>
+		props.interactive && props.showWeek
+			? h(CardAction, null, {
+					default: () =>
+						h(
+							Button,
+							{
+								type: 'button',
+								variant: 'ghost',
+								size: 'sm',
+								class: [
+									'h-6 border border-transparent px-1.5 text-[10px] font-medium',
+									onSurface
+										? 'text-white/80 hover:bg-white/10 hover:text-white'
+										: 'text-muted-foreground hover:text-foreground'
+								],
+								'aria-label': props.hasSummary
+									? props.actionLabel
+									: `View ${props.title.toLowerCase()} week`,
+								onClick: (event: MouseEvent) => open('week', event.currentTarget as HTMLElement)
+							},
+							{ default: () => props.actionLabel }
+						)
+				})
+			: null;
+const backAction =
+	(onSurface = false) =>
+	() =>
+		h(CardAction, null, {
+			default: () =>
+				h(
+					Button,
+					{
+						type: 'button',
+						variant: 'ghost',
+						size: 'sm',
+						class: [
+							'h-6 gap-1 border border-transparent px-1.5 text-[10px]',
+							onSurface
+								? 'text-white/80 hover:bg-white/10 hover:text-white'
+								: 'text-muted-foreground'
+						],
+						onClick: back
+					},
+					{
+						default: () => [
+							h(ForecastIcon, {
+								name: 'arrowDown',
+								iconSet: props.iconType,
+								class: 'size-3 rotate-90'
+							}),
+							'Back'
+						]
+					}
+				)
+		});
 </script>
 <template>
 	<div
@@ -82,21 +142,14 @@ onBeforeUnmount(() => observer?.disconnect());
 		:inert="screen !== 'overview' || undefined"
 		:aria-hidden="screen !== 'overview'"
 	>
-		<slot name="overview" :open-day="openDay" :visible="screen === 'overview'">
-			<slot :open-day="openDay" :visible="screen === 'overview'" />
-		</slot>
-		<CardAction
-			v-if="interactive && showWeek"
-			class="absolute top-[var(--wxcn-spacing,1.5rem)] right-[var(--wxcn-spacing,1.5rem)] z-20"
-			><Button
-				variant="ghost"
-				size="sm"
-				class="h-6 px-1.5 text-[10px] font-medium text-muted-foreground hover:text-foreground"
-				:aria-label="hasSummary ? actionLabel : `View ${title.toLowerCase()} week`"
-				@click="open('week', $event.currentTarget as HTMLElement)"
-				>{{ actionLabel }}</Button
-			></CardAction
+		<slot
+			name="overview"
+			:open-day="openDay"
+			:visible="screen === 'overview'"
+			:action="weekAction(onSurface)"
 		>
+			<slot :open-day="openDay" :visible="screen === 'overview'" :action="weekAction(onSurface)" />
+		</slot>
 	</div>
 	<div
 		v-if="screen !== 'overview'"
@@ -104,7 +157,11 @@ onBeforeUnmount(() => observer?.disconnect());
 		tabindex="-1"
 		role="group"
 		:aria-label="
-			screen === 'day' ? `${selected?.label} ${title.toLowerCase()} forecast` : `${title} • Week`
+			screen === 'day'
+				? `${selected?.label} ${title.toLowerCase()} forecast`
+				: hasSummary
+					? summaryTitle
+					: `${title} • Week`
 		"
 		data-slot="forecast-screen"
 		@keydown="
@@ -116,33 +173,17 @@ onBeforeUnmount(() => observer?.disconnect());
 		:class="`absolute inset-0 z-10 flex min-h-0 flex-col overflow-hidden rounded-[inherit] bg-card text-card-foreground outline-none ${screen === 'day' && flush ? 'gap-0' : screen === 'week' ? 'gap-2 py-3' : 'gap-(--card-spacing) py-(--card-spacing)'}`"
 	>
 		<template v-if="screen === 'day' && selected"
-			><div
-				class="absolute top-[var(--wxcn-spacing,1.5rem)] right-[var(--wxcn-spacing,1.5rem)] z-20"
-			>
-				<Button
-					variant="ghost"
-					size="sm"
-					class="h-6 gap-1 px-1.5 text-[10px] text-muted-foreground"
-					@click="back"
-					><ForecastIcon
-						name="arrowDown"
-						:icon-set="iconType"
-						class="size-3 rotate-90"
-					/>Back</Button
-				>
-			</div>
-			<slot name="detail" :day="selected" :back="back"
+			><slot name="detail" :day="selected" :back="back" :action="backAction(onSurface)"
 		/></template>
 		<template v-else
 			><CardHeader class="shrink-0"
-				><CardTitle class="truncate">{{
-					hasSummary ? 'Upcoming tides' : `${title} • Week`
-				}}</CardTitle
+				><CardTitle class="truncate">{{ hasSummary ? summaryTitle : `${title} • Week` }}</CardTitle
 				><CardAction
 					><Button
+						type="button"
 						variant="ghost"
 						size="sm"
-						class="h-6 gap-1 px-1.5 text-[10px] text-muted-foreground"
+						class="h-6 gap-1 border border-transparent px-1.5 text-[10px] text-muted-foreground"
 						@click="back"
 						><ForecastIcon
 							name="arrowDown"
@@ -157,7 +198,7 @@ onBeforeUnmount(() => observer?.disconnect());
 					<slot v-if="hasSummary" name="summary" :height="availableHeight" />
 					<div
 						v-else
-						:class="`grid h-full content-start gap-x-3 ${!hasDaySummary && availableHeight < days.length * 28 ? 'grid-cols-2' : 'grid-cols-1'}`"
+						:class="`grid h-full content-start gap-x-3 overflow-y-auto ${!hasDaySummary && availableHeight < days.length * 28 ? 'grid-cols-2' : 'grid-cols-1'}`"
 					>
 						<button
 							v-for="day in days"
@@ -165,7 +206,10 @@ onBeforeUnmount(() => observer?.disconnect());
 							type="button"
 							:data-forecast-day="day.key"
 							:style="{
-								height: `${Math.min(28, availableHeight / (!hasDaySummary && availableHeight < days.length * 28 ? Math.ceil(days.length / 2) : days.length))}px`
+								height: `${hasDaySummary ? Math.max(32, availableHeight / days.length) : Math.min(28, availableHeight / (!hasDaySummary && availableHeight < days.length * 28 ? Math.ceil(days.length / 2) : days.length))}px`,
+								fontSize: hasDaySummary
+									? `clamp(12px, min(4.5cqw, ${availableHeight / days.length / 3}px), 20px)`
+									: undefined
 							}"
 							class="flex min-h-0 min-w-0 items-center justify-between gap-2 border-b text-left text-[11px] hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-ring"
 							:aria-label="`View details for ${day.label}`"

@@ -182,8 +182,8 @@
 					<Step>Copy and paste the following code into your project.</Step>
 					<p>
 						These files use the default aliases and native icon adapter. Adjust imports to match
-						your project, or use CLI installation to apply your aliases and configured icon library
-						automatically.
+						your project, or use CLI installation to apply your aliases and supported icon mappings
+						automatically. Vue weather glyphs retain their canonical Lucide shapes.
 					</p>
 					<ComponentSource
 						item={{

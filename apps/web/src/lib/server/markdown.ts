@@ -71,10 +71,10 @@ export async function pageMarkdown(path: string, origin: string): Promise<string
 							item.primitives.join(' ') +
 							'\n```',
 						'2. Install dependencies.\n\n```sh\npnpm add ' + item.dependencies.join(' ') + '\n```',
-						'3. Copy the following files. These use default aliases and Lucide icons. Adjust imports to match your project, or use the CLI to apply your configuration automatically.',
+						'3. Copy the following files. These use default aliases and Lucide icons. Adjust imports to match your project, or use the CLI to apply your aliases and supported icon mappings automatically. Vue weather glyphs retain their canonical Lucide shapes.',
 						...item.files.map(
 							(file) =>
-								`#### ${file.path}\n\n\`\`\`${file.path.endsWith('.svelte') ? 'svelte' : file.path.endsWith('.tsx') ? 'tsx' : 'ts'}\n${file.code}\n\`\`\``
+								`#### ${file.path}\n\n\`\`\`${file.path.endsWith('.svelte') ? 'svelte' : file.path.endsWith('.vue') ? 'vue' : file.path.endsWith('.tsx') ? 'tsx' : 'ts'}\n${file.code}\n\`\`\``
 						),
 						'4. Update import paths to match your project setup.'
 					].join('\n\n')
@@ -83,7 +83,7 @@ export async function pageMarkdown(path: string, origin: string): Promise<string
 		);
 	}
 	if (pagePath === '/')
-		return `# wxcn\n\nWeather, moon, and tide components that inherit your ${library} theme and selected icon library.\n\n## Preview\n\nThe homepage canvas showcases all cards or individual Weather, Moon, and Tides collections in multiple sizes and data densities.\n\n## Frameworks\n\nSvelte, React, and Vue are available with native components and framework registries.\n\n## Get code\n\n\`\`\`sh\n${install('forecast-dashboard')}\n\`\`\`\n\n[Components](${origin}${prefix}/docs/components.md) · [Data sources](${origin}${prefix}/docs/endpoints.md)\n`;
+		return `# wxcn\n\nWeather, moon, and tide components that inherit your ${library} theme and supported icon mappings. Vue weather glyphs retain their canonical Lucide shapes.\n\n## Preview\n\nThe homepage canvas showcases all cards or individual Weather, Moon, and Tides collections in multiple sizes and data densities.\n\n## Frameworks\n\nSvelte, React, and Vue are available with native components and framework registries.\n\n## Get code\n\n\`\`\`sh\n${install('forecast-dashboard')}\n\`\`\`\n\n[Components](${origin}${prefix}/docs/components.md) · [Data sources](${origin}${prefix}/docs/endpoints.md)\n`;
 	if (path === '/shader-preview')
 		return '# Weather background preview\n\nInteractive preview of WeatherShaderBackground. Select atmospheric modes with the mode query parameter: sunrise, sunset, clear, partly-cloudy, haze, fog, wind, cloudy, thunderstorm, rain, heavy-rain, drizzle, snow, heavy-snow, wintry-mix, clear-night, partly-cloudy-night, and drizzle-night. Backgrounds are included with the weather card registry item.\n';
 	return null;

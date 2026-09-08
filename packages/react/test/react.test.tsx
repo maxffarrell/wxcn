@@ -129,20 +129,20 @@ test('live data without an explicit time uses deterministic SSR loading states',
 	assert.match(tides, /Loading current tide time/);
 });
 
-test('astronomical skies follow location and time in server-rendered gradients', () => {
+test('astronomical skies follow location and time in server-rendered sky metadata', () => {
 	const at = Date.parse('2026-09-07T12:00:00Z');
 	const renderAt = (longitude: number) =>
 		renderToString(
 			<WeatherForecast
 				at={at}
-				background="gradient"
+				background="realistic"
 				location={{ latitude: 0, longitude, label: 'Equator' }}
 			/>
 		);
 	assert.match(renderAt(0), /data-sky-period="midday"/);
 	assert.match(renderAt(180), /data-sky-period="night"/);
-	assert.match(renderAt(0), /class="wxcn-gradient-sun"/);
-	assert.doesNotMatch(renderAt(180), /class="wxcn-gradient-sun"/);
+	assert.ok(Number(renderAt(0).match(/data-sun-altitude="([^"]+)"/)![1]) > 0);
+	assert.ok(Number(renderAt(180).match(/data-sun-altitude="([^"]+)"/)![1]) < 0);
 });
 
 test('weather trend uses astronomical night even when provider daytime is stale', () => {
@@ -167,4 +167,12 @@ test('weather trend uses astronomical night even when provider daytime is stale'
 		/>
 	);
 	assert.doesNotMatch(html, /Going up to/);
+});
+
+test('legacy background values follow Svelte while those designs are disabled', () => {
+	for (const background of ['gradient', 'dithered'] as const)
+		assert.doesNotMatch(
+			renderToString(<WeatherForecast background={background} />),
+			/data-background-style=/
+		);
 });

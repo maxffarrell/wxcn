@@ -16,6 +16,7 @@ export interface ForecastScreensProps {
 	summary?: (availableHeight: number) => ReactNode;
 	daySummary?: (day: ForecastDay) => ReactNode;
 	actionLabel?: string;
+	summaryTitle?: string;
 	showWeek?: boolean;
 	iconType?: IconSet;
 	flush?: boolean;
@@ -33,6 +34,7 @@ export function ForecastScreens({
 	summary,
 	daySummary,
 	actionLabel = 'View week',
+	summaryTitle = 'Upcoming tides',
 	showWeek = true,
 	iconType,
 	flush = false,
@@ -122,7 +124,7 @@ export function ForecastScreens({
 					type="button"
 					variant="ghost"
 					size="sm"
-					className={`h-6 px-1.5 text-[10px] font-medium ${onSurface ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-muted-foreground hover:text-foreground'}`}
+					className={`h-6 border border-transparent px-1.5 text-[10px] font-medium ${onSurface ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-muted-foreground hover:text-foreground'}`}
 					aria-label={summary ? actionLabel : `View ${title.toLowerCase()} week`}
 					onClick={(event) => open('week', event.currentTarget)}
 				>
@@ -136,7 +138,7 @@ export function ForecastScreens({
 				type="button"
 				variant="ghost"
 				size="sm"
-				className={`h-6 gap-1 px-1.5 text-[10px] ${onSurface ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-muted-foreground'}`}
+				className={`h-6 gap-1 border border-transparent px-1.5 text-[10px] ${onSurface ? 'text-white/80 hover:bg-white/10 hover:text-white' : 'text-muted-foreground'}`}
 				onClick={back}
 			>
 				<ForecastIcon name="arrowDown" iconSet={iconType} className="size-3 rotate-90" />
@@ -162,7 +164,9 @@ export function ForecastScreens({
 					aria-label={
 						active === 'day'
 							? `${selected?.label} ${title.toLowerCase()} forecast`
-							: `${title} • Week`
+							: summary
+								? summaryTitle
+								: `${title} • Week`
 					}
 					data-slot="forecast-screen"
 					onKeyDown={(event) => {
@@ -179,7 +183,7 @@ export function ForecastScreens({
 						<>
 							<CardHeader className="shrink-0">
 								<CardTitle className="truncate">
-									{summary ? 'Upcoming tides' : `${title} • Week`}
+									{summary ? summaryTitle : `${title} • Week`}
 								</CardTitle>
 								{backAction(false)}
 							</CardHeader>
@@ -189,7 +193,7 @@ export function ForecastScreens({
 										summary(availableHeight)
 									) : (
 										<div
-											className={`grid h-full content-start gap-x-3 ${!daySummary && availableHeight < days.length * 28 ? 'grid-cols-2' : 'grid-cols-1'}`}
+											className={`grid h-full content-start gap-x-3 overflow-y-auto ${!daySummary && availableHeight < days.length * 28 ? 'grid-cols-2' : 'grid-cols-1'}`}
 										>
 											{days.map((day) => (
 												<button
@@ -197,13 +201,18 @@ export function ForecastScreens({
 													type="button"
 													data-forecast-day={day.key}
 													style={{
-														height: Math.min(
-															28,
-															availableHeight /
-																(!daySummary && availableHeight < days.length * 28
-																	? Math.ceil(days.length / 2)
-																	: days.length)
-														)
+														height: daySummary
+															? Math.max(32, availableHeight / days.length)
+															: Math.min(
+																	28,
+																	availableHeight /
+																		(!daySummary && availableHeight < days.length * 28
+																			? Math.ceil(days.length / 2)
+																			: days.length)
+																),
+														fontSize: daySummary
+															? `clamp(12px, min(4.5cqw, ${availableHeight / days.length / 3}px), 20px)`
+															: undefined
 													}}
 													className="flex min-h-0 min-w-0 items-center justify-between gap-2 border-b text-left text-[11px] hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-ring"
 													aria-label={`View details for ${day.label}`}

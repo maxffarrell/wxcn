@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
-import { getMoonForecast, sampleMoon } from '@wxcn/core/moon.js';
+import { getMoonForecast, getUpcomingMoonPhases, sampleMoon } from '@wxcn/core/moon.js';
 import type { ForecastType, LocationInput, MoonForecast as MoonData } from '@wxcn/core/types.js';
 import type { IconSet } from '../../icons/ForecastIcon.vue';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
@@ -37,19 +37,15 @@ const date = (v: string) =>
 	new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', timeZone: zone.value }).format(
 		new Date(v)
 	);
+const phases = computed(() => getUpcomingMoonPhases(new Date(props.forecast.date)));
 const days = computed(() =>
 	forecastDays(
-		Array.from({ length: 7 }, (_, i) => {
-			const v = i
-				? getMoonForecast(new Date(Date.parse(props.forecast.date) + i * 864e5))
-				: props.forecast;
-			return {
-				time: Date.parse(v.date),
-				label: v.phaseName,
-				summary: `${v.illumination}% illuminated`,
-				details: `Moon age: ${v.age} days. Next full moon: ${date(v.nextFullMoon)}. Next new moon: ${date(v.nextNewMoon)}.`
-			};
-		}),
+		phases.value.map((v) => ({
+			time: Date.parse(v.date),
+			label: v.phaseName,
+			summary: `${v.illumination}% illuminated`,
+			details: ''
+		})),
 		zone.value
 	)
 );
@@ -60,7 +56,7 @@ function view(day?: ForecastDay) {
 }
 import { defineComponent, h } from 'vue';
 const MoonView = defineComponent({
-	props: { day: Object },
+	props: { day: Object, action: Function },
 	setup(p) {
 		return () => {
 			const vm = p.day as ForecastDay | undefined;
@@ -69,7 +65,8 @@ const MoonView = defineComponent({
 				h(CardHeader, null, {
 					default: () => [
 						h(CardTitle, null, { default: () => vm?.label ?? 'Moon phase' }),
-						h(CardDescription, null, { default: () => props.location.label })
+						h(CardDescription, null, { default: () => props.location.label }),
+						p.action?.()
 					]
 				}),
 				h(
@@ -106,7 +103,10 @@ const MoonView = defineComponent({
 											'p',
 											{
 												style: { fontSize: 'clamp(1rem,6cqw,1.5rem)' },
-												class: 'font-medium tracking-tight'
+												class: [
+													'font-medium tracking-tight',
+													props.size === 'sm' ? 'text-lg' : 'text-2xl'
+												]
 											},
 											v.phaseName
 										),
@@ -167,8 +167,35 @@ const MoonView = defineComponent({
 			title="Moon"
 			:density="density"
 			:source-label="sourceLabel"
+			action-label="Next phases"
+			summary-title="Next phases"
+			has-summary
 		>
-			<template #overview><MoonView :day="undefined" /></template
-			><template #detail="{ day }"><MoonView :day="day" /></template> </ForecastScreens
-	></Card>
+			<template #overview="{ action }"><MoonView :day="undefined" :action="action" /></template
+			><template #detail="{ day, action }"><MoonView :day="day" :action="action" /></template>
+			<template #summary="{ height }">
+				<div
+					class="grid h-full auto-rows-[minmax(32px,1fr)] overflow-y-auto"
+					data-slot="upcoming-moon-phases"
+				>
+					<div
+						v-for="phase in phases"
+						:key="phase.date"
+						class="flex min-h-0 items-center gap-3 border-b text-xs last:border-0"
+					>
+						<div
+							class="shrink-0"
+							:style="{ width: `${Math.max(16, Math.min(32, height / 7 - 4))}px` }"
+						>
+							<MoonDisc :phase="phase.phase" :label="phase.phaseName" class="size-full" />
+						</div>
+						<span class="min-w-0 flex-1 font-medium">{{ phase.phaseName }}</span>
+						<time :datetime="phase.date" class="shrink-0 text-muted-foreground">{{
+							date(phase.date)
+						}}</time>
+					</div>
+				</div>
+			</template>
+		</ForecastScreens></Card
+	>
 </template>

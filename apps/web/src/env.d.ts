@@ -19,6 +19,6 @@ declare module '*.svx' {
 }
 
 declare module '*.vue' {
- const component: import('vue').Component;
- export default component;
+	const component: import('vue').Component;
+	export default component;
 }

@@ -54,6 +54,15 @@ const definitions = [
 const items = [];
 for (const [name, description, helpers, components, registryDependencies] of definitions) {
 	const files = await Promise.all([
+		...(name === 'weather-forecast'
+			? ['cloud-texture', 'weather-scenes'].map((helper) =>
+					file(
+						`packages/react/src/components/wxcn/${helper}.ts`,
+						'registry:component',
+						`@components/wxcn/${helper}.ts`
+					)
+				)
+			: []),
 		...[name, 'forecast-screens', ...components].map((name) =>
 			file(
 				`packages/react/src/components/wxcn/${name}.tsx`,

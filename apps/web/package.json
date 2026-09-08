@@ -1,7 +1,7 @@
 {
 	"name": "@wxcn/web",
 	"version": "0.1.0",
-	"description": "shadcn-svelte registry components for weather, tides, and moon forecasts.",
+	"description": "Native Svelte, React, and Vue registry components for weather, tides, and moon forecasts.",
 	"license": "MIT",
 	"type": "module",
 	"scripts": {

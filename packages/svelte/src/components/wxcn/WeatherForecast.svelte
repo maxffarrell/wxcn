@@ -201,9 +201,9 @@
 			>
 			{@render action(background !== 'none' && !!view)}
 		</Card.Header>
-		<Card.Content class="relative grid min-w-0 shrink-0 gap-5 py-(--card-spacing)">
+		<Card.Content class="relative grid min-w-0 shrink-0 grid-cols-1 gap-5 py-(--card-spacing)">
 			{#if view}
-				<div>
+				<div class="min-w-0">
 					<p
 						class={`mb-2 text-xs ${background !== 'none' ? 'text-white/75' : 'text-muted-foreground'}`}
 					>
@@ -216,7 +216,7 @@
 						{temperature(view)}<span class="align-top text-2xl">°</span>
 					</p>
 					<p
-						class={`mt-3 text-sm ${day ? 'truncate' : ''}`}
+						class="mt-3 line-clamp-2 min-h-10 text-sm wrap-break-word"
 						title={day ? view.shortForecast : undefined}
 					>
 						{view.shortForecast}
@@ -379,7 +379,7 @@
 		{/snippet}
 		{#snippet detail(day, action)}
 			<div
-				class={`relative isolate flex h-full min-h-0 flex-col ${background !== 'none' ? 'text-white' : ''}`}
+				class={`relative isolate flex h-full min-h-0 w-full min-w-0 flex-col ${background !== 'none' ? 'text-white' : ''}`}
 			>
 				{@render cardView(day, action, true, () => {})}
 			</div>

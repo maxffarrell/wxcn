@@ -38,9 +38,12 @@
 			})
 		});
 	}
-	const markup = untrack(() => renderToString(node(), { identifierPrefix: prefix }));
+	// Hydration must use the same props snapshot as the server-rendered markup.
+	// The parent can update location, moon data, or presets before this mounts.
+	const initial = untrack(node);
+	const markup = renderToString(initial, { identifierPrefix: prefix });
 	onMount(() => {
-		root = hydrateRoot(element, node(), { identifierPrefix: prefix });
+		root = hydrateRoot(element, initial, { identifierPrefix: prefix });
 		return () => {
 			root?.unmount();
 			root = undefined;

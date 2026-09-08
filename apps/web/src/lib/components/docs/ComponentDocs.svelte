@@ -76,6 +76,25 @@
 				<code>--weather-base-color</code>, falling back to your theme's
 				<code>--muted-foreground</code>.
 			</p>
+			<H3 id="weather-sky">Location-aware skies</H3>
+			<p>
+				Backgrounds use <code>location.latitude</code>, <code>location.longitude</code>, and
+				<code>at</code> to calculate the Sun and Moon with Astronomy Engine. Live cards update every minute;
+				sample cards use their sample date. Day details use the selected period's start time. Sunrise
+				and sunset colors follow solar altitude, including nighttime rain, snow, and clouds.
+			</p>
+			<p>
+				The sky is a fixed panorama: north at both edges, east at one quarter, south in the middle,
+				west at three quarters. Height follows altitude. Sun and Moon discs are enlarged for
+				readability; the Moon shows its calculated illuminated fraction and local tilt, and bodies
+				below the horizon are hidden. Clouds can obscure them. This is an illustrative sky, not a
+				camera-aligned view or a forecast of exact cloud locations.
+			</p>
+			<p>
+				Pass an explicit <code>at</code> timestamp to preview a moment. The homepage's Sky time picker
+				finds actual rise, set, and solar transit times; polar locations may have no sunrise or sunset
+				on the preview date.
+			</p>
 			<H3 id="weather-temperature-outlook">Current conditions and temperature outlook</H3>
 			<p>
 				Pass a <code>currentWeather</code> observation separately from <code>forecast</code>
@@ -113,7 +132,7 @@
 		</p>
 		<p>
 			Weather and tides show supplied periods only, up to seven days; missing days are not filled
-			in. Moon summaries use the existing lunar estimates anchored to the supplied forecast date.
+			in. Moon summaries use astronomical phase calculations anchored to the supplied forecast date.
 			Set <code>timeZone</code> or <code>location.timeZone</code> to group days in the local calendar.
 		</p>
 		<H3 id={`${item.name}-installation`}>Installation</H3>

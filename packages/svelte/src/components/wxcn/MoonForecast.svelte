@@ -80,7 +80,7 @@
 			class={`flex items-center gap-4 ${size === 'lg' ? 'flex-col rounded-lg bg-muted/20 p-5 text-center' : ''}`}
 		>
 			<MoonDisc
-				phase={view.age / 29.530588853}
+				phase={view.phase ?? view.age / 29.530588853}
 				label={`${view.phaseName}, ${view.illumination}% illuminated`}
 				class={size === 'sm'
 					? 'size-16 shrink-0'

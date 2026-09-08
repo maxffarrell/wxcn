@@ -45,7 +45,7 @@ const predictions = await fetchTidePredictions({
 
 ## Moon
 
-Moon data is calculated locally from a mean synodic month. Phase and cycle dates are estimates; rise and set times need a location-specific ephemeris. The component does not require an external API.
+Moon phase, illumination, and cycle dates are calculated locally with [Astronomy Engine](https://github.com/cosinekitty/astronomy). Weather backgrounds also calculate observer-specific Sun and Moon positions from coordinates and time, including the illuminated lunar limb and horizon visibility. The component does not require an external astronomy API.
 
 ```ts
 import { getMoonForecast } from '$lib/data/moon';

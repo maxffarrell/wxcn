@@ -38,6 +38,7 @@
 	import CloudSun from '@lucide/svelte/icons/cloud-sun';
 	import Moon from '@lucide/svelte/icons/moon';
 	import Waves from '@lucide/svelte/icons/waves';
+	import { getSkyPreviewTime, type SkyPeriod } from '@wxcn/core/sky.js';
 	import { sampleWeather, sampleCurrentWeather } from '@wxcn/core/weather.js';
 	import { sampleTides } from '@wxcn/core/tides.js';
 	import { getMoonForecast, sampleMoon } from '@wxcn/core/moon.js';
@@ -61,6 +62,7 @@
 		unit = $state<WeatherUnit>('fahrenheit'),
 		background = $state('realistic');
 	let scene = $state('live');
+	let skyTime = $state('live');
 	let tideUnit = $state<TideUnit>('ft'),
 		windUnit = $state<'mph' | 'km/h' | 'm/s' | 'knots'>('mph');
 	let base = $state('neutral'),
@@ -224,6 +226,16 @@
 							}
 				)
 	);
+	const skyPreview = $derived(
+		skyTime !== 'live' || scene === 'night'
+			? getSkyPreviewTime(
+					location.latitude,
+					location.longitude,
+					status === 'live' ? Date.now() : Date.parse(sampleCurrentWeather.observedAt),
+					(skyTime === 'live' ? 'night' : skyTime) as SkyPeriod
+				)
+			: null
+	);
 	const weatherSource = $derived(
 		scene !== 'live'
 			? 'Condition preview'
@@ -246,6 +258,7 @@
 		background = 'realistic';
 		interaction = 'on';
 		scene = 'live';
+		skyTime = 'live';
 		showTemperatureTrend = true;
 		showHighLow = false;
 	}
@@ -467,9 +480,10 @@
 					}}
 			{showTemperatureTrend}
 			{showHighLow}
-			at={status === 'live' && scene === 'live'
-				? undefined
-				: Date.parse(sampleCurrentWeather.observedAt)}
+			at={skyPreview ??
+				(status === 'live' && scene === 'live'
+					? undefined
+					: Date.parse(sampleCurrentWeather.observedAt))}
 			{location}
 			sourceLabel={weatherSource}
 			background={background as WeatherBackground}
@@ -685,6 +699,30 @@
 							{ value: 'none', label: 'None' }
 						]}
 					/>
+					<Picker
+						label="Sky time"
+						bind:value={skyTime}
+						options={[
+							{ value: 'live', label: 'Forecast time' },
+							{ value: 'sunrise', label: 'Sunrise' },
+							{ value: 'midday', label: 'Solar noon' },
+							{ value: 'sunset', label: 'Sunset' },
+							{ value: 'night', label: 'Solar midnight' }
+						]}
+					/>
+					{#if skyTime !== 'live'}
+						<p class="px-2 text-xs text-muted-foreground" role="status">
+							{skyPreview === null
+								? 'No sunrise or sunset at this location on the preview date.'
+								: new Intl.DateTimeFormat('en-US', {
+										timeZone: location.timeZone,
+										month: 'short',
+										day: 'numeric',
+										hour: 'numeric',
+										minute: '2-digit'
+									}).format(skyPreview)}
+						</p>
+					{/if}
 					<Picker
 						label="Weather preview"
 						bind:value={scene}

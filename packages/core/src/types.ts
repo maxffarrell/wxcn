@@ -35,6 +35,8 @@ export type TidePrediction = {
 export type MoonForecast = {
 	date: string;
 	phaseName: string;
+	/** Astronomical phase cycle: 0 new, 0.25 first quarter, 0.5 full. */
+	phase?: number;
 	illumination: number;
 	age: number;
 	nextFullMoon: string;

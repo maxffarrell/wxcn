@@ -2,14 +2,14 @@
   <img src="apps/web/static/favicon.svg" width="48" height="48" alt="" />
   <h1>wxcn</h1>
   <p><strong>A little atmosphere for your interface.</strong></p>
-  <p>Weather, moon, and tide components for Svelte and React.<br />Built on native shadcn primitives. Shaped by your theme. Yours to customize.</p>
+  <p>Weather, moon, and tide components for Svelte, React, and Vue.<br />Built on native shadcn primitives. Shaped by your theme. Yours to customize.</p>
   <p>
     <a href="#the-components">Components</a> ·
     <a href="#make-it-yours">Playground</a> ·
     <a href="#build-with-wxcn">Developer experience</a> ·
     <a href="LICENSE">MIT license</a>
   </p>
-  <p><strong>Svelte 5</strong> &nbsp; / &nbsp; <strong>React 19</strong> &nbsp; / &nbsp; <strong>Tailwind CSS 4</strong> &nbsp; / &nbsp; <strong>LayerChart 2</strong></p>
+  <p><strong>Svelte 5</strong> &nbsp; / &nbsp; <strong>React 19</strong> &nbsp; / &nbsp; <strong>Vue 3</strong> &nbsp; / &nbsp; <strong>Tailwind CSS 4</strong> &nbsp; / &nbsp; <strong>LayerChart 2</strong></p>
 </div>
 
 <picture>
@@ -53,8 +53,8 @@ A forecast at a glance, a view of the lunar cycle, or the next turn of the tide.
   </tr>
   <tr>
     <td valign="top">Temperature, wind, and forecast periods with optional cloud, rain, and snow backgrounds.</td>
-    <td valign="top">A phase illustration, illumination, and estimated lunar-cycle dates.</td>
-    <td valign="top">A LayerChart curve, current water level, and surrounding high/low events.</td>
+    <td valign="top">A phase illustration, illumination, and astronomically calculated lunar-cycle dates.</td>
+    <td valign="top">An interactive prediction curve, current water level, and surrounding high/low events.</td>
   </tr>
 </table>
 
@@ -69,7 +69,7 @@ Explore a wide canvas of mixed cards, or open a component collection to compare 
 - **Motion with restraint.** Atmospheric backgrounds sit behind readable information. Rain and snow respect reduced motion; offscreen animations pause.
 - **Location-aware previews.** Browser location loads local US weather and coastal tides. Tides automatically use the nearest coastal station, including for inland visitors. Unavailable data stays clearly labeled.
 
-Svelte and [React](https://wxcn.dev/react) are available today. **Vue is looking for contributors!**
+Svelte, [React](https://wxcn.dev/react), and [Vue](https://wxcn.dev/vue) are available today.
 
 ## Build with wxcn
 
@@ -85,6 +85,8 @@ Run the playground locally and open **Get code**, or visit its **Registry** page
 | `/r/forecast-dashboard.json` | All three cards and a composed dashboard             |
 
 React items use the `/r/react/<component>.json` endpoints and the same component names. The React registry installs native React components, Recharts, and the configured shadcn primitives. Its icon adapter supports Lucide, Tabler, Phosphor, Hugeicons, and Remixicon through the consumer's configured icon library.
+
+Vue items use `/r/vue/<component>.json` with `shadcn-vue@latest` and install native Vue components using the same component names and shared data contracts. Weather glyphs retain their canonical Lucide shapes where shadcn-vue has no equivalent icon mapping; navigation arrows follow the configured icon library.
 
 The CLI resolves the required `card` and `badge` primitives from your configuration. Icon selection happens **at installation time**; the playground's icon picker lets you preview those choices.
 
@@ -158,17 +160,17 @@ Sun and Moon positions, lunar illumination, and full/new moon dates are calculat
 
 Use the pnpm version pinned in [`package.json`](package.json) to install dependencies, then start the playground with `pnpm dev`.
 
-| Command               | Purpose                                                |
-| --------------------- | ------------------------------------------------------ |
-| `pnpm dev`            | Start the playground and local registry                |
-| `pnpm check`          | Run Svelte and TypeScript checks                       |
-| `pnpm test`           | Verify registry transforms, data handling, and presets |
-| `pnpm lint`           | Check formatting                                       |
-| `pnpm build`          | Regenerate the registry and build the site             |
-| `pnpm registry:build` | Generate installable Svelte and React registry files   |
-| `pnpm dev:react`      | Start the standalone React/Vite preview harness        |
-| `pnpm test:react`     | Run React SSR and semantic component tests             |
-| `pnpm build:react`    | Typecheck and build the React preview                  |
+| Command               | Purpose                                                    |
+| --------------------- | ---------------------------------------------------------- |
+| `pnpm dev`            | Start the playground and local registry                    |
+| `pnpm check`          | Run Svelte and TypeScript checks                           |
+| `pnpm test`           | Verify registry transforms, data handling, and presets     |
+| `pnpm lint`           | Check formatting                                           |
+| `pnpm build`          | Regenerate the registry and build the site                 |
+| `pnpm registry:build` | Generate installable Svelte, React, and Vue registry files |
+| `pnpm dev:react`      | Start the standalone React/Vite preview harness            |
+| `pnpm test:react`     | Run React SSR and semantic component tests                 |
+| `pnpm build:react`    | Typecheck and build the React preview                      |
 
 Component source lives in [`packages/svelte/src/components/wxcn`](packages/svelte/src/components/wxcn) and [`packages/react/src/components/wxcn`](packages/react/src/components/wxcn), with shared data and calculations in [`packages/core`](packages/core). [`tooling/registry/build.mjs`](tooling/registry/build.mjs) generates both installable registries from that source. For registry-only iteration, use the `registry:build` package script before testing an install.
 
@@ -181,7 +183,7 @@ Presets use the native `shadcn-svelte/preset` encoder and settings, so the same 
 
 ## Contributing & credits
 
-Contributions are welcome, especially Vue implementations that preserve the same theme and data contracts.
+Contributions are welcome. Preserve the shared theme and data contracts across all three frameworks.
 
 Built with [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) and [LayerChart](https://github.com/techniq/layerchart). The playground layout and controls are adapted from [shadcn-svelte PR #2755](https://github.com/huntabyte/shadcn-svelte/pull/2755). See [third-party notices](THIRD_PARTY_NOTICES.md) for attribution.
 
@@ -189,7 +191,7 @@ Built with [shadcn-svelte](https://github.com/huntabyte/shadcn-svelte) and [Laye
 
 ## Contributing across frameworks
 
-The pnpm workspace separates the Astro website (`apps/web`), native Svelte and React components (`packages/svelte`, `packages/react`), and shared TypeScript logic (`packages/core`). Run `pnpm dev:react` for the native React preview. Vue directories remain reserved for contributions.
+The pnpm workspace separates the Astro website (`apps/web`), native framework components (`packages/svelte`, `packages/react`, and `packages/vue`), and shared TypeScript logic (`packages/core`).
 
 Svelte registry items are available at `/r/svelte/<component>.json`. Existing `/r/<component>.json` URLs remain compatible. See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, framework adapters, parity requirements, and deployment configuration.
 
@@ -199,4 +201,4 @@ Every public page has a Markdown version: use `/index.md`, `/docs/components.md`
 
 The [wxcn skill](skills/wxcn/SKILL.md) provides registry installation, data-prop, theming, and contribution guidance. Install it with `npx skills add maxffarrell/wxcn-svelte --skill wxcn`.
 
-Production site: [wxcn.dev](https://wxcn.dev). The site runs on Astro with native Svelte and React preview islands; the standalone React Vite app remains the local harness. Production deployment is handled by the linked Cloudflare Workers Builds project.
+Production site: [wxcn.dev](https://wxcn.dev). The Astro site serves native Svelte, React, and Vue previews and documentation. Production deployment is handled by the linked Cloudflare Workers Builds project.

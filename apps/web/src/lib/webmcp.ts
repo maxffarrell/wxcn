@@ -20,22 +20,30 @@ type ModelContext = {
 
 const frameworkProperty = {
 	type: 'string',
-	enum: ['svelte', 'react'],
+	enum: ['svelte', 'react', 'vue'],
 	description: 'Framework to navigate or list. Defaults to the current framework.'
 };
 
 function frameworkPrefix(input: unknown): string {
 	const framework =
 		input && typeof input === 'object' && 'framework' in input ? input.framework : undefined;
-	if (framework !== undefined && framework !== 'svelte' && framework !== 'react') {
-		throw new Error('Choose Svelte or React.');
+	if (
+		framework !== undefined &&
+		framework !== 'svelte' &&
+		framework !== 'react' &&
+		framework !== 'vue'
+	) {
+		throw new Error('Choose Svelte, React, or Vue.');
 	}
+	const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
 	const current =
-		typeof window !== 'undefined' &&
-		(window.location.pathname === '/react' || window.location.pathname.startsWith('/react/'))
+		pathname === '/react' || pathname.startsWith('/react/')
 			? 'react'
-			: 'svelte';
-	return (framework ?? current) === 'react' ? '/react' : '';
+			: pathname === '/vue' || pathname.startsWith('/vue/')
+				? 'vue'
+				: 'svelte';
+	const selected = framework ?? current;
+	return selected === 'svelte' ? '' : `/${selected}`;
 }
 
 function pageHref(href: string, prefix: string) {

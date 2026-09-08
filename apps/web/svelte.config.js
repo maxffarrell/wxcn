@@ -6,6 +6,7 @@ import rehypePrettyCode from 'rehype-pretty-code';
 
 const config = {
 	extensions: ['.svelte', '.svx'],
+	compilerOptions: { experimental: { async: true } },
 	preprocess: [
 		vitePreprocess(),
 		mdsx({

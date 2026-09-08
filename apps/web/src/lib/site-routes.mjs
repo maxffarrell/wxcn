@@ -9,5 +9,8 @@ export const publicRoutes = [
 	'/shader-preview',
 	'/react',
 	'/react/docs/components',
-	'/react/docs/endpoints'
+	'/react/docs/endpoints',
+	'/vue',
+	'/vue/docs/components',
+	'/vue/docs/endpoints'
 ];

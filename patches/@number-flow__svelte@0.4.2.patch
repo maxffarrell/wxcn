@@ -1,0 +1,19 @@
+diff --git a/dist/NumberFlow.svelte b/dist/NumberFlow.svelte
+index 81f5854a889bc063cc5d1b7f7a97e4067b9967e4..f85215f30a075e5316e5af258b081f789c646ad7 100644
+--- a/dist/NumberFlow.svelte
++++ b/dist/NumberFlow.svelte
+@@ -25,7 +25,6 @@ define("number-flow-svelte", NumberFlowElement);
+ } from "number-flow/lite";
+ import { writable } from "svelte/store";
+ import { getGroupContext } from "./group.js";
+-import { BROWSER } from "esm-env";
+ export let locales = void 0;
+ export let format = void 0;
+ export let value;
+@@ -68,5 +67,5 @@ group?.register?.(elStore);
+ 	{nonce}
+ 	{data}
+ >
+-	{@html BROWSER ? undefined : renderInnerHTML(data, { nonce, elementSuffix: '-svelte' })}
++	{@html renderInnerHTML(data, { nonce, elementSuffix: '-svelte' })}
+ </number-flow-svelte>

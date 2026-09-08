@@ -75,7 +75,7 @@ function MoonCardView({
 					)}
 				>
 					<MoonDisc
-						phase={view.age / 29.530588853}
+						phase={view.phase ?? view.age / 29.530588853}
 						label={`${view.phaseName}, ${view.illumination}% illuminated`}
 						className={
 							size === 'sm'

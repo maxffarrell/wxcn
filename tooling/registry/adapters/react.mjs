@@ -32,7 +32,7 @@ const definitions = [
 	[
 		'weather-forecast',
 		'Weather forecast with optional atmospheric backgrounds.',
-		['weather', 'weather-outlook'],
+		['weather', 'weather-outlook', 'sky'],
 		['weather-shader-background', 'weather-gradient-background'],
 		['card']
 	],
@@ -77,7 +77,11 @@ for (const [name, description, helpers, components, registryDependencies] of def
 		description,
 		registryDependencies: [...registryDependencies, 'button'],
 		dependencies:
-			name === 'tide-forecast' ? ['lucide-react', '@number-flow/react@^0.5.8'] : ['lucide-react'],
+			name === 'tide-forecast'
+				? ['lucide-react', '@number-flow/react@^0.5.8']
+				: name === 'weather-forecast' || name === 'moon-forecast'
+					? ['lucide-react', 'astronomy-engine@2.1.19']
+					: ['lucide-react'],
 		files
 	});
 }

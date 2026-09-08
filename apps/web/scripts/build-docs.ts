@@ -1,6 +1,7 @@
 import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import registry from '../registry.json' with { type: 'json' };
 import reactRegistry from '../../../packages/react/registry.json' with { type: 'json' };
+import vueRegistry from '../../../packages/vue/registry.json' with { type: 'json' };
 import { codeToHtml } from 'shiki';
 import { reactManualIcons } from './react-docs-icons.mjs';
 import { transformImports } from 'shadcn-svelte/transformers/imports';
@@ -76,7 +77,7 @@ export async function load() {
 		[
 			'moon-forecast',
 			'MoonForecast',
-			'Lunar phase, illumination, and estimated cycle dates.',
+			'Lunar phase, illumination, and astronomically calculated cycle dates.',
 			moonExample
 		]
 	];
@@ -156,7 +157,11 @@ async function loadReact() {
 			'TideForecast',
 			'Nearest coastal tides, with a current reading and interactive prediction curve.'
 		],
-		['moon-forecast', 'MoonForecast', 'Lunar phase, illumination, and estimated cycle dates.']
+		[
+			'moon-forecast',
+			'MoonForecast',
+			'Lunar phase, illumination, and astronomically calculated cycle dates.'
+		]
 	];
 	return {
 		examples: await Promise.all(
@@ -217,8 +222,84 @@ async function loadReact() {
 	};
 }
 
+function vueManualImports(content: string) {
+	return content
+		.replaceAll('@/registry/wxcn/components/', '@/components/')
+		.replaceAll('@/registry/wxcn/lib/', '@/lib/')
+		.replaceAll('@/registry/wxcn/ui/', '@/components/ui/');
+}
+
+async function loadVue() {
+	const descriptions = [
+		['forecast-dashboard', 'ForecastDashboard', 'All three components, composed into a dashboard.'],
+		[
+			'weather-forecast',
+			'WeatherForecast',
+			'Forecast periods with optional atmospheric backgrounds.'
+		],
+		[
+			'tide-forecast',
+			'TideForecast',
+			'Nearest coastal tides, with a current reading and interactive prediction curve.'
+		],
+		['moon-forecast', 'MoonForecast', 'Lunar phase, illumination, and astronomical cycle dates.']
+	];
+	return {
+		examples: await Promise.all(
+			descriptions.map(async ([name, title, description]) => {
+				const code = readFileSync(
+					new URL(`../src/lib/components/docs/examples/vue/${name}.vue`, import.meta.url),
+					'utf8'
+				);
+				const items =
+					name === 'forecast-dashboard'
+						? [
+								...vueRegistry.items.filter((item) => item.name === name),
+								...vueRegistry.items.filter((item) => item.name !== name)
+							]
+						: vueRegistry.items.filter((item) => item.name === name);
+				const files = [
+					...new Map(items.flatMap((item) => item.files).map((file) => [file.path, file])).values()
+				];
+				return {
+					name,
+					title,
+					description,
+					code,
+					html: await highlight(code, 'vue'),
+					primitives: [
+						...new Set(
+							items
+								.flatMap((item) => item.registryDependencies)
+								.filter(
+									(dependency) => !dependency.startsWith('https://') && !dependency.startsWith('.')
+								)
+						)
+					],
+					dependencies: [
+						...new Set(
+							items.flatMap((item) => ('dependencies' in item ? (item.dependencies ?? []) : []))
+						)
+					],
+					files: await Promise.all(
+						files.map(async (file) => ({
+							path: file.path.replace(/^registry\//, 'src/'),
+							code: vueManualImports(file.content),
+							html: await highlight(
+								vueManualImports(file.content),
+								file.path.endsWith('.vue') ? 'vue' : 'typescript'
+							)
+						}))
+					)
+				};
+			})
+		)
+	};
+}
+
 const destination = new URL('../src/lib/server/generated/', import.meta.url);
 mkdirSync(destination, { recursive: true });
 writeFileSync(new URL('component-docs.json', destination), JSON.stringify(await load()));
 writeFileSync(new URL('component-docs-react.json', destination), JSON.stringify(await loadReact()));
+writeFileSync(new URL('component-docs-vue.json', destination), JSON.stringify(await loadVue()));
 console.log('Generated component documentation and syntax highlighting.');

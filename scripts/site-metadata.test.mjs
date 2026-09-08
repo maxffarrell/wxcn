@@ -22,7 +22,10 @@ test('public route manifest contains the canonical Astro pages', async () => {
 		'/shader-preview',
 		'/react',
 		'/react/docs/components',
-		'/react/docs/endpoints'
+		'/react/docs/endpoints',
+		'/vue',
+		'/vue/docs/components',
+		'/vue/docs/endpoints'
 	]);
 	assert.equal(siteUrl, 'https://wxcn.dev');
 	assert.match(await read('apps/web/src/pages/sitemap.xml.ts'), /publicRoutes/);

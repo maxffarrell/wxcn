@@ -6,13 +6,17 @@ class Page {
 		this.url = new URL(url);
 	}
 	get framework() {
-		return this.url.pathname.startsWith('/react') ? 'react' : 'svelte';
+		return /^\/react(?:\/|$)/.test(this.url.pathname)
+			? 'react'
+			: /^\/vue(?:\/|$)/.test(this.url.pathname)
+				? 'vue'
+				: 'svelte';
 	}
 	get path() {
-		return this.url.pathname.replace(/^\/react(?=\/|$)/, '') || '/';
+		return this.url.pathname.replace(/^\/(react|vue)(?=\/|$)/, '') || '/';
 	}
 	href(path: string) {
-		return this.framework === 'react' ? '/react' + (path === '/' ? '' : path) : path;
+		return this.framework !== 'svelte' ? '/' + this.framework + (path === '/' ? '' : path) : path;
 	}
 	replace(url: URL) {
 		history.replaceState(null, '', url);

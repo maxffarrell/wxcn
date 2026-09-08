@@ -5,6 +5,7 @@ allowBuilds:
   workerd: true
   esbuild: true
   '@hugeicons/svelte': false
+  vue-demi: true
 minimumReleaseAgeExclude:
   - '@cloudflare/workerd-darwin-64@1.20260907.1'
   - '@cloudflare/workerd-darwin-arm64@1.20260907.1'
@@ -16,3 +17,5 @@ minimumReleaseAgeExclude:
   - miniflare@5.20260907.0-alpha
   - workerd@1.20260907.1
   - wrangler@4.129.1
+patchedDependencies:
+  '@number-flow/svelte@0.4.2': patches/@number-flow__svelte@0.4.2.patch

@@ -1,5 +1,37 @@
 {
 	"name": "@wxcn/vue",
+	"version": "0.1.0",
 	"private": true,
-	"type": "module"
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./components/*": "./src/components/*"
+	},
+	"scripts": {
+		"check": "vue-tsc --noEmit"
+	},
+	"dependencies": {
+		"@hugeicons/core-free-icons": "^4.3.0",
+		"@hugeicons/vue": "^1.0.8",
+		"@number-flow/vue": "^0.5.2",
+		"@phosphor-icons/vue": "^2.2.1",
+		"@remixicon/vue": "^4.9.0",
+		"@tabler/icons-vue": "^3.46.0",
+		"@wxcn/core": "workspace:*",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"d3-shape": "^3.2.0",
+		"lucide-vue-next": "^0.577.0",
+		"reka-ui": "^2.8.0",
+		"tailwind-merge": "^3.6.0"
+	},
+	"peerDependencies": {
+		"vue": "^3.5.0"
+	},
+	"devDependencies": {
+		"@types/d3-shape": "^3.2.0",
+		"typescript": "6.0.3",
+		"vue": "^3.5.0",
+		"vue-tsc": "^3.2.5"
+	}
 }

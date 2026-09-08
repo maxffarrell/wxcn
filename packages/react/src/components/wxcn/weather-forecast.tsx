@@ -18,6 +18,7 @@ import type {
 } from '@wxcn/core/types.js';
 import { sampleWeather, sampleCurrentWeather, convertWindSpeed } from '@wxcn/core/weather.js';
 import { weatherOutlook } from '@wxcn/core/weather-outlook.js';
+import { getSkyState } from '@wxcn/core/sky.js';
 
 export interface WeatherForecastProps {
 	interactive?: boolean;
@@ -102,15 +103,19 @@ export function WeatherForecast({
 	}, []);
 	const effectiveTime =
 		at ?? (forecast === sampleWeather ? Date.parse(sampleCurrentWeather.observedAt) : (clock ?? 0));
+	const periods = forecast.slice(0, type === 'detailed' ? 8 : density === 'compact' ? 3 : 5);
+	const currentSky = getSkyState(location.latitude, location.longitude, effectiveTime);
+	const current =
+		currentWeather && currentSky
+			? { ...currentWeather, isDaytime: currentSky.isDaytime }
+			: currentWeather;
 	const outlook = weatherOutlook(
-		currentWeather,
+		current,
 		forecast,
 		unit,
 		timeZone ?? location.timeZone ?? visitorTimeZone,
 		effectiveTime
 	);
-	const periods = forecast.slice(0, type === 'detailed' ? 8 : density === 'compact' ? 3 : 5);
-	const current = currentWeather;
 	const temperature = (p: WeatherPeriod) =>
 		Math.round(
 			unit === 'celsius' && p.temperatureUnit === 'F'
@@ -176,6 +181,10 @@ export function WeatherForecast({
 		const view = day
 			? (displayedPeriods.find((period) => period.isDaytime) ?? displayedPeriods[0])
 			: current;
+		const sky =
+			day && view
+				? getSkyState(location.latitude, location.longitude, Date.parse(view.startTime))
+				: currentSky;
 		return (
 			<>
 				<div
@@ -188,10 +197,11 @@ export function WeatherForecast({
 						<>
 							<div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
 								{background === 'gradient' ? (
-									<WeatherGradientBackground mode={condition(view)} />
+									<WeatherGradientBackground mode={condition(view)} sky={sky} />
 								) : (
 									<WeatherShaderBackground
 										mode={condition(view)}
+										sky={sky}
 										paused={!overviewVisible}
 										dithered={background === 'dithered'}
 									/>

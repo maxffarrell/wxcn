@@ -1,6 +1,8 @@
 import { chromium, expect } from '@playwright/test';
 import assert from 'node:assert/strict';
 import { encodePreset, PRESET_STYLES } from 'shadcn-svelte/preset';
+const framework = process.env.WXCN_FRAMEWORK ?? 'react';
+assert.ok(['react', 'vue'].includes(framework));
 const browser = await chromium.launch();
 const page = await browser.newPage({
 	viewport: { width: 1280, height: 900 },
@@ -8,6 +10,7 @@ const page = await browser.newPage({
 });
 page.setDefaultTimeout(15000);
 const errors = [];
+page.on('console', message => { if (/hydration|hydrating|mismatch/i.test(message.text()) && ['warning', 'error'].includes(message.type())) errors.push(message.text()); });
 page.on('pageerror', (e) => errors.push(e.message));
 await page.route('**/api/**', (route) =>
 	route.fulfill({ status: 503, json: { message: 'Fixture mode' } })
@@ -34,10 +37,11 @@ const metrics = () =>
 try {
 	for (const style of PRESET_STYLES) {
 		const values = [];
-		for (const path of ['/', '/react']) {
+		for (const path of ['/', '/' + framework]) {
 			await page.goto(`${base}${path}?preset=${encodePreset({ style })}`);
 			await page.locator('[data-slot="designer"]').waitFor();
 			await page.waitForLoadState('networkidle');
+            if (path === '/vue') await page.waitForFunction(() => [...document.querySelectorAll('[data-vue-forecast]')].every(element => element.__vue_app__));
 			await page.getByRole('button', { name: 'Style', exact: true }).waitFor();
 			await page.waitForFunction(
 				(style) =>
@@ -62,40 +66,44 @@ try {
 	for (const name of names) {
 		await page.getByRole('button', { name: 'Icon library', exact: true }).click();
 		await page.getByRole('menuitemradio', { name: name.trim(), exact: true }).click();
-		await page.locator('[data-react-forecast="weather"] svg').first().waitFor();
+		await page.locator(`[data-${framework}-forecast="weather"] svg`).first().waitFor();
 	}
 	await page.getByRole('button', { name: 'Get Code', exact: true }).click();
 	assert.match(
 		await page.getByRole('dialog').innerText(),
-		/shadcn@latest.*\/r\/react\/forecast-dashboard\.json/
+		new RegExp(
+			`shadcn${framework === 'vue' ? '-vue' : ''}@latest.*\\/r\\/${framework}\\/forecast-dashboard\\.json`
+		)
 	);
 	await page.keyboard.press('Escape');
 	await page.getByRole('link', { name: 'Components', exact: true }).click();
-	await page.locator('[data-react-forecast="dashboard"]').waitFor();
-	assert.ok(page.url().includes('/react/docs/components'));
-	await page.goto(base + '/react?item=weather');
+	await page.locator(`[data-${framework}-forecast="dashboard"]`).waitFor();
+	assert.ok(page.url().includes(`/${framework}/docs/components`));
+	await page.goto(base + `/${framework}?item=weather`);
 	await page.waitForLoadState('networkidle');
 	for (const mode of ['Realistic', 'Dithered', 'Gradient', 'None']) {
 		await page.getByRole('button', { name: 'Background', exact: true }).click();
 		await page.getByRole('menuitemradio', { name: mode, exact: true }).click();
 		if (mode === 'None')
 			await page
-				.locator('[data-react-forecast=weather] [data-background-style]')
+				.locator(`[data-${framework}-forecast=weather] [data-background-style]`)
 				.first()
 				.waitFor({ state: 'detached' });
 		else
 			await page
-				.locator(`[data-react-forecast=weather] [data-background-style="${mode.toLowerCase()}"]`)
+				.locator(
+					`[data-${framework}-forecast=weather] [data-background-style="${mode.toLowerCase()}"]`
+				)
 				.first()
 				.waitFor();
 	}
 	await page.setViewportSize({ width: 375, height: 900 });
-	await page.locator('[data-react-forecast="weather"]').first().waitFor();
+	await page.locator(`[data-${framework}-forecast="weather"]`).first().waitFor();
 	await expect
 		.poll(() => page.evaluate(() => document.documentElement.scrollWidth > innerWidth))
 		.toBe(false);
-	await page.screenshot({ path: '/tmp/wxcn-react-site-mobile.png', fullPage: true });
-	await page.goto(base + '/react');
+	await page.screenshot({ path: `/tmp/wxcn-${framework}-site-mobile.png`, fullPage: true });
+	await page.goto(base + '/' + framework);
 	await page.getByRole('link', { name: 'Svelte', exact: true }).click();
 	assert.equal(new URL(page.url()).pathname, '/');
 	assert.deepEqual(errors, []);

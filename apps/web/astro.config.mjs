@@ -1,5 +1,6 @@
 import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
+import vue from '@astrojs/vue';
 import svelte from '@astrojs/svelte';
 import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
@@ -9,7 +10,7 @@ export default defineConfig({
 	site: 'https://wxcn.dev',
 	output: 'server',
 	publicDir: './static',
-	integrations: [react(), svelte({ extensions: ['.svelte', '.svx'] })],
+	integrations: [react(), vue(), svelte({ extensions: ['.svelte', '.svx'] })],
 	adapter: cloudflare({ imageService: 'passthrough' }),
 	vite: {
 		// Prebundle the server renderer before workerd starts; discovering it later
@@ -23,7 +24,9 @@ export default defineConfig({
 						'react',
 						'react/jsx-runtime',
 						'react/jsx-dev-runtime',
-						'react-dom/server'
+						'react-dom/server',
+						'vue',
+						'@vue/server-renderer'
 					]
 				}
 			}
@@ -43,7 +46,7 @@ export default defineConfig({
 			}
 		],
 		resolve: {
-			dedupe: ['svelte', 'bits-ui', 'react', 'react-dom'],
+			dedupe: ['svelte', 'bits-ui', 'react', 'react-dom', 'vue'],
 			alias: {
 				'@': fileURLToPath(new URL('../../packages/react/src', import.meta.url)),
 				$lib: fileURLToPath(new URL('./src/lib', import.meta.url)),

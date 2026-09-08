@@ -7,7 +7,7 @@
 		"dev": "pnpm docs:build && pnpm --filter @wxcn/web dev",
 		"build": "pnpm docs:build && pnpm --filter @wxcn/web build && node tooling/deploy/link-worker.mjs",
 		"preview": "pnpm --filter @wxcn/web preview",
-		"check": "pnpm docs:build && pnpm --filter @wxcn/core check && pnpm --filter @wxcn/svelte check && pnpm --filter @wxcn/web check && pnpm --filter @wxcn/react check && pnpm --filter @wxcn/preview-react check",
+		"check": "pnpm docs:build && pnpm --filter @wxcn/core check && pnpm --filter @wxcn/svelte check && pnpm --filter @wxcn/web check && pnpm --filter @wxcn/react check && pnpm --filter @wxcn/preview-react check && pnpm --filter @wxcn/vue check && pnpm --filter @wxcn/preview-vue check",
 		"lint": "prettier --check .",
 		"registry:build": "node tooling/registry/build.mjs",
 		"dns-aid:check": "node scripts/dns-aid-check.mjs",
@@ -17,7 +17,11 @@
 		"dev:react": "pnpm --filter @wxcn/preview-react dev",
 		"build:react": "pnpm --filter @wxcn/preview-react build",
 		"test:react": "tsx --tsconfig packages/react/tsconfig.json --test packages/react/test/react.test.tsx",
-		"test:consumer:react": "pnpm registry:build && node scripts/react-consumer.test-build.mjs"
+		"test:consumer:react": "pnpm registry:build && node scripts/react-consumer.test-build.mjs",
+		"dev:vue": "pnpm --filter @wxcn/preview-vue dev",
+		"build:vue": "pnpm --filter @wxcn/preview-vue build",
+		"test:consumer:vue": "pnpm registry:build && node scripts/vue-consumer.test-build.mjs",
+		"test:vue": "pnpm --filter @wxcn/preview-vue test:ssr"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.63.0",

@@ -32,8 +32,14 @@ test('WebMCP preserves the current framework and supports an explicit framework 
 			['/react', '/react/docs/components', '/react/docs/endpoints']
 		);
 		assert.equal((await list.execute({ framework: 'svelte' }))[0].href, '/');
+		assert.deepEqual(
+			(await list.execute({ framework: 'vue' })).map((page) => page.href),
+			['/vue', '/vue/docs/components', '/vue/docs/endpoints']
+		);
+		await navigate.execute({ page: 'components', framework: 'vue' });
+		assert.equal(navigations.at(-1), '/vue/docs/components');
 		await assert.rejects(navigate.execute({ page: 'toString' }), /valid wxcn page/);
-		await assert.rejects(list.execute({ framework: 'unknown' }), /Choose Svelte or React/);
+		await assert.rejects(list.execute({ framework: 'unknown' }), /Choose Svelte, React, or Vue/);
 	} finally {
 		if (original === undefined) delete globalThis.window;
 		else globalThis.window = original;

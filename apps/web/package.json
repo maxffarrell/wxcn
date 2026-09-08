@@ -12,6 +12,7 @@
 	},
 	"dependencies": {
 		"@astrojs/react": "^6.0.5",
+		"@astrojs/vue": "^7.0.2",
 		"@fontsource-variable/dm-sans": "^5.3.0",
 		"@fontsource-variable/eb-garamond": "^5.3.0",
 		"@fontsource-variable/figtree": "^5.3.0",
@@ -42,9 +43,11 @@
 		"@hugeicons/svelte": "^1.1.5",
 		"@lucide/svelte": "^1.42.0",
 		"@tabler/icons-svelte": "^3.46.0",
+		"@vue/server-renderer": "^3.5.42",
 		"@wxcn/core": "workspace:*",
 		"@wxcn/react": "workspace:*",
 		"@wxcn/svelte": "workspace:*",
+		"@wxcn/vue": "workspace:*",
 		"bits-ui": "^2.19.0",
 		"clsx": "^2.1.1",
 		"d3-shape": "^3.2.0",
@@ -58,7 +61,8 @@
 		"remixicon-svelte": "^0.0.5",
 		"runed": "^0.37.1",
 		"tailwind-merge": "^3.6.0",
-		"tailwind-variants": "^3.3.1"
+		"tailwind-variants": "^3.3.1",
+		"vue": "^3.5.42"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.10",

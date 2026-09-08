@@ -128,3 +128,43 @@ test('live data without an explicit time uses deterministic SSR loading states',
 	assert.match(weather, /Loading current weather time/);
 	assert.match(tides, /Loading current tide time/);
 });
+
+test('astronomical skies follow location and time in server-rendered gradients', () => {
+	const at = Date.parse('2026-09-07T12:00:00Z');
+	const renderAt = (longitude: number) =>
+		renderToString(
+			<WeatherForecast
+				at={at}
+				background="gradient"
+				location={{ latitude: 0, longitude, label: 'Equator' }}
+			/>
+		);
+	assert.match(renderAt(0), /data-sky-period="midday"/);
+	assert.match(renderAt(180), /data-sky-period="night"/);
+	assert.match(renderAt(0), /class="wxcn-gradient-sun"/);
+	assert.doesNotMatch(renderAt(180), /class="wxcn-gradient-sun"/);
+});
+
+test('weather trend uses astronomical night even when provider daytime is stale', () => {
+	const at = Date.parse('2026-09-07T12:00:00Z');
+	const current = { ...sampleCurrentWeather, temperature: 60, isDaytime: true };
+	const forecast = [
+		{
+			...sampleWeather[0],
+			temperature: 80,
+			isDaytime: true,
+			startTime: '2026-09-07T12:00:00Z',
+			endTime: '2026-09-07T18:00:00Z'
+		}
+	];
+	const html = renderToString(
+		<WeatherForecast
+			at={at}
+			currentWeather={current}
+			forecast={forecast}
+			showTemperatureTrend
+			location={{ latitude: 0, longitude: 180, label: 'Night', timeZone: 'UTC' }}
+		/>
+	);
+	assert.doesNotMatch(html, /Going up to/);
+});

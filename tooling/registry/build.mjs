@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { reactRegistry } from './adapters/react.mjs';
 import { svelteRegistry } from './adapters/svelte.mjs';
+import { vueRegistry } from './adapters/vue.mjs';
 const root = new URL('../../', import.meta.url);
 async function write(path, value) {
 	const url = new URL(path, root);
@@ -24,3 +25,8 @@ for (const item of reactRegistry.items)
 await write('apps/web/static/r/react/registry.json', reactRegistry);
 await write('packages/react/registry.json', reactRegistry);
 console.log(`Built ${reactRegistry.items.length} React items.`);
+
+for (const item of vueRegistry.items) await write(`apps/web/static/r/vue/${item.name}.json`, item);
+await write('apps/web/static/r/vue/registry.json', vueRegistry);
+await write('packages/vue/registry.json', vueRegistry);
+console.log(`Built ${vueRegistry.items.length} Vue items.`);

@@ -1,6 +1,6 @@
 # Contributing to wxcn
 
-wxcn distributes editable source through each framework's native shadcn registry. Svelte and React are implemented; Vue is reserved for future contributions.
+wxcn distributes editable source through each framework's native shadcn registry. Svelte, React, and Vue are implemented.
 
 ## Workspace
 
@@ -10,6 +10,7 @@ wxcn distributes editable source through each framework's native shadcn registry
 | `packages/core`      | Framework-independent data types, conversions, calculations, and fixtures |
 | `packages/svelte`    | Native Svelte components, icons, and shadcn primitives used by previews   |
 | `packages/react`     | Native React components and preview primitives                            |
+| `packages/vue`       | Native Vue components and preview primitives                              |
 | `apps/preview-react` | Native React/Vite preview                                                 |
 | `tooling/registry`   | Registry build orchestration and framework-specific transforms            |
 | `tooling/contracts`  | Component availability and shared behavior requirements                   |
@@ -53,4 +54,4 @@ GitHub Actions runs validation only. Deployment credentials, GitHub deployment e
 
 Astro owns routes in `apps/web/src/pages`, API endpoints, and Markdown content negotiation in `src/middleware.ts`. Interactive Svelte pages live in `src/lib/pages`; the shared shell provides their theme, tooltip, icon, and page-URL context. MDSX documentation uses `.svx` to avoid conflicting with Astro’s native Markdown renderer.
 
-React is served at `/react` with its own Astro island and component documentation at `/react/docs/components`; its standalone Vite preview (`pnpm dev:react`) is the SSR and hydration test harness. Future Vue contributions should add a separate native island. Keep implementations in `packages/react` and `packages/vue` and register their framework adapters; do not import Svelte primitives into those packages. Full-page navigation crosses islands, while playground query changes update the local Svelte page context and browser history.
+React and Vue are served at `/react` and `/vue` with native framework hosts and component documentation. Keep implementations in `packages/react` and `packages/vue` and register their framework adapters; do not import Svelte primitives into those packages. Full-page navigation crosses framework routes.

@@ -7,6 +7,7 @@ const page = await browser.newPage({
 	reducedMotion: 'reduce'
 });
 const errors = [];
+page.on('console', message => { if (/hydration|hydrating|mismatch/i.test(message.text()) && ['warning', 'error'].includes(message.type())) errors.push(message.text()); });
 page.on('pageerror', (error) => errors.push(error.message));
 const shift = Date.now() - sampleTideTime;
 const shifted = (entries) =>
@@ -32,12 +33,13 @@ await page.route('**/api/**', (route) =>
 			})
 		: route.fulfill({ status: 503, json: { message: 'Fixture mode' } })
 );
+const framework = process.env.WXCN_FRAMEWORK ?? 'react';
 const base = process.env.WXCN_SITE_URL ?? 'http://127.0.0.1:8799';
 try {
 	for (const kind of ['weather', 'moon', 'tides']) {
-		await page.goto(`${base}/react?item=${kind}`);
+		await page.goto(`${base}/${framework}?item=${kind}`);
 		await page.waitForLoadState('networkidle');
-		const cards = page.locator(`[data-react-forecast="${kind}"] [data-slot="card"]`);
+		const cards = page.locator(`[data-${framework}-forecast="${kind}"] [data-slot="card"]`);
 		let index = 0;
 		while (
 			index < (await cards.count()) &&

@@ -13,16 +13,30 @@
 	import MoonForecast from '$lib/components/docs/examples/moon-forecast.svelte';
 	import ForecastDashboard from '$lib/components/docs/examples/forecast-dashboard.svelte';
 	import ReactForecast from '$lib/components/react-forecast.svelte';
+	import VueForecast from '$lib/components/vue-forecast.svelte';
 	import { getPage } from '$lib/page.svelte.js';
 	const page = getPage();
-	const framework = $derived(page.url.pathname.startsWith('/react') ? 'react' : 'svelte');
-	const installer = $derived(framework === 'react' ? 'shadcn@latest' : 'shadcn-svelte@latest');
+	const framework = $derived(
+		page.url.pathname.startsWith('/react')
+			? 'react'
+			: page.url.pathname.startsWith('/vue')
+				? 'vue'
+				: 'svelte'
+	);
+	const installer = $derived(
+		framework === 'react'
+			? 'shadcn@latest'
+			: framework === 'vue'
+				? 'shadcn-vue@latest'
+				: 'shadcn-svelte@latest'
+	);
 	const reactKinds = {
 		'weather-forecast': 'weather',
 		'tide-forecast': 'tides',
 		'moon-forecast': 'moon',
 		'forecast-dashboard': 'dashboard'
 	} as const;
+	const vueKinds = reactKinds;
 	let { data }: { data: Awaited<ReturnType<typeof import('$lib/server/component-docs.js').load>> } =
 		$props();
 	const demos: Record<string, typeof WeatherForecast> = {
@@ -43,6 +57,25 @@
 					<div class={item.name === 'forecast-dashboard' ? 'w-full' : 'w-full max-w-sm'}>
 						<ReactForecast
 							kind={reactKinds[item.name as keyof typeof reactKinds]}
+							props={item.name === 'weather-forecast'
+								? {
+										interactive: true,
+										unit: 'celsius',
+										background: 'realistic',
+										showTemperatureTrend: true,
+										showHighLow: true
+									}
+								: item.name === 'tide-forecast'
+									? { interactive: true, unit: 'meter' }
+									: item.name === 'forecast-dashboard'
+										? { interactive: true, background: 'realistic' }
+										: { interactive: true }}
+						/>
+					</div>
+				{:else if framework === 'vue'}
+					<div class={item.name === 'forecast-dashboard' ? 'w-full' : 'w-full max-w-sm'}>
+						<VueForecast
+							kind={vueKinds[item.name as keyof typeof vueKinds]}
 							props={item.name === 'weather-forecast'
 								? {
 										interactive: true,

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://shadcn-vue.com/schema/registry-item.json",
+  "name": "forecast-dashboard",
+  "type": "registry:block",
+  "description": "Weather and moon for Austin, with a separate coastal tide card.",
+  "registryDependencies": [
+    "https://wxcn.dev/r/vue/weather-forecast.json",
+    "https://wxcn.dev/r/vue/moon-forecast.json",
+    "https://wxcn.dev/r/vue/tide-forecast.json"
+  ],
+  "files": [
+    {
+      "path": "registry/components/wxcn/ForecastDashboard.vue",
+      "type": "registry:component",
+      "content": "<script setup lang=\"ts\">\nimport type {\n\tForecastType,\n\tLocationInput,\n\tTideUnit,\n\tWeatherUnit,\n\tCurrentWeather,\n\tWeatherBackground,\n\tWeatherPeriod\n} from '@/registry/wxcn/lib/wxcn/types';\nimport type { IconSet } from '@/registry/wxcn/components/wxcn/ForecastIcon.vue';\nimport WeatherForecast from '@/registry/wxcn/components/wxcn/WeatherForecast.vue';\nimport TideForecast from '@/registry/wxcn/components/wxcn/TideForecast.vue';\nimport MoonForecast from '@/registry/wxcn/components/wxcn/MoonForecast.vue';\nwithDefaults(\n\tdefineProps<{\n\t\tinteractive?: boolean;\n\t\ticonType?: IconSet;\n\t\ttimeZone?: string;\n\t\ttype?: ForecastType;\n\t\tsize?: 'sm' | 'default' | 'lg';\n\t\tdensity?: 'compact' | 'comfortable';\n\t\tweatherUnit?: WeatherUnit;\n\t\twindUnit?: 'mph' | 'km/h' | 'm/s' | 'knots';\n\t\ttideUnit?: TideUnit;\n\t\tbackground?: WeatherBackground;\n\t\tshowTemperatureTrend?: boolean;\n\t\tshowHighLow?: boolean;\n\t\tcurrentWeather?: CurrentWeather | null;\n\t\thourlyForecast?: WeatherPeriod[];\n\t\tlocation?: LocationInput;\n\t\ttideLocation?: LocationInput;\n\t}>(),\n\t{\n\t\tinteractive: false,\n\t\ttype: 'summary',\n\t\tsize: 'default',\n\t\tdensity: 'comfortable',\n\t\tweatherUnit: 'fahrenheit',\n\t\twindUnit: 'mph',\n\t\ttideUnit: 'ft',\n\t\tbackground: 'none',\n\t\tshowTemperatureTrend: false,\n\t\tshowHighLow: false\n\t}\n);\n</script>\n<template>\n\t<div class=\"@container/dashboard w-full\">\n\t\t<div\n\t\t\tclass=\"grid items-start gap-4 @min-[38rem]/dashboard:grid-cols-2 @min-[52rem]/dashboard:grid-cols-3\"\n\t\t>\n\t\t\t<div class=\"min-w-0 @min-[38rem]/dashboard:col-span-2 @min-[52rem]/dashboard:col-span-1\">\n\t\t\t\t<WeatherForecast\n\t\t\t\t\t:interactive=\"interactive\"\n\t\t\t\t\t:icon-type=\"iconType\"\n\t\t\t\t\t:time-zone=\"timeZone\"\n\t\t\t\t\t:type=\"type\"\n\t\t\t\t\t:size=\"size\"\n\t\t\t\t\t:density=\"density\"\n\t\t\t\t\t:unit=\"weatherUnit\"\n\t\t\t\t\t:wind-unit=\"windUnit\"\n\t\t\t\t\t:location=\"location\"\n\t\t\t\t\t:background=\"background\"\n\t\t\t\t\t:show-temperature-trend=\"showTemperatureTrend\"\n\t\t\t\t\t:show-high-low=\"showHighLow\"\n\t\t\t\t\t:current-weather=\"currentWeather\"\n\t\t\t\t\t:hourly-forecast=\"hourlyForecast\"\n\t\t\t\t/>\n\t\t\t</div>\n\t\t\t<TideForecast\n\t\t\t\t:interactive=\"interactive\"\n\t\t\t\t:icon-type=\"iconType\"\n\t\t\t\t:time-zone=\"timeZone\"\n\t\t\t\t:type=\"type\"\n\t\t\t\t:size=\"size\"\n\t\t\t\t:density=\"density\"\n\t\t\t\t:unit=\"tideUnit\"\n\t\t\t\t:location=\"tideLocation\"\n\t\t\t/><MoonForecast\n\t\t\t\t:interactive=\"interactive\"\n\t\t\t\t:icon-type=\"iconType\"\n\t\t\t\t:time-zone=\"timeZone\"\n\t\t\t\t:type=\"type\"\n\t\t\t\t:size=\"size\"\n\t\t\t\t:density=\"density\"\n\t\t\t\t:location=\"location\"\n\t\t\t/>\n\t\t</div>\n\t</div>\n</template>\n"
+    }
+  ]
+}

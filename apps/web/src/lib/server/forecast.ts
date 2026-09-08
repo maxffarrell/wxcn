@@ -212,7 +212,7 @@ async function stationTides(
 		return response.json();
 	}
 	const [extrema, continuous, observed] = await Promise.all([
-		request({ product: 'predictions', begin_date: begin, range: '72', interval: 'hilo' }).catch(
+		request({ product: 'predictions', begin_date: begin, range: '192', interval: 'hilo' }).catch(
 			() => null
 		),
 		request({ product: 'predictions', begin_date: begin, range: '72', interval: '6' }).catch(

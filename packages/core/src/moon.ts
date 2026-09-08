@@ -28,4 +28,15 @@ export function getMoonForecast(date = new Date()): MoonForecast {
 	};
 }
 
+/** The next seven named phases, at their exact 45-degree lunar phase crossings. */
+export function getUpcomingMoonPhases(date = new Date()): MoonForecast[] {
+	return phaseNames
+		.map((phaseName, index) => {
+			const event = SearchMoonPhase(index * 45, new Date(date.getTime() + 1000), 40)!;
+			return { ...getMoonForecast(event.date), phase: index / 8, phaseName };
+		})
+		.sort((a, b) => Date.parse(a.date) - Date.parse(b.date))
+		.slice(0, 7);
+}
+
 export const sampleMoon = getMoonForecast(new Date('2026-09-06T12:00:00-05:00'));

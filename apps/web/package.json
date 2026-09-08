@@ -66,7 +66,7 @@
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.10",
-		"@astrojs/cloudflare": "14.3.0",
+		"@astrojs/cloudflare": "14.3.1",
 		"@astrojs/svelte": "9.0.1",
 		"@internationalized/date": "^3.12.4",
 		"@sveltejs/package": "^2.5.8",
@@ -76,7 +76,7 @@
 		"@types/node": "^26.5.0",
 		"@types/react": "^19.2.18",
 		"@types/react-dom": "^19.2.7",
-		"astro": "7.3.1",
+		"astro": "7.3.2",
 		"mdsx": "^0.0.7",
 		"prettier": "^3.9.6",
 		"prettier-plugin-svelte": "^4.1.1",

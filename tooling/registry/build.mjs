@@ -1,5 +1,6 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { svelteRegistry } from './adapters/svelte.mjs';
+await import('./cloud-texture.mjs');
+const { svelteRegistry } = await import('./adapters/svelte.mjs');
 const root = new URL('../../', import.meta.url);
 async function write(path, value) {
 	const url = new URL(path, root);

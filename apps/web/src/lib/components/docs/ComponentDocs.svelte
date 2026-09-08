@@ -35,8 +35,8 @@
 			<p>
 				Use <code>background</code> on WeatherForecast or ForecastDashboard:
 				<code>"none"</code> (default) keeps the plain card, <code>"realistic"</code>
-				animates the sky, <code>"dithered"</code> adds a fixed monochrome pixel pattern tinted by
-				the base color, and
+				animates a photographic cloud texture, <code>"dithered"</code> adds fine monochrome
+				stippling tinted by the base color, and
 				<code>"gradient"</code> uses a still, condition-aware color gradient. Animated styles
 				respect reduced motion and pause offscreen. Dithered ink uses
 				<code>--weather-base-color</code>, falling back to your theme's

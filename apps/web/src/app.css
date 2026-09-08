@@ -204,21 +204,23 @@
 	--color-code-foreground: var(--code-foreground);
 	--font-heading: var(--font-sans);
 }
-[data-rehype-pretty-code-figure] {
-	background-color: var(--color-code);
-	color: var(--color-code-foreground);
-	border-radius: var(--radius-xl);
-	border-width: 0px;
-	border-color: var(--border);
-	margin-top: calc(var(--spacing) * 6);
-	overflow: hidden;
-	font-size: var(--text-sm);
-	outline: none;
-	position: relative;
-	@apply -mx-1;
+@layer base {
+	[data-rehype-pretty-code-figure] {
+		background-color: var(--color-code);
+		color: var(--color-code-foreground);
+		border-radius: var(--radius-xl);
+		border-width: 0px;
+		border-color: var(--border);
+		margin-top: calc(var(--spacing) * 6);
+		overflow: hidden;
+		font-size: var(--text-sm);
+		outline: none;
+		position: relative;
+		@apply -mx-1;
 
-	&:has([data-rehype-pretty-code-title]) [data-slot='copy-button'] {
-		top: calc(var(--spacing) * 1.5) !important;
+		&:has([data-rehype-pretty-code-title]) [data-slot='copy-button'] {
+			top: calc(var(--spacing) * 1.5) !important;
+		}
 	}
 }
 

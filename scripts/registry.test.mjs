@@ -63,6 +63,25 @@ for (const [iconLibrary, packages] of Object.entries(libraries)) {
 test('weather registry includes its background and transforms all aliases', async () => {
 	const item = registry.items[0];
 	assert.ok(item.files.some((f) => f.target === 'wxcn/WeatherShaderBackground.svelte'));
+	const texture = item.files.find((f) => f.target === 'wxcn/cloud-texture.ts');
+	assert.equal(texture?.type, 'registry:component');
+	for (const [key, name] of Object.entries({
+		fair: 'clouds',
+		overcast: 'overcast',
+		storm: 'storm',
+		fog: 'fog'
+	})) {
+		const embedded = texture.content.match(
+			new RegExp(`${key}:\\s*'data:image/webp;base64,([^']+)`)
+		);
+		assert.ok(embedded, `${key} cloud texture is bundled for installed consumers`);
+		assert.deepEqual(
+			Buffer.from(embedded[1], 'base64'),
+			readFileSync(new URL(`../packages/svelte/src/assets/weather-${name}.webp`, import.meta.url))
+		);
+	}
+	assert.ok(item.files.some((f) => f.target === 'wxcn/weather-scenes.ts'));
+
 	for (const file of item.files) {
 		const result = await transformImports({ content: file.content, config: { aliases } });
 		assert.ok(!/\$(UI|LIB|COMPONENTS|UTILS)\$/.test(result.content));

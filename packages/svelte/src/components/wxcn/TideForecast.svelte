@@ -5,7 +5,6 @@
 	import { Chart, Svg, Area } from 'layerchart';
 	import { curveMonotoneX } from 'd3-shape';
 	import * as Card from '../ui/card/index.js';
-	import ForecastIcon from '../../icons/forecast-icons.svelte';
 	import ForecastScreens from './ForecastScreens.svelte';
 	import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
 	import type {
@@ -188,12 +187,49 @@
 		: timeParts}
 	{@const viewIndicatorTime = day ? viewDisplayedTime : indicatorTime}
 	{@const viewIndicatorLevel = day ? (viewHovered?.height ?? viewTide.predicted) : indicatorLevel}
-	<Card.Header
+	{#snippet neighbors()}
+		<div
+			data-slot="tide-neighbors"
+			class={size === 'sm' ? 'grid content-center gap-3' : 'grid grid-cols-2 gap-3 border-t pt-3'}
+		>
+			{#each [{ label: 'Previous', event: viewTide.previous }, { label: 'Next', event: viewTide.next }] as entry}
+				<div>
+					<p
+						class={size === 'sm'
+							? 'text-[10px] text-muted-foreground'
+							: 'text-xs text-muted-foreground'}
+					>
+						{entry.label}
+						{entry.event ? (entry.event.type === 'H' ? 'high tide' : 'low tide') : 'tide'}
+					</p>
+					<div class={size === 'sm' ? 'mt-0.5 flex flex-wrap items-baseline gap-x-2' : 'contents'}>
+						<p
+							class={size === 'sm'
+								? 'text-xs font-medium tabular-nums'
+								: 'mt-1 text-sm font-medium tabular-nums'}
+						>
+							{entry.event ? time(entry.event.time) : 'Unavailable'}
+						</p>
+						{#if entry.event}<p
+								class={size === 'sm'
+									? 'text-[10px] text-muted-foreground'
+									: 'mt-1 text-xs text-muted-foreground'}
+							>
+								{height(Number(entry.event.height))}
+								{symbol}
+							</p>{/if}
+					</div>
+				</div>
+			{/each}
+		</div>
+	{/snippet}
+
+	<Card.Header class={size === 'sm' ? 'flex items-baseline justify-between gap-2' : undefined}
 		><Card.Title>{day?.label ?? 'Tides'}</Card.Title><Card.Description
 			>{location.label}</Card.Description
 		>{@render action(false)}</Card.Header
 	>
-	<Card.Content class={density === 'compact' ? 'grid gap-3' : 'grid gap-5'}>
+	<Card.Content class={size === 'sm' || density === 'compact' ? 'grid gap-3' : 'grid gap-5'}>
 		{#if viewTide.events.length || viewTide.points.length}
 			<div class={`flex items-end justify-between gap-3 ${day ? '' : 'flex-wrap'}`}>
 				<div class="min-w-0">
@@ -209,7 +245,9 @@
 										: 'High/low predictions only'}
 					</p>
 					<p
-						style="font-size:clamp(1.5rem,12cqw,2.5rem)"
+						style={size === 'sm'
+							? 'font-size:clamp(1.25rem,8cqw,1.875rem);line-height:1.1'
+							: 'font-size:clamp(1.5rem,12cqw,2.5rem)'}
 						class={`${size === 'sm' ? 'text-3xl' : 'text-4xl'} font-medium tracking-tight tabular-nums`}
 					>
 						{#if viewDisplayedLevel === null}—{:else}<NumberFlow
@@ -241,103 +279,92 @@
 					</p>
 				</div>
 			</div>
-			{#if viewChartData.length > 1}
-				<ChartUI.Container
-					config={{ height: { label: 'Tide level', color: 'var(--chart-1)' } }}
-					class={`aspect-auto w-full ${size === 'sm' ? 'h-20' : size === 'lg' ? 'h-36' : 'h-28'}`}
-					role="img"
-					aria-label="Tide prediction curve with predicted water level marker"
-				>
-					<Chart
-						bind:context={
-							() => (day ? dayChartContext : chartContext),
-							(value) => {
-								if (day) dayChartContext = value;
-								else chartContext = value;
-							}
-						}
-						data={viewChartData}
-						x="time"
-						y="height"
-						yDomain={viewDomain}
-						series={[{ key: 'height', label: 'Tide level', color: 'var(--chart-1)' }]}
-						tooltipContext={{ mode: 'bisect-x' }}
-						padding={{ top: 8, right: 8, bottom: 4, left: 8 }}
-					>
-						{#snippet children({ context })}
-							<Svg>
-								<Area
-									curve={curveMonotoneX}
-									fill="color-mix(in oklab, var(--chart-1) 12%, transparent)"
-									line={{
-										stroke: 'var(--chart-1, var(--primary))',
-										strokeWidth: 2,
-										fill: 'none',
-										opacity: 1
-									}}
-									motion={{ type: 'tween', duration: 0 }}
-								/>
-								{#if viewIndicatorLevel !== null && viewIndicatorTime >= viewChartData[0].time && viewIndicatorTime <= viewChartData[viewChartData.length - 1].time}
-									<line
-										x1={context.xScale(viewIndicatorTime)}
-										x2={context.xScale(viewIndicatorTime)}
-										y1={0}
-										y2={context.height}
-										stroke="var(--muted-foreground)"
-										stroke-dasharray="3 4"
-									/>
-									<circle
-										data-slot="current-tide-marker"
-										cx={context.xScale(viewIndicatorTime)}
-										cy={context.yScale(viewIndicatorLevel)}
-										r={4.5}
-										fill="var(--chart-1, var(--primary))"
-										stroke="var(--card)"
-										stroke-width="2"
-									/>
-								{/if}
-							</Svg>
-						{/snippet}
-					</Chart>
-				</ChartUI.Container>
-				<div class="-mt-2 flex justify-between text-[10px] text-muted-foreground">
-					<span>{time(viewChartData[0].time)}</span><span
-						>MLLW · {viewTide.points.length ? 'predicted curve' : 'extrema only'}</span
-					><span>{time(viewChartData.at(-1)!.time)}</span>
+			<div
+				data-slot="tide-chart-layout"
+				class={size === 'sm'
+					? 'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3'
+					: 'contents'}
+			>
+				{#if size === 'sm'}{@render neighbors()}{/if}
+				<div class={size === 'sm' ? 'grid min-w-0 gap-1' : 'contents'}>
+					{#if viewChartData.length > 1}
+						<ChartUI.Container
+							config={{ height: { label: 'Tide level', color: 'var(--chart-1)' } }}
+							class={`aspect-auto w-full ${size === 'sm' ? 'h-16' : size === 'lg' ? 'h-36' : 'h-28'}`}
+							role="img"
+							aria-label="Tide prediction curve with predicted water level marker"
+						>
+							<Chart
+								bind:context={
+									() => (day ? dayChartContext : chartContext),
+									(value) => {
+										if (day) dayChartContext = value;
+										else chartContext = value;
+									}
+								}
+								data={viewChartData}
+								x="time"
+								y="height"
+								yDomain={viewDomain}
+								series={[{ key: 'height', label: 'Tide level', color: 'var(--chart-1)' }]}
+								tooltipContext={{ mode: 'bisect-x' }}
+								padding={{ top: 8, right: 8, bottom: 4, left: 8 }}
+							>
+								{#snippet children({ context })}
+									<Svg>
+										<Area
+											curve={curveMonotoneX}
+											fill="color-mix(in oklab, var(--chart-1) 12%, transparent)"
+											line={{
+												stroke: 'var(--chart-1, var(--primary))',
+												strokeWidth: 2,
+												fill: 'none',
+												opacity: 1
+											}}
+											motion={{ type: 'tween', duration: 0 }}
+										/>
+										{#if viewIndicatorLevel !== null && viewIndicatorTime >= viewChartData[0].time && viewIndicatorTime <= viewChartData[viewChartData.length - 1].time}
+											<line
+												x1={context.xScale(viewIndicatorTime)}
+												x2={context.xScale(viewIndicatorTime)}
+												y1={0}
+												y2={context.height}
+												stroke="var(--muted-foreground)"
+												stroke-dasharray="3 4"
+											/>
+											<circle
+												data-slot="current-tide-marker"
+												cx={context.xScale(viewIndicatorTime)}
+												cy={context.yScale(viewIndicatorLevel)}
+												r={4.5}
+												fill="var(--chart-1, var(--primary))"
+												stroke="var(--card)"
+												stroke-width="2"
+											/>
+										{/if}
+									</Svg>
+								{/snippet}
+							</Chart>
+						</ChartUI.Container>
+						<div
+							class={`flex justify-between gap-1 text-[10px] text-muted-foreground ${size === 'sm' ? '' : '-mt-2'}`}
+						>
+							<span>{time(viewChartData[0].time)}</span>{#if size !== 'sm'}<span
+									>MLLW · {viewTide.points.length ? 'predicted curve' : 'extrema only'}</span
+								>{/if}<span>{time(viewChartData.at(-1)!.time)}</span>
+						</div>
+					{/if}
 				</div>
-			{/if}
-			<div class="grid grid-cols-2 gap-3 border-t pt-3">
-				{#each [{ label: 'Previous', event: viewTide.previous }, { label: 'Next', event: viewTide.next }] as entry}
-					<div>
-						<p class="text-xs text-muted-foreground">
-							{entry.label}
-							{entry.event ? (entry.event.type === 'H' ? 'high tide' : 'low tide') : 'tide'}
-						</p>
-						<p class="mt-1 text-sm font-medium tabular-nums">
-							{entry.event ? time(entry.event.time) : 'Unavailable'}
-						</p>
-						{#if entry.event}<p class="mt-1 text-xs text-muted-foreground">
-								{height(Number(entry.event.height))}
-								{symbol}
-							</p>{/if}
-					</div>
-				{/each}
 			</div>
+			{#if size !== 'sm'}{@render neighbors()}{/if}
 			{#if type !== 'simple'}
 				<div class="divide-y border-t">
 					{#each viewTide.events
 						.filter((p) => tideTimestamp(p.time) > viewNow)
 						.slice(0, type === 'detailed' ? 6 : density === 'compact' ? 2 : 4) as event}<div
-							class={`flex justify-between gap-2 text-xs ${density === 'compact' ? 'py-2' : 'py-3'}`}
+							class={`grid grid-cols-[auto_1fr_auto] items-center gap-3 text-xs ${density === 'compact' ? 'py-2' : 'py-3'}`}
 						>
-							{#if interactive && size !== 'lg' && !day}<button
-									type="button"
-									class="min-h-8 text-left underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-ring"
-									aria-label={`View tide details for ${dateTime(event)}`}
-									onclick={(e) =>
-										openDay(new Date(tideTimestamp(event.time)).toISOString(), e.currentTarget)}
-									>{event.type === 'H' ? 'High tide' : 'Low tide'}</button
-								>{:else}<span>{event.type === 'H' ? 'High tide' : 'Low tide'}</span>{/if}<span
+							<span>{event.type === 'H' ? 'High tide' : 'Low tide'}</span><span
 								class="ml-auto text-muted-foreground">{dateTime(event)}</span
 							><span class="tabular-nums">{height(Number(event.height))} {symbol}</span>
 						</div>{/each}
@@ -358,7 +385,7 @@
 	class={`relative isolate min-w-0 overflow-hidden ${className}`}
 >
 	<ForecastScreens
-		interactive={interactive && size !== 'lg'}
+		{interactive}
 		{days}
 		title="Tide"
 		{density}
@@ -368,21 +395,27 @@
 		actionLabel="Upcoming tides"
 	>
 		{#snippet summary(availableHeight)}
-			<div class="divide-y" data-slot="upcoming-tides">
-				{#each tide.events
-					.filter((event) => tideTimestamp(event.time) >= now)
-					.slice(0, Math.max(1, Math.floor(availableHeight / 32))) as event}
-					<div class="flex h-8 items-center justify-between gap-2 text-xs">
-						<span class="flex shrink-0 items-center gap-1"
-							><ForecastIcon
-								name={event.type === 'H' ? 'arrowUp' : 'arrowDown'}
-								iconSet={iconType}
-								class="size-3"
-							/>{event.type === 'H' ? 'High' : 'Low'}</span
+			{@const events = tide.events
+				.filter((event) => tideTimestamp(event.time) >= now)
+				.slice(0, size === 'lg' ? 12 : Math.max(1, Math.floor(availableHeight / 36)))}
+			<div
+				class="grid h-full w-full overflow-y-auto"
+				style={`grid-auto-rows: minmax(${size === 'lg' ? 40 : 36}px, 1fr)`}
+				data-slot="upcoming-tides"
+			>
+				{#each events as event}
+					<div
+						class={`grid min-w-0 grid-cols-[auto_1fr_auto] items-center gap-3 border-b last:border-0 ${size === 'lg' ? 'text-sm' : 'text-xs'}`}
+					>
+						<span class="font-medium">{event.type === 'H' ? 'High tide' : 'Low tide'}</span>
+						<time
+							datetime={new Date(tideTimestamp(event.time)).toISOString()}
+							class="text-right text-muted-foreground">{dateTime(event)}</time
 						>
-						<span class="truncate text-muted-foreground">{time(event.time)}</span>
-						<span class="shrink-0 tabular-nums">{height(Number(event.height))} {symbol}</span>
+						<span class="text-right tabular-nums">{height(Number(event.height))} {symbol}</span>
 					</div>
+				{:else}
+					<p class="py-4 text-sm text-muted-foreground">No upcoming tide predictions available.</p>
 				{/each}
 			</div>
 		{/snippet}

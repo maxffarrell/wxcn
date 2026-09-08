@@ -64,3 +64,31 @@ export function weatherOutlook(
 	}
 	return { high, low, trend, highReached };
 }
+
+/** Combine a day's forecast high with observations from that same local day. */
+export function weatherDayHigh(
+	key: string,
+	periods: WeatherPeriod[],
+	current: CurrentWeather | null,
+	unit: WeatherUnit,
+	timeZone: string
+) {
+	const highs = periods
+		.filter((p) => p.isDaytime && Number.isFinite(p.temperature))
+		.map((p) => weatherTemperature(p.temperature, p.temperatureUnit, unit));
+	if (
+		current &&
+		Number.isFinite(current.highToday) &&
+		Number.isFinite(Date.parse(current.observedAt))
+	) {
+		const observedDay = new Intl.DateTimeFormat('en-CA', {
+			timeZone,
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit'
+		}).format(new Date(current.observedAt));
+		if (observedDay === key)
+			highs.push(weatherTemperature(current.highToday!, current.temperatureUnit, unit));
+	}
+	return highs.length ? Math.max(...highs) : null;
+}

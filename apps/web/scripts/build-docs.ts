@@ -52,7 +52,21 @@ const highlight = (code: string, lang = 'svelte') =>
 	codeToHtml(code, {
 		lang,
 		themes: { light: 'github-light', dark: 'github-dark' },
-		defaultColor: false
+		defaultColor: false,
+		transformers: [
+			{
+				pre(node) {
+					node.properties.class =
+						'no-scrollbar min-w-0 overflow-x-auto px-4 py-3.5 outline-none has-[[data-highlighted-line]]:px-0 has-[[data-line-numbers]]:px-0 has-[[data-slot=tabs]]:p-0';
+					node.properties.style = undefined;
+					node.properties['data-language'] = lang;
+					node.properties['data-theme'] = 'github-light github-dark';
+				},
+				line(node) {
+					node.properties['data-line'] = '';
+				}
+			}
+		]
 	});
 export async function load() {
 	const descriptions = [

@@ -1,7 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { reactRegistry } from './adapters/react.mjs';
-import { svelteRegistry } from './adapters/svelte.mjs';
-import { vueRegistry } from './adapters/vue.mjs';
+await import('./cloud-texture.mjs');
+const { svelteRegistry } = await import('./adapters/svelte.mjs');
+const { reactRegistry } = await import('./adapters/react.mjs');
+const { vueRegistry } = await import('./adapters/vue.mjs');
 const root = new URL('../../', import.meta.url);
 async function write(path, value) {
 	const url = new URL(path, root);

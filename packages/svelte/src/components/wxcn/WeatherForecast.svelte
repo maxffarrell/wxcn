@@ -4,7 +4,7 @@
 	import { getSkyState } from '@wxcn/core/sky.js';
 	import WeatherGradientBackground from './WeatherGradientBackground.svelte';
 	import ForecastScreens from './ForecastScreens.svelte';
-	import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
+	import { forecastDays, forecastDayNoon, type ForecastDay } from '@wxcn/core/forecast-days.js';
 	import ForecastIcon from '../../icons/forecast-icons.svelte';
 	import WeatherShaderBackground, {
 		type WeatherShaderMode
@@ -19,7 +19,7 @@
 		WeatherBackground
 	} from '@wxcn/core/types.js';
 	import { sampleWeather, sampleCurrentWeather, convertWindSpeed } from '@wxcn/core/weather.js';
-	import { weatherOutlook } from '@wxcn/core/weather-outlook.js';
+	import { weatherOutlook, weatherDayHigh } from '@wxcn/core/weather-outlook.js';
 	let {
 		interactive = false,
 		timeZone,
@@ -171,18 +171,25 @@
 	{@const displayedPeriods = day ? dayPeriods(day) : periods}
 	{@const sky =
 		day && view
-			? getSkyState(location.latitude, location.longitude, Date.parse(view.startTime))
+			? getSkyState(
+					location.latitude,
+					location.longitude,
+					forecastDayNoon(day.key, displayTimeZone)
+				)
 			: currentSky}
+	{@const skyMode = view
+		? condition(day && sky ? { ...view, isDaytime: sky.isDaytime } : view)
+		: 'clear'}
 	<div
 		class={`${day ? 'contents' : 'relative isolate overflow-hidden'} ${background !== 'none' && view ? 'text-white' : 'text-card-foreground'}`}
 	>
 		{#if background !== 'none' && view}
 			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
 				{#if background === 'gradient'}
-					<WeatherGradientBackground mode={condition(view)} {sky} />
+					<WeatherGradientBackground mode={skyMode} {sky} />
 				{:else}
 					<WeatherShaderBackground
-						mode={condition(view)}
+						mode={skyMode}
 						{sky}
 						paused={!overviewVisible}
 						dithered={background === 'dithered'}
@@ -201,9 +208,9 @@
 			>
 			{@render action(background !== 'none' && !!view)}
 		</Card.Header>
-		<Card.Content class="relative grid min-w-0 shrink-0 gap-5 py-(--card-spacing)">
+		<Card.Content class="relative grid min-w-0 shrink-0 grid-cols-1 gap-5 py-(--card-spacing)">
 			{#if view}
-				<div>
+				<div class="min-w-0">
 					<p
 						class={`mb-2 text-xs ${background !== 'none' ? 'text-white/75' : 'text-muted-foreground'}`}
 					>
@@ -216,7 +223,7 @@
 						{temperature(view)}<span class="align-top text-2xl">°</span>
 					</p>
 					<p
-						class={`mt-3 text-sm ${day ? 'truncate' : ''}`}
+						class="mt-3 line-clamp-2 min-h-10 text-sm wrap-break-word"
 						title={day ? view.shortForecast : undefined}
 					>
 						{view.shortForecast}
@@ -341,6 +348,7 @@
 			{@const daytime = values.find((period) => period.isDaytime)}
 			{@const overnight = values.find((period) => !period.isDaytime)}
 			{@const representative = daytime ?? overnight}
+			{@const high = weatherDayHigh(day.key, values, current, unit, displayTimeZone)}
 			<span
 				class="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_1.25rem_3rem_3rem] items-center gap-2"
 			>
@@ -356,20 +364,20 @@
 						/></span
 					>{:else}<span></span>{/if}
 				<span
-					class="flex items-center justify-end gap-1 tabular-nums"
-					aria-label={daytime ? `High ${temperature(daytime)} degrees` : 'High unavailable'}
+					class="grid grid-cols-[0.75rem_minmax(0,1fr)] items-center gap-1 text-right tabular-nums"
+					aria-label={high !== null ? `High ${high} degrees` : 'High unavailable'}
 					><ForecastIcon
 						name="arrowUp"
 						iconSet={iconType}
 						class="size-3 text-muted-foreground"
-					/>{daytime ? `${temperature(daytime)}°` : '—'}</span
+					/><span>{high !== null ? `${high}°` : '—'}</span></span
 				>
 				<span
-					class="flex items-center justify-end gap-1 text-muted-foreground tabular-nums"
+					class="grid grid-cols-[0.75rem_minmax(0,1fr)] items-center gap-1 text-right text-muted-foreground tabular-nums"
 					aria-label={overnight ? `Low ${temperature(overnight)} degrees` : 'Low unavailable'}
-					><ForecastIcon name="arrowDown" iconSet={iconType} class="size-3" />{overnight
-						? `${temperature(overnight)}°`
-						: '—'}</span
+					><ForecastIcon name="arrowDown" iconSet={iconType} class="size-3" /><span
+						>{overnight ? `${temperature(overnight)}°` : '—'}</span
+					></span
 				>
 			</span>
 		{/snippet}
@@ -378,7 +386,7 @@
 		{/snippet}
 		{#snippet detail(day, action)}
 			<div
-				class={`relative isolate flex h-full min-h-0 flex-col ${background !== 'none' ? 'text-white' : ''}`}
+				class={`relative isolate flex h-full min-h-0 w-full min-w-0 flex-col ${background !== 'none' ? 'text-white' : ''}`}
 			>
 				{@render cardView(day, action, true, () => {})}
 			</div>

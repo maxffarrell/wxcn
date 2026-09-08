@@ -361,8 +361,8 @@
 				<div class="divide-y border-t">
 					{#each viewTide.events
 						.filter((p) => tideTimestamp(p.time) > viewNow)
-						.slice(0, size === 'lg' ? 12 : type === 'detailed' ? 6 : density === 'compact' ? 2 : 4) as event}<div
-							class={`grid grid-cols-[auto_1fr_auto] items-center gap-3 ${size === 'lg' ? 'py-4 text-sm' : density === 'compact' ? 'py-2 text-xs' : 'py-3 text-xs'}`}
+						.slice(0, type === 'detailed' ? 6 : density === 'compact' ? 2 : 4) as event}<div
+							class={`grid grid-cols-[auto_1fr_auto] items-center gap-3 text-xs ${density === 'compact' ? 'py-2' : 'py-3'}`}
 						>
 							<span>{event.type === 'H' ? 'High tide' : 'Low tide'}</span><span
 								class="ml-auto text-muted-foreground">{dateTime(event)}</span
@@ -385,15 +385,40 @@
 	class={`relative isolate min-w-0 overflow-hidden ${className}`}
 >
 	<ForecastScreens
-		interactive={interactive && size !== 'lg'}
+		{interactive}
 		{days}
 		title="Tide"
 		{density}
 		{sourceLabel}
 		{iconType}
-		showWeek={false}
+		showWeek
 		actionLabel="Upcoming tides"
 	>
+		{#snippet summary(availableHeight)}
+			{@const events = tide.events
+				.filter((event) => tideTimestamp(event.time) >= now)
+				.slice(0, size === 'lg' ? 12 : Math.max(1, Math.floor(availableHeight / 36)))}
+			<div
+				class="grid h-full w-full overflow-y-auto"
+				style={`grid-auto-rows: minmax(${size === 'lg' ? 40 : 36}px, 1fr)`}
+				data-slot="upcoming-tides"
+			>
+				{#each events as event}
+					<div
+						class={`grid min-w-0 grid-cols-[auto_1fr_auto] items-center gap-3 border-b last:border-0 ${size === 'lg' ? 'text-sm' : 'text-xs'}`}
+					>
+						<span class="font-medium">{event.type === 'H' ? 'High tide' : 'Low tide'}</span>
+						<time
+							datetime={new Date(tideTimestamp(event.time)).toISOString()}
+							class="text-right text-muted-foreground">{dateTime(event)}</time
+						>
+						<span class="text-right tabular-nums">{height(Number(event.height))} {symbol}</span>
+					</div>
+				{:else}
+					<p class="py-4 text-sm text-muted-foreground">No upcoming tide predictions available.</p>
+				{/each}
+			</div>
+		{/snippet}
 		{#snippet children(openDay, action, visible)}
 			{@render cardView(undefined, action, openDay)}
 		{/snippet}

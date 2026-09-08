@@ -1,7 +1,7 @@
 import { isDaylight } from '../apps/web/src/lib/server/daylight.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { weatherOutlook } from '../packages/core/src/weather-outlook.ts';
+import { weatherOutlook, weatherDayHigh } from '../packages/core/src/weather-outlook.ts';
 import { sampleWeather, sampleCurrentWeather } from '../packages/core/src/weather.ts';
 import { loadForecast } from '../apps/web/src/lib/server/forecast.ts';
 import { currentWeatherFromObservations } from '../apps/web/src/lib/server/current-weather.ts';
@@ -120,4 +120,19 @@ test('solar daylight handles longitude, UTC date boundaries, and polar seasons',
 	assert.equal(isDaylight(-33.87, 151.21, Date.parse('2026-09-08T00:00:00+10:00')), false);
 	assert.equal(isDaylight(78.22, 15.65, Date.parse('2026-06-21T00:00:00Z')), true);
 	assert.equal(isDaylight(78.22, 15.65, Date.parse('2026-12-21T12:00:00Z')), false);
+});
+
+test('week high survives sunset without borrowing observations from another local day', () => {
+	const observed = { ...sampleCurrentWeather, observedAt: '2026-09-07T01:00:00Z', highToday: 99 };
+	assert.equal(
+		weatherDayHigh('2026-09-06', [sampleWeather[1]], observed, 'fahrenheit', 'America/Chicago'),
+		99
+	);
+	assert.equal(
+		weatherDayHigh('2026-09-06', [sampleWeather[0]], observed, 'fahrenheit', 'America/Chicago'),
+		99
+	);
+	assert.equal(weatherDayHigh('2026-09-06', [], observed, 'celsius', 'America/Chicago'), 37);
+	assert.equal(weatherDayHigh('2026-09-07', [], observed, 'fahrenheit', 'America/Chicago'), null);
+	assert.equal(weatherDayHigh('2026-09-06', [], null, 'fahrenheit', 'America/Chicago'), null);
 });

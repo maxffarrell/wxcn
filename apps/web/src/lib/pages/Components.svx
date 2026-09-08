@@ -1,6 +1,9 @@
 <script lang="ts">
   import FrameworkTabs from '$lib/components/site/framework-tabs.svelte';
   import ComponentDocs from '$lib/components/docs/ComponentDocs.svelte';
+  import { getPage } from '$lib/page.svelte.js';
+  const page = getPage();
+  const framework = $derived(page.url.pathname.startsWith('/react') ? 'React' : page.url.pathname.startsWith('/vue') ? 'Vue' : 'Svelte');
   let { data } = $props();
 </script>
 
@@ -8,10 +11,10 @@
 
 <FrameworkTabs />
 
-Weather, moon, and tide components that inherit your shadcn-svelte theme, base components, and icon library.
+Weather, moon, and tide components for {framework} that inherit your {framework === 'React' ? 'shadcn/ui' : framework === 'Vue' ? 'shadcn-vue' : 'shadcn-svelte'} theme, base components, and icon library.
 
 ## Time zones
 
-All cards default to the visitor’s browser time zone after hydration (UTC during server rendering). Pass an IANA `timeZone` prop, such as `timeZone="America/Chicago"`, to override it. `ForecastDashboard` forwards this prop to all three cards. Location coordinates and the provider’s time zone remain separate from the display time zone.
+All cards use an explicit IANA `timeZone` prop first, then `location.timeZone`, then the visitor’s browser time zone after hydration (UTC during server rendering). `ForecastDashboard` forwards its explicit `timeZone` prop to all three cards. Location coordinates and the provider’s time zone remain separate from the display time zone.
 
 <ComponentDocs {data} />

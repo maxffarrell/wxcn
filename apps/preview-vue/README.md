@@ -1,5 +1,8 @@
 # preview-vue
 
-Reserved for future Vue contributions. No components or runnable preview are implemented yet.
+Native Vite + Vue development harness for every `@wxcn/vue` forecast component.
 
-See [CONTRIBUTING.md](../../CONTRIBUTING.md) for the implementation contract and setup requirements.
+```sh
+pnpm --filter @wxcn/preview-vue dev
+pnpm --filter @wxcn/preview-vue build
+```

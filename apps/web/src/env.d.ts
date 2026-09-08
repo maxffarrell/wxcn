@@ -17,3 +17,8 @@ declare module '*.svx' {
 	const component: import('svelte').Component<any>;
 	export default component;
 }
+
+declare module '*.vue' {
+	const component: import('vue').Component;
+	export default component;
+}

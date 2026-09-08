@@ -10,6 +10,6 @@ All implementations should use the same fixture data in `packages/core/src` and 
 - Presentation: light/dark, small/default/large, compact/comfortable, simple/summary/detailed.
 - Layout and behavior: narrow containers, keyboard navigation, reduced motion, SSR without browser globals, and clearly labeled fixtures when live data is unavailable.
 
-Core is pure TypeScript with no component framework dependency. The existing `IconSet` type retains legacy Svelte spellings for compatibility; new frameworks should define native icon types locally rather than expand this into a universal icon adapter.
+Core is pure TypeScript with no component framework dependency. The existing `IconSet` type retains legacy Svelte spellings for compatibility. React defines native icon names locally for Lucide, Tabler, Phosphor, Hugeicons, and Remixicon; new frameworks should define native icon types locally rather than expand this into a universal icon adapter.
 
-Frameworks share semantic props and outcomes. Their rendering, icon support, chart libraries, and lifecycle implementations can differ. Preset portability must be demonstrated against the relevant upstream implementation.
+Frameworks share semantic props and outcomes. Their rendering, icon support, chart libraries, and lifecycle implementations can differ. The React site and standalone preview provide native SSR, hydration, and interaction coverage. Preset portability must be demonstrated against the relevant upstream implementation.

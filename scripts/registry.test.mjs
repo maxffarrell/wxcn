@@ -108,8 +108,8 @@ test('framework paths preserve legacy Svelte payloads and never leak workspace i
 		frameworks.svelte.components.toSorted(),
 		registry.items.map((i) => i.name).toSorted()
 	);
-	for (const name of ['react', 'vue']) {
-		assert.equal(frameworks[name].status, 'planned');
-		assert.deepEqual(frameworks[name].components, []);
+	for (const name of ['vue']) {
+		assert.equal(frameworks[name].status, 'available');
+		assert.deepEqual(frameworks[name].components, frameworks.svelte.components);
 	}
 });

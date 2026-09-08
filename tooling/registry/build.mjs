@@ -1,6 +1,8 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 await import('./cloud-texture.mjs');
 const { svelteRegistry } = await import('./adapters/svelte.mjs');
+const { reactRegistry } = await import('./adapters/react.mjs');
+const { vueRegistry } = await import('./adapters/vue.mjs');
 const root = new URL('../../', import.meta.url);
 async function write(path, value) {
 	const url = new URL(path, root);
@@ -18,3 +20,14 @@ await write('packages/svelte/registry.json', svelteRegistry);
 await write('apps/web/registry.json', svelteRegistry);
 await write('registry.json', svelteRegistry);
 console.log(`Built ${svelteRegistry.items.length} Svelte items with legacy URL compatibility.`);
+
+for (const item of reactRegistry.items)
+	await write(`apps/web/static/r/react/${item.name}.json`, item);
+await write('apps/web/static/r/react/registry.json', reactRegistry);
+await write('packages/react/registry.json', reactRegistry);
+console.log(`Built ${reactRegistry.items.length} React items.`);
+
+for (const item of vueRegistry.items) await write(`apps/web/static/r/vue/${item.name}.json`, item);
+await write('apps/web/static/r/vue/registry.json', vueRegistry);
+await write('packages/vue/registry.json', vueRegistry);
+console.log(`Built ${vueRegistry.items.length} Vue items.`);

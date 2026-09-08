@@ -9,8 +9,10 @@
 			"$lib/*": ["./src/lib/*"],
 			"$components/*": ["./src/lib/components/*"],
 			"$frameworks": ["../../tooling/contracts/frameworks.json"],
-			"$wxcn/*": ["../../packages/svelte/src/components/wxcn/*"]
-		}
+			"$wxcn/*": ["../../packages/svelte/src/components/wxcn/*"],
+			"@/*": ["../../packages/react/src/*"]
+		},
+		"jsx": "react-jsx"
 	},
 	"include": [".astro/types.d.ts", "**/*"],
 	"exclude": ["dist", "src/routes", "**/* 2.*"]

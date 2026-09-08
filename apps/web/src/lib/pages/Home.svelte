@@ -1,8 +1,13 @@
 <script lang="ts">
+	import { decodePreset as decodeReactPreset } from 'shadcn/preset';
+	import ReactForecast from '$lib/components/react-forecast.svelte';
+	import VueForecast from '$lib/components/vue-forecast.svelte';
 	import LocationSearch from '$lib/components/site/location-search.svelte';
 	import { getContext, onMount } from 'svelte';
 	import { getPage } from '$lib/page.svelte.js';
 	const page = getPage();
+	const isReact = $derived(page.framework === 'react');
+	const NativeForecast = $derived(page.framework === 'vue' ? VueForecast : ReactForecast);
 
 	import * as Card from '@wxcn/svelte/components/ui/card/index.js';
 	import FrameworkTabs from '$lib/components/site/framework-tabs.svelte';
@@ -88,7 +93,22 @@
 		menuAccent,
 		menuColor
 	} as Preset);
-	const nextPreset = $derived(decodePreset(presetInput.trim().replace(/^--preset\s+/, '')));
+	const nextPreset = $derived(
+		decodeFrameworkPreset(presetInput.trim().replace(/^--preset\s+/, ''))
+	);
+	function decodeFrameworkPreset(value: string): Preset | null {
+		if (!isReact) return decodePreset(value);
+		const decoded = decodeReactPreset(value);
+		if (
+			!decoded ||
+			!(PRESET_BASE_COLOR_KEYS as readonly string[]).includes(decoded.baseColor) ||
+			!(PRESET_THEME_KEYS as readonly string[]).includes(decoded.theme) ||
+			(decoded.chartColor !== undefined &&
+				!(PRESET_CHART_COLORS as readonly string[]).includes(decoded.chartColor))
+		)
+			return null;
+		return decoded as Preset;
+	}
 	function applyPreset(p: Preset) {
 		style = p.style;
 		base = p.baseColor;
@@ -367,7 +387,7 @@
 		);
 	}
 	onMount(() => {
-		const saved = decodePreset(page.url.searchParams.get('preset') ?? '');
+		const saved = decodeFrameworkPreset(page.url.searchParams.get('preset') ?? '');
 		if (saved) applyPreset(saved);
 		visitorTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 		ready = true;
@@ -386,7 +406,7 @@
 <svelte:head
 	><title>wxcn — Make the forecast your own</title><meta
 		name="description"
-		content="Customize weather, moon, and tide cards for your shadcn-svelte project. Explore sizes, data density, themes, and icons."
+		content={`Customize weather, moon, and tide cards for your ${isReact ? 'shadcn/ui React' : page.framework === 'vue' ? 'shadcn-vue' : 'shadcn-svelte'} project. Explore sizes, data density, themes, and icons.`}
 	/></svelte:head
 >
 
@@ -396,7 +416,54 @@
 	size: 'sm' | 'default' | 'lg' = 'default',
 	cardDensity: CardDensity = density
 )}
-	{#if collection === 'weather'}<WeatherForecast
+	{#if page.framework !== 'svelte'}<NativeForecast
+			kind={collection as 'weather' | 'moon' | 'tides'}
+			props={{
+				interactive: interaction === 'on',
+				size,
+				type: variant,
+				density: cardDensity,
+				iconType: icons.value,
+				...(collection === 'weather'
+					? {
+							unit,
+							windUnit,
+							forecast: displayedForecast,
+							hourlyForecast,
+							currentWeather:
+								scene === 'live'
+									? currentWeather
+									: {
+											...sampleCurrentWeather,
+											...displayedForecast[0],
+											name: 'Now',
+											observedAt: sampleCurrentWeather.observedAt
+										},
+							showTemperatureTrend,
+							showHighLow,
+							at:
+								skyPreview ??
+								(status === 'live' && scene === 'live'
+									? undefined
+									: Date.parse(sampleCurrentWeather.observedAt)),
+							location,
+							sourceLabel: weatherSource,
+							background
+						}
+					: collection === 'moon'
+						? { forecast: moon, location }
+						: {
+								unit: tideUnit,
+								predictions: tides,
+								example: tideSeries === undefined,
+								series: tideSeries,
+								reading: tideReading,
+								location: tideLocation,
+								sourceLabel: `${tideSource.replace(' · station time', '')} · ${visitorTimeZone}`
+							})
+			}}
+		/>
+	{:else if collection === 'weather'}<WeatherForecast
 			{size}
 			interactive={interaction === 'on'}
 			type={variant}
@@ -716,7 +783,11 @@
 		>
 			<Dialog.Header
 				><Dialog.Title>Open Preset</Dialog.Title><Dialog.Description
-					>Paste a shadcn-svelte preset code to load a saved configuration.</Dialog.Description
+					>Paste a {isReact
+						? 'shadcn/ui'
+						: page.framework === 'vue'
+							? 'wxcn designer'
+							: 'shadcn-svelte'} preset code to load a saved configuration.</Dialog.Description
 				></Dialog.Header
 			><label for="preset-code" class="sr-only">Preset code</label><input
 				id="preset-code"
@@ -725,7 +796,11 @@
 				class="my-4 h-10 w-full rounded-md border bg-transparent px-3 text-sm"
 				aria-invalid={presetInput.length > 0 && !nextPreset}
 			/>{#if presetInput.length > 0 && !nextPreset}<p class="mb-3 text-xs text-destructive">
-					Enter a valid shadcn-svelte preset.
+					Enter a valid {isReact
+						? 'shadcn/ui'
+						: page.framework === 'vue'
+							? 'wxcn designer'
+							: 'shadcn-svelte'} preset.
 				</p>{/if}<Dialog.Footer
 				><Button type="button" variant="outline" onclick={() => (presetOpen = false)}>Cancel</Button
 				><Button type="submit" disabled={!nextPreset}>Open</Button></Dialog.Footer
@@ -742,9 +817,13 @@
 		><PMBlock
 			type="execute"
 			command={[
-				'shadcn-svelte@latest',
+				isReact
+					? 'shadcn@latest'
+					: page.framework === 'vue'
+						? 'shadcn-vue@latest'
+						: 'shadcn-svelte@latest',
 				'add',
-				`${ready ? page.url.origin : ''}/r/svelte/${registryName}.json`
+				`${ready ? page.url.origin : ''}/r/${page.framework}/${registryName}.json`
 			]}
 		/>
 		<p class="text-xs leading-5 text-muted-foreground">

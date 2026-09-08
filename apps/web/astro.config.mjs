@@ -1,4 +1,6 @@
 import { defineConfig } from 'astro/config';
+import react from '@astrojs/react';
+import vue from '@astrojs/vue';
 import svelte from '@astrojs/svelte';
 import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
@@ -8,20 +10,45 @@ export default defineConfig({
 	site: 'https://wxcn.dev',
 	output: 'server',
 	publicDir: './static',
-	integrations: [svelte({ extensions: ['.svelte', '.svx'] })],
+	integrations: [react(), vue(), svelte({ extensions: ['.svelte', '.svx'] })],
 	adapter: cloudflare({ imageService: 'passthrough' }),
 	vite: {
 		// Prebundle the server renderer before workerd starts; discovering it later
 		// invalidates the worker dependency graph during a cold development start.
 		environments: {
 			ssr: {
-				optimizeDeps: { include: ['@astrojs/svelte/server.js', 'astro/assets/services/noop'] }
+				optimizeDeps: {
+					include: [
+						'@astrojs/svelte/server.js',
+						'astro/assets/services/noop',
+						'react',
+						'react/jsx-runtime',
+						'react/jsx-dev-runtime',
+						'react-dom/server',
+						'vue',
+						'@vue/server-renderer'
+					]
+				}
 			}
 		},
-		plugins: [tailwindcss()],
+		plugins: [
+			tailwindcss(),
+			{
+				name: 'wxcn-worker-browser-flag',
+				enforce: 'pre',
+				resolveId(source) {
+					if (source === 'esm-env/browser' && ['ssr', 'prerender'].includes(this.environment.name))
+						return '\0wxcn-worker-browser-flag';
+				},
+				load(id) {
+					if (id === '\0wxcn-worker-browser-flag') return 'export default false';
+				}
+			}
+		],
 		resolve: {
-			dedupe: ['svelte', 'bits-ui'],
+			dedupe: ['svelte', 'bits-ui', 'react', 'react-dom', 'vue'],
 			alias: {
+				'@': fileURLToPath(new URL('../../packages/react/src', import.meta.url)),
 				$lib: fileURLToPath(new URL('./src/lib', import.meta.url)),
 				$components: fileURLToPath(new URL('./src/lib/components', import.meta.url)),
 				$frameworks: fileURLToPath(

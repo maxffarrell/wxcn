@@ -15,7 +15,18 @@ test('robots.txt permits public discovery and points to the sitemap', async () =
 });
 
 test('public route manifest contains the canonical Astro pages', async () => {
-	assert.deepEqual(publicRoutes, ['/', '/docs/components', '/docs/endpoints', '/shader-preview']);
+	assert.deepEqual(publicRoutes, [
+		'/',
+		'/docs/components',
+		'/docs/endpoints',
+		'/shader-preview',
+		'/react',
+		'/react/docs/components',
+		'/react/docs/endpoints',
+		'/vue',
+		'/vue/docs/components',
+		'/vue/docs/endpoints'
+	]);
 	assert.equal(siteUrl, 'https://wxcn.dev');
 	assert.match(await read('apps/web/src/pages/sitemap.xml.ts'), /publicRoutes/);
 	assert.match(await read('apps/web/src/pages/index.astro'), /<Site>/);

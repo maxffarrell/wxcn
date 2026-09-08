@@ -21,6 +21,13 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - run: pnpm test
+      - run: pnpm test:react
+      - run: pnpm test:vue
+      - run: pnpm build:vue
+      - run: pnpm test:consumer:vue
+      - run: pnpm build:react
+      - run: pnpm test:consumer:react
       - run: pnpm lint
       - run: pnpm build
+      - run: npx --no-install wrangler versions upload --dry-run
       - run: pnpm test:consumer

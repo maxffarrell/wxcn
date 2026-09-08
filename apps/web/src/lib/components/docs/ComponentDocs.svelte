@@ -12,8 +12,31 @@
 	import TideForecast from '$lib/components/docs/examples/tide-forecast.svelte';
 	import MoonForecast from '$lib/components/docs/examples/moon-forecast.svelte';
 	import ForecastDashboard from '$lib/components/docs/examples/forecast-dashboard.svelte';
+	import ReactForecast from '$lib/components/react-forecast.svelte';
+	import VueForecast from '$lib/components/vue-forecast.svelte';
 	import { getPage } from '$lib/page.svelte.js';
 	const page = getPage();
+	const framework = $derived(
+		page.url.pathname.startsWith('/react')
+			? 'react'
+			: page.url.pathname.startsWith('/vue')
+				? 'vue'
+				: 'svelte'
+	);
+	const installer = $derived(
+		framework === 'react'
+			? 'shadcn@latest'
+			: framework === 'vue'
+				? 'shadcn-vue@latest'
+				: 'shadcn-svelte@latest'
+	);
+	const reactKinds = {
+		'weather-forecast': 'weather',
+		'tide-forecast': 'tides',
+		'moon-forecast': 'moon',
+		'forecast-dashboard': 'dashboard'
+	} as const;
+	const vueKinds = reactKinds;
 	let { data }: { data: Awaited<ReturnType<typeof import('$lib/server/component-docs.js').load>> } =
 		$props();
 	const demos: Record<string, typeof WeatherForecast> = {
@@ -28,7 +51,51 @@
 	<section class="mt-12">
 		<H2 id={item.name}>{item.title}</H2>
 		<p>{item.description}</p>
-		<ComponentPreview name={item.name} component={demos[item.name]}>
+		<ComponentPreview name={item.name}>
+			{#snippet example()}
+				{#if framework === 'react'}
+					<div class={item.name === 'forecast-dashboard' ? 'w-full' : 'w-full max-w-sm'}>
+						<ReactForecast
+							kind={reactKinds[item.name as keyof typeof reactKinds]}
+							props={item.name === 'weather-forecast'
+								? {
+										interactive: true,
+										unit: 'celsius',
+										background: 'realistic',
+										showTemperatureTrend: true,
+										showHighLow: true
+									}
+								: item.name === 'tide-forecast'
+									? { interactive: true, unit: 'meter' }
+									: item.name === 'forecast-dashboard'
+										? { interactive: true, background: 'realistic' }
+										: { interactive: true }}
+						/>
+					</div>
+				{:else if framework === 'vue'}
+					<div class={item.name === 'forecast-dashboard' ? 'w-full' : 'w-full max-w-sm'}>
+						<VueForecast
+							kind={vueKinds[item.name as keyof typeof vueKinds]}
+							props={item.name === 'weather-forecast'
+								? {
+										interactive: true,
+										unit: 'celsius',
+										background: 'realistic',
+										showTemperatureTrend: true,
+										showHighLow: true
+									}
+								: item.name === 'tide-forecast'
+									? { interactive: true, unit: 'meter' }
+									: item.name === 'forecast-dashboard'
+										? { interactive: true, background: 'realistic' }
+										: { interactive: true }}
+						/>
+					</div>
+				{:else}
+					{@const Demo = demos[item.name]}
+					<Demo />
+				{/if}
+			{/snippet}
 			<SourceCode code={item.code} html={item.html} />
 		</ComponentPreview>
 		{#if item.name === 'weather-forecast'}
@@ -72,8 +139,9 @@
 				<code>unit</code>.
 			</p>
 			<p>
-				Set <code>timeZone</code> for the local calendar day. The example uses both options with sample
-				observations.
+				Set an explicit <code>timeZone</code> first; otherwise cards use
+				<code>location.timeZone</code>, then the visitor's browser time zone after hydration. Server
+				rendering falls back to UTC when neither prop supplies a time zone.
 			</p>
 		{/if}
 		<H3 id={`${item.name}-interaction`}>Interactive forecasts</H3>
@@ -85,11 +153,11 @@
 		</p>
 		<p>
 			Day details reuse the original card layout with the selected day's data, preserving its
-			dimensions without an internal scroll area. Week tables page through the available days when
-			the card is too small to show them all. Back and Escape return to the previous screen and
-			restore focus. Weather details use the selected day's conditions for the chosen <code
-				>background</code
-			>. ForecastDashboard forwards
+			dimensions without an internal scroll area. Week screens use a compact responsive grid for the
+			available days. Tide cards show an Upcoming tides summary, while day buttons remain available
+			from the detailed tide list. Back and Escape return to the previous screen and restore focus.
+			Weather details use the selected day's conditions for the chosen <code>background</code>.
+			ForecastDashboard forwards
 			<code>interactive</code> to all three cards.
 		</p>
 		<p>
@@ -101,20 +169,21 @@
 		<InstallTabs>
 			{#snippet cli()}<PMBlock
 					type="execute"
-					command={['shadcn-svelte@latest', 'add', `${page.url.origin}/r/svelte/${item.name}.json`]}
+					command={[installer, 'add', `${page.url.origin}/r/${framework}/${item.name}.json`]}
 				/>{/snippet}
 			{#snippet manual()}
 				<Steps>
 					<Step>Install the required base components.</Step>
-					<PMBlock type="execute" command={['shadcn-svelte@latest', 'add', ...item.primitives]} />
+					<PMBlock type="execute" command={[installer, 'add', ...item.primitives]} />
 					{#if item.dependencies.length}<Step>Install the following dependencies.</Step><PMBlock
 							type="add"
 							command={item.dependencies}
 						/>{/if}
 					<Step>Copy and paste the following code into your project.</Step>
 					<p>
-						These files use the default aliases and Lucide icons. Adjust imports to match your
-						project, or use CLI installation to apply your configuration automatically.
+						These files use the default aliases and native icon adapter. Adjust imports to match
+						your project, or use CLI installation to apply your aliases and supported icon mappings
+						automatically. Vue weather glyphs retain their canonical Lucide shapes.
 					</p>
 					<ComponentSource
 						item={{

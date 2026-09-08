@@ -17,3 +17,33 @@ test('weather families select appropriate clouds and precipitation intensity', (
 		assert.deepEqual(scenes[`${mode}-night`], scenes[mode]);
 	}
 });
+
+import { readFile } from 'node:fs/promises';
+test('native sky ports preserve the canonical shader, scene data, and embedded photography', async () => {
+	const source = async (framework, file) =>
+		readFile(
+			new URL(`../packages/${framework}/src/components/wxcn/${file}`, import.meta.url),
+			'utf8'
+		);
+	const shader = (code) =>
+		code.slice(code.indexOf('precision highp'), code.indexOf('`', code.indexOf('precision highp')));
+	const canonical = shader(await source('svelte', 'WeatherShaderBackground.svelte'));
+	for (const framework of ['react', 'vue']) {
+		assert.equal(
+			shader(
+				await source(
+					framework,
+					framework === 'react' ? 'weather-shader-background.tsx' : 'WeatherShaderBackground.vue'
+				)
+			),
+			canonical,
+			`${framework} shader`
+		);
+		for (const file of ['cloud-texture.ts', 'weather-scenes.ts'])
+			assert.equal(
+				await source(framework, file),
+				await source('svelte', file),
+				`${framework} ${file}`
+			);
+	}
+});

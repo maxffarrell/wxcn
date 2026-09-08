@@ -1,5 +1,38 @@
 {
 	"name": "@wxcn/react",
+	"version": "0.1.0",
 	"private": true,
-	"type": "module"
+	"type": "module",
+	"exports": {
+		".": "./src/index.ts",
+		"./components/*": "./src/components/*"
+	},
+	"scripts": {
+		"check": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@hugeicons/core-free-icons": "^4.3.0",
+		"@hugeicons/react": "^1.1.10",
+		"@number-flow/react": "^0.5.8",
+		"@phosphor-icons/react": "^2.1.10",
+		"@remixicon/react": "^4.9.0",
+		"@tabler/icons-react": "^3.46.0",
+		"@wxcn/core": "workspace:*",
+		"class-variance-authority": "^0.7.1",
+		"cn": "^0.2.5",
+		"lucide-react": "^0.577.0",
+		"radix-ui": "^1.4.3",
+		"recharts": "^3.8.0"
+	},
+	"peerDependencies": {
+		"react": "^19.2.0",
+		"react-dom": "^19.2.0"
+	},
+	"devDependencies": {
+		"@types/react": "^19.2.0",
+		"@types/react-dom": "^19.2.0",
+		"react": "^19.2.0",
+		"react-dom": "^19.2.0",
+		"typescript": "^7.0.2"
+	}
 }

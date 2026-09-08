@@ -5,6 +5,19 @@ class Page {
 	constructor(url: string) {
 		this.url = new URL(url);
 	}
+	get framework() {
+		return /^\/react(?:\/|$)/.test(this.url.pathname)
+			? 'react'
+			: /^\/vue(?:\/|$)/.test(this.url.pathname)
+				? 'vue'
+				: 'svelte';
+	}
+	get path() {
+		return this.url.pathname.replace(/^\/(react|vue)(?=\/|$)/, '') || '/';
+	}
+	href(path: string) {
+		return this.framework !== 'svelte' ? '/' + this.framework + (path === '/' ? '' : path) : path;
+	}
 	replace(url: URL) {
 		history.replaceState(null, '', url);
 		this.url = new URL(url);

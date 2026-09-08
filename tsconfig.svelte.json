@@ -8,7 +8,8 @@
 			"$wxcn/*": ["./packages/svelte/src/components/wxcn/*"],
 			"@wxcn/svelte/components/*": ["./packages/svelte/src/components/*"],
 			"@wxcn/svelte/icons/*": ["./packages/svelte/src/icons/*"],
-			"@wxcn/svelte/utils": ["./packages/svelte/src/utils.ts"]
+			"@wxcn/svelte/utils": ["./packages/svelte/src/utils.ts"],
+			"@/*": ["./packages/react/src/*"]
 		}
 	},
 	"include": [

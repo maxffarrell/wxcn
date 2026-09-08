@@ -2,4 +2,15 @@ export const siteUrl = 'https://wxcn.dev';
 
 // Keep this list limited to pages intended for public discovery. API and registry
 // endpoints are linked from the site where appropriate but are not sitemap pages.
-export const publicRoutes = ['/', '/docs/components', '/docs/endpoints', '/shader-preview'];
+export const publicRoutes = [
+	'/',
+	'/docs/components',
+	'/docs/endpoints',
+	'/shader-preview',
+	'/react',
+	'/react/docs/components',
+	'/react/docs/endpoints',
+	'/vue',
+	'/vue/docs/components',
+	'/vue/docs/endpoints'
+];

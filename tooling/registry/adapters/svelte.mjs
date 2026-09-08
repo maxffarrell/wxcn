@@ -85,6 +85,11 @@ for (const [name, component, data, description, registryDependencies] of definit
 				'wxcn/WeatherGradientBackground.svelte'
 			),
 			await file(
+				'packages/svelte/src/components/wxcn/weather-scenes.ts',
+				'registry:component',
+				'wxcn/weather-scenes.ts'
+			),
+			await file(
 				'packages/svelte/src/components/wxcn/cloud-texture.ts',
 				'registry:component',
 				'wxcn/cloud-texture.ts'

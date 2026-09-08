@@ -22,6 +22,7 @@
 
 <script lang="ts">
 	import type { SkyState } from '@wxcn/core/sky.js';
+	import { weatherCloudTexture } from './cloud-texture.js';
 	import { onMount } from 'svelte';
 	let {
 		mode = 'clear',
@@ -114,15 +115,11 @@ uniform vec4 sunPosition;
 uniform vec4 moonPosition;
 uniform vec3 moonLight;
 uniform float astronomical;
-// A fixed Bayer lattice avoids temporal noise while the sky moves underneath.
-float bayer2(vec2 p){p=mod(floor(p),2.);return mod(2.*p.x+3.*p.y,4.);}
-float bayer4(vec2 p){return (4.*bayer2(p)+bayer2(floor(p/2.))+.5)/16.;}
+uniform sampler2D cloudPlate;
 float hash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
-float noise(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);}
-float fbm(vec3 p){float v=0.;float a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p=p*2.03+vec3(12.1,3.7,8.2);a*=.5;}return v;}
 void main(){
  vec2 uv=gl_FragCoord.xy/resolution;
- vec2 p=(gl_FragCoord.xy-.5*resolution)/resolution.y;
+
  float night=mix(step(14.5,mode),1.-smoothstep(-8.,1.,sunPosition.z),astronomical);
  float storm=step(7.5,mode)*(1.-step(8.5,mode));
  float wet=step(7.5,mode)*(1.-step(11.5,mode))+step(16.5,mode);
@@ -134,24 +131,20 @@ void main(){
  float dusk=mix(1.-step(1.5,mode),smoothstep(-8.,-1.,sunPosition.z)*(1.-smoothstep(2.,12.,sunPosition.z)),astronomical);
  float fog=step(4.5,mode)*(1.-step(5.5,mode));
  float cloudy=step(6.5,mode)*(1.-step(14.5,mode));
- float cover=mix(.56,.32,cloudy);
- cover=mix(cover,.63,1.-step(.1,abs(mode-2.)));
- cover=mix(cover,.36,fog);
- cover=mix(cover,.68,1.-step(.1,abs(mode-15.)));
  vec2 sunPoint=mix(vec2(.8,.76),sunPosition.xy,astronomical);
- vec3 sunDir=normalize(vec3((sunPoint.x-.5)*resolution.x/resolution.y,(sunPoint.y-.5)*.6+.46,-1.));
- vec3 ray=normalize(vec3(p.x, p.y*.6+.46, -1.));
  vec2 sunDelta=uv-sunPoint;
  sunDelta.x=mod(sunDelta.x+.5,1.)-.5;
  sunDelta.x*=resolution.x/resolution.y;
  float sunDistance=length(sunDelta);
  float sunVisible=mix(1.-night,sunPosition.w,astronomical);
- vec3 sky=mix(vec3(.69,.79,.83),vec3(.20,.43,.64),smoothstep(0.,1.,uv.y));
+ float height=pow(clamp(uv.y,0.,1.),.65);
+ vec3 sky=mix(vec3(.64,.77,.85),vec3(.085,.29,.52),height);
  sky=mix(sky,mix(vec3(.91,.63,.44),vec3(.33,.42,.57),uv.y),dusk);
  sky=mix(sky,mix(vec3(.43,.48,.51),vec3(.23,.30,.35),uv.y),cloudy*.75);
  sky=mix(sky,mix(vec3(.10,.15,.23),vec3(.025,.045,.09),uv.y),night);
- sky+=mix(vec3(1.,.87,.63),vec3(1.,.48,.18),dusk)*exp(-sunDistance*12.)*.24*sunVisible*(1.-cloudy);
- sky=mix(sky,mix(vec3(1.,.97,.82),vec3(1.,.67,.34),dusk),(1.-smoothstep(.013,.016,sunDistance))*sunVisible);
+ sky+=mix(vec3(1.,.87,.63),vec3(1.,.48,.18),dusk)*exp(-sunDistance*9.)*.19*sunVisible*(1.-cloudy);
+ sky+=vec3(1.,.88,.64)*exp(-sunDistance*60.)*.18*sunVisible;
+ sky=mix(sky,mix(vec3(1.,.99,.93),vec3(1.,.76,.47),dusk),(1.-smoothstep(.007,.009,sunDistance))*sunVisible);
  float stars=pow(hash(vec3(floor(uv*resolution/2.),1.)),180.);
  sky+=stars*.35*night;
  vec2 moonDelta=uv-moonPosition.xy;
@@ -165,34 +158,33 @@ void main(){
   float mask=(1.-smoothstep(.94,1.,moonRadius))*lit;
   sky=mix(sky,vec3(.82,.85,.89),mask*mix(.5,1.,night));
  }
- // Integrate a moving 3D cloud layer, lit from the upper right.
- vec4 cloud=vec4(0.);
- for(int i=0;i<14;i++){
-  float depth=1.2+float(i)*.16;
-  vec3 q=ray*depth*3.0+vec3(time*.012,0.,time*.005);
-  float shape=fbm(q*1.05);
-  float density=max(0.,shape-cover)*3.4;
-  float clearSky=(1.-step(.1,abs(mode-2.)))+(1.-step(.1,abs(mode-15.)));
-  density*=mix(1.,.10,clearSky);
-  density*=smoothstep(.05,.25,ray.y);
-  float light=clamp((shape-fbm(q*1.05+sunDir*.35))*2.5+.65,.2,1.);
-  vec3 tone=mix(vec3(.48,.54,.59),vec3(.97,.96,.91),light);
-  tone=mix(tone,vec3(.19,.25,.33)*(.6+light*.5),night);
-  tone=mix(tone,tone*vec3(1.,.78,.65),dusk*.45);
-  tone=mix(tone,tone*.55,storm);
-  float a=clamp(density*.28,0.,1.);
-  cloud.rgb+=(1.-cloud.a)*tone*a;
-  cloud.a+=(1.-cloud.a)*a;
- }
- vec3 color=sky*(1.-cloud.a)+cloud.rgb;
+ // Photographic cloud structure, slowly drifting without a visible loop seam.
+ float aspect=resolution.x/resolution.y;
+ vec2 photoUv=(uv-.5)*vec2(min(aspect/1.5,1.),min(1.5/aspect,1.))*.88+.5;
+ photoUv+=vec2(sin(time*.012)*.035,sin(time*.008)*.012);
+ vec3 photo=texture2D(cloudPlate,photoUv).rgb;
+ float cloudMask=1.-smoothstep(.045,.24,photo.b-photo.r);
+ float clearSky=(1.-step(.1,abs(mode-2.)))+(1.-step(.1,abs(mode-15.)));
+ float cloudAmount=mix(.90,.10,clearSky);
+ float cloudOpacity=cloudMask*cloudAmount;
+ // Overcast fills openings but keeps the plate's soft natural cloud detail.
+ cloudOpacity=mix(cloudOpacity,.78+cloudMask*.20,cloudy);
+ vec3 cloudTone=mix(vec3(.38,.45,.51),vec3(.98,.98,.96),smoothstep(.22,.95,photo.r));
+ cloudTone=mix(cloudTone,cloudTone*vec3(1.,.72,.49),dusk*.65);
+ cloudTone=mix(cloudTone,cloudTone*vec3(.12,.17,.24),night);
+ cloudTone*=mix(1.,.58,storm);
+ vec3 color=mix(sky,cloudTone,cloudOpacity);
  color=mix(color,mix(vec3(.69,.73,.74),vec3(.10,.14,.20),night),fog*.55);
  color+=(hash(vec3(gl_FragCoord.xy,0.))-.5)/255.;
  if(dithered>.5){
-  vec2 cell=floor(gl_FragCoord.xy/(2.*pixelRatio));
-  // Quantize luminance, not individual RGB channels, into two ink tones.
+  // Fine, fixed stochastic dithering preserves cloud shading without a checkerboard.
+  vec2 cell=floor(gl_FragCoord.xy/pixelRatio);
+  float grain=hash(vec3(cell,7.));
   float luminance=dot(clamp(color,0.,1.),vec3(.2126,.7152,.0722));
-  color=vec3(mix(.18,1.,step(bayer4(cell),luminance)));
+  float ink=floor(luminance*7.+grain)/7.;
+  color=vec3(.28+ink*.64);
  }
+
  gl_FragColor=vec4(color,1.);
 }`
 		);
@@ -230,21 +222,47 @@ void main(){
 			moonPosition = gl.getUniformLocation(program, 'moonPosition'),
 			moonLight = gl.getUniformLocation(program, 'moonLight'),
 			astronomical = gl.getUniformLocation(program, 'astronomical');
+		const plate = gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, plate);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		gl.texImage2D(
+			gl.TEXTURE_2D,
+			0,
+			gl.RGBA,
+			1,
+			1,
+			0,
+			gl.RGBA,
+			gl.UNSIGNED_BYTE,
+			new Uint8Array([35, 95, 150, 255])
+		);
+		const photograph = new Image();
+		let disposed = false;
+		photograph.onload = () => {
+			if (disposed || lost) return;
+			gl.bindTexture(gl.TEXTURE_2D, plate);
+			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, photograph);
+			refresh();
+		};
 		const reduced = matchMedia('(prefers-reduced-motion: reduce)');
 		let visible = true,
 			frame = 0,
 			last = 0,
 			elapsed = 0,
 			lost = false;
-		function draw(now = performance.now()) {
+		function draw(now = performance.now(), force = false) {
 			frame = 0;
-			if (lost || !visible || document.hidden) {
+			if (lost || (!force && (!visible || document.hidden))) {
 				last = 0;
 				return;
 			}
 			if (last && !reduced.matches && !paused) elapsed += Math.min(now - last, 100) / 1000;
 			last = now;
-			const ratio = Math.min(devicePixelRatio || 1, 1.25);
+			const ratio = Math.min(devicePixelRatio || 1, 2);
 			const width = Math.max(1, Math.floor(canvas.clientWidth * ratio));
 			const height = Math.max(1, Math.floor(canvas.clientHeight * ratio));
 			if (canvas.width !== width) canvas.width = width;
@@ -259,6 +277,9 @@ void main(){
 			gl!.uniform1f(scene, modes.indexOf(mode));
 			gl!.uniform1f(texture, dithered ? 1 : 0);
 			gl!.uniform1f(pixelRatio, ratio);
+			gl!.activeTexture(gl!.TEXTURE0);
+			gl!.bindTexture(gl!.TEXTURE_2D, plate);
+			gl!.uniform1i(gl!.getUniformLocation(program, 'cloudPlate'), 0);
 			gl!.uniform1f(astronomical, sky ? 1 : 0);
 			gl!.uniform4f(
 				sunPosition,
@@ -276,7 +297,8 @@ void main(){
 			);
 			gl!.uniform3f(moonLight, ...(sky?.moon.light ?? ([0, 0, -1] as [number, number, number])));
 			gl!.drawArrays(gl!.TRIANGLES, 0, 6);
-			if (!reduced.matches && !paused) frame = requestAnimationFrame(tick);
+			if (visible && !document.hidden && !reduced.matches && !paused)
+				frame = requestAnimationFrame(tick);
 		}
 		function tick(now: number) {
 			if (now - last < 1000 / 24) {
@@ -288,7 +310,8 @@ void main(){
 		function refresh() {
 			cancelAnimationFrame(frame);
 			last = 0;
-			draw();
+			// Prop changes still need a static frame when an offscreen card is paused.
+			draw(performance.now(), true);
 		}
 		redraw = refresh;
 		const observer = new IntersectionObserver((entries) => {
@@ -307,8 +330,12 @@ void main(){
 		canvas.addEventListener('webglcontextlost', lose);
 		reduced.addEventListener('change', refresh);
 		document.addEventListener('visibilitychange', refresh);
+		photograph.src = weatherCloudTexture;
 		refresh();
 		return () => {
+			disposed = true;
+			photograph.onload = null;
+			gl.deleteTexture(plate);
 			redraw = () => {};
 			cancelAnimationFrame(frame);
 			observer.disconnect();

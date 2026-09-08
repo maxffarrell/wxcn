@@ -22,7 +22,8 @@
 
 <script lang="ts">
 	import type { SkyState } from '@wxcn/core/sky.js';
-	import { weatherCloudTexture } from './cloud-texture.js';
+	import { weatherCloudTextures } from './cloud-texture.js';
+	import { weatherScenes } from './weather-scenes.js';
 	import { onMount } from 'svelte';
 	let {
 		mode = 'clear',
@@ -37,9 +38,10 @@
 	} = $props();
 	let canvas: HTMLCanvasElement;
 	let active = $state(true);
-	const rain = $derived(/rain|drizzle|thunderstorm|wintry/.test(mode));
-	const snow = $derived(/snow|wintry/.test(mode));
-	const particles = Array.from({ length: 36 }, (_, i) => ({
+	const atmosphere = $derived(weatherScenes[mode]);
+	const rain = $derived(atmosphere.rain > 0);
+	const snow = $derived(atmosphere.snow > 0);
+	const particles = Array.from({ length: 48 }, (_, i) => ({
 		left: (i * 61.803) % 100,
 		delay: -(i * 0.173) % 3,
 		duration: 0.65 + (i % 7) * 0.09
@@ -116,22 +118,19 @@ uniform vec4 moonPosition;
 uniform vec3 moonLight;
 uniform float astronomical;
 uniform sampler2D cloudPlate;
+uniform vec4 atmosphere; // coverage, mist, wind, opaque plate
+uniform float snowCover;
 float hash(vec3 p){p=fract(p*.3183099+vec3(.1,.2,.3));p*=17.;return fract(p.x*p.y*p.z*(p.x+p.y+p.z));}
 void main(){
  vec2 uv=gl_FragCoord.xy/resolution;
 
  float night=mix(step(14.5,mode),1.-smoothstep(-8.,1.,sunPosition.z),astronomical);
  float storm=step(7.5,mode)*(1.-step(8.5,mode));
- float wet=step(7.5,mode)*(1.-step(11.5,mode))+step(16.5,mode);
- wet*=mix(.65,1.0,1.-step(.1,abs(mode-10.)));
- wet*=mix(1.,.4,step(10.5,mode));
- float snow=step(11.5,mode)*(1.-step(14.5,mode));
- snow*=mix(.5,1.,1.-step(.1,abs(mode-13.)));
- wet+=.3*(1.-step(.1,abs(mode-14.)));
  float dusk=mix(1.-step(1.5,mode),smoothstep(-8.,-1.,sunPosition.z)*(1.-smoothstep(2.,12.,sunPosition.z)),astronomical);
- float fog=step(4.5,mode)*(1.-step(5.5,mode));
- float cloudy=step(6.5,mode)*(1.-step(14.5,mode));
- vec2 sunPoint=mix(vec2(.8,.76),sunPosition.xy,astronomical);
+ float fog=atmosphere.y;
+ float cloudy=atmosphere.w;
+ vec2 previewSun=mix(vec2(.8,.76),vec2(mix(.25,.75,step(.5,mode)),.12),1.-step(1.5,mode));
+ vec2 sunPoint=mix(previewSun,sunPosition.xy,astronomical);
  vec2 sunDelta=uv-sunPoint;
  sunDelta.x=mod(sunDelta.x+.5,1.)-.5;
  sunDelta.x*=resolution.x/resolution.y;
@@ -161,20 +160,18 @@ void main(){
  // Photographic cloud structure, slowly drifting without a visible loop seam.
  float aspect=resolution.x/resolution.y;
  vec2 photoUv=(uv-.5)*vec2(min(aspect/1.5,1.),min(1.5/aspect,1.))*.88+.5;
- photoUv+=vec2(sin(time*.012)*.035,sin(time*.008)*.012);
+ photoUv+=vec2(sin(time*.012*atmosphere.z)*.035,sin(time*.008*atmosphere.z)*.012);
  vec3 photo=texture2D(cloudPlate,photoUv).rgb;
  float cloudMask=1.-smoothstep(.045,.24,photo.b-photo.r);
- float clearSky=(1.-step(.1,abs(mode-2.)))+(1.-step(.1,abs(mode-15.)));
- float cloudAmount=mix(.90,.10,clearSky);
- float cloudOpacity=cloudMask*cloudAmount;
- // Overcast fills openings but keeps the plate's soft natural cloud detail.
- cloudOpacity=mix(cloudOpacity,.78+cloudMask*.20,cloudy);
- vec3 cloudTone=mix(vec3(.38,.45,.51),vec3(.98,.98,.96),smoothstep(.22,.95,photo.r));
+ float cloudOpacity=mix(cloudMask*atmosphere.x,1.,cloudy);
+ vec3 fairTone=mix(vec3(.38,.45,.51),vec3(.98,.98,.96),smoothstep(.22,.95,photo.r));
+ vec3 cloudTone=mix(fairTone,photo,cloudy);
+ cloudTone=mix(cloudTone,cloudTone*vec3(.92,.96,1.)+.06,snowCover*.4);
  cloudTone=mix(cloudTone,cloudTone*vec3(1.,.72,.49),dusk*.65);
  cloudTone=mix(cloudTone,cloudTone*vec3(.12,.17,.24),night);
- cloudTone*=mix(1.,.58,storm);
+ cloudTone*=mix(1.,.85,storm);
  vec3 color=mix(sky,cloudTone,cloudOpacity);
- color=mix(color,mix(vec3(.69,.73,.74),vec3(.10,.14,.20),night),fog*.55);
+ color=mix(color,mix(vec3(.69,.73,.74),vec3(.10,.14,.20),night),fog);
  color+=(hash(vec3(gl_FragCoord.xy,0.))-.5)/255.;
  if(dithered>.5){
   // Fine, fixed stochastic dithering preserves cloud shading without a checkerboard.
@@ -241,6 +238,14 @@ void main(){
 		);
 		const photograph = new Image();
 		let disposed = false;
+		let loadedPlate = '';
+		function loadPlate() {
+			const source = weatherCloudTextures[atmosphere.plate];
+			if (source !== loadedPlate) {
+				loadedPlate = source;
+				photograph.src = source;
+			}
+		}
 		photograph.onload = () => {
 			if (disposed || lost) return;
 			gl.bindTexture(gl.TEXTURE_2D, plate);
@@ -280,6 +285,14 @@ void main(){
 			gl!.activeTexture(gl!.TEXTURE0);
 			gl!.bindTexture(gl!.TEXTURE_2D, plate);
 			gl!.uniform1i(gl!.getUniformLocation(program, 'cloudPlate'), 0);
+			gl!.uniform4f(
+				gl!.getUniformLocation(program, 'atmosphere'),
+				atmosphere.coverage,
+				atmosphere.mist,
+				atmosphere.wind,
+				atmosphere.plate === 'fair' ? 0 : 1
+			);
+			gl!.uniform1f(gl!.getUniformLocation(program, 'snowCover'), snow ? 1 : 0);
 			gl!.uniform1f(astronomical, sky ? 1 : 0);
 			gl!.uniform4f(
 				sunPosition,
@@ -308,6 +321,7 @@ void main(){
 			draw(now);
 		}
 		function refresh() {
+			loadPlate();
 			cancelAnimationFrame(frame);
 			last = 0;
 			// Prop changes still need a static frame when an offscreen card is paused.
@@ -330,7 +344,6 @@ void main(){
 		canvas.addEventListener('webglcontextlost', lose);
 		reduced.addEventListener('change', refresh);
 		document.addEventListener('visibilitychange', refresh);
-		photograph.src = weatherCloudTexture;
 		refresh();
 		return () => {
 			disposed = true;
@@ -363,13 +376,13 @@ void main(){
 >
 	<canvas bind:this={canvas}></canvas>
 	{#if rain}<div class="precipitation rain" data-precipitation="rain">
-			{#each particles as p, i}<i
-					style={`left:${p.left}%;animation-delay:${p.delay}s;animation-duration:${p.duration}s;opacity:${0.25 + (i % 4) * 0.12};height:${9 + (i % 12)}px`}
+			{#each particles.slice(0, atmosphere.rain) as p, i}<i
+					style={`left:${p.left}%;animation-delay:${p.delay}s;animation-duration:${(p.duration * (mode.includes('drizzle') ? 1.8 : 1)) / atmosphere.wind}s;opacity:${0.25 + (i % 4) * 0.12};height:${mode.includes('drizzle') ? 5 + (i % 5) : 12 + (i % 16)}px`}
 				></i>{/each}
 		</div>{/if}
 	{#if snow}<div class="precipitation snow" data-precipitation="snow">
-			{#each particles.slice(0, 24) as p, i}<i
-					style={`left:${p.left}%;animation-delay:${p.delay * 3}s;animation-duration:${4 + p.duration * 2}s;width:${2 + (i % 3)}px;height:${2 + (i % 3)}px;opacity:${0.45 + (i % 4) * 0.12}`}
+			{#each particles.slice(0, atmosphere.snow) as p, i}<i
+					style={`left:${p.left}%;animation-delay:${p.delay * 3}s;animation-duration:${(4 + p.duration * 2) / atmosphere.wind}s;width:${2 + (i % 3)}px;height:${2 + (i % 3)}px;opacity:${0.45 + (i % 4) * 0.12}`}
 				></i>{/each}
 		</div>{/if}
 </div>

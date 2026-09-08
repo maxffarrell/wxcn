@@ -128,8 +128,8 @@
 		{density}
 		{sourceLabel}
 		{iconType}
-		actionLabel="Next 7 phases"
-		summaryTitle="Next 7 phases"
+		actionLabel="Next phases"
+		summaryTitle="Next phases"
 	>
 		{#snippet summary(availableHeight)}
 			<div

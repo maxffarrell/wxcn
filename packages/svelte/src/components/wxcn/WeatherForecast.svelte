@@ -258,24 +258,34 @@
 		</Card.Content>
 	</div>
 	{#if day && size === 'lg' && type !== 'simple' && dayHours(day).length}
-		<Card.Content class="relative min-h-0 flex-1 pb-(--card-spacing)">
-			<p class="mb-3 text-xs font-medium">Hourly forecast</p>
-			<div class="grid grid-cols-3 gap-x-4 gap-y-2" data-slot="hourly-forecast">
-				{#each dayHours(day) as hour}
-					<div
-						class="flex min-w-0 items-center justify-between gap-1 text-xs"
-						title={hour.shortForecast}
-					>
-						<span class="opacity-75"
-							>{new Intl.DateTimeFormat('en-US', {
-								timeZone: displayTimeZone,
-								hour: 'numeric'
-							}).format(new Date(hour.startTime))}</span
+		<Card.Content class="relative flex min-h-0 flex-1 flex-col pb-(--card-spacing)">
+			<p class="mb-3 shrink-0 text-base font-medium">Hourly forecast</p>
+			<!-- Keyboard focus lets users scroll the hourly list independently of the card. -->
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+			<div
+				class="min-h-0 flex-1 overflow-y-auto overscroll-contain"
+				tabindex="0"
+				role="region"
+				aria-label="Hourly forecast"
+				data-slot="hourly-forecast"
+			>
+				<div class="grid min-h-full auto-rows-[minmax(3.5rem,1fr)] grid-cols-1">
+					{#each dayHours(day) as hour}
+						<div
+							class="grid min-w-0 grid-cols-[1fr_auto_1fr] items-center gap-4 border-b border-current/15 text-lg last:border-0"
+							title={hour.shortForecast}
 						>
-						<ForecastIcon name={icon(hour)} iconSet={iconType} class="size-3.5 shrink-0" />
-						<span class="tabular-nums">{temperature(hour)}°</span>
-					</div>
-				{/each}
+							<span class="opacity-75"
+								>{new Intl.DateTimeFormat('en-US', {
+									timeZone: displayTimeZone,
+									hour: 'numeric'
+								}).format(new Date(hour.startTime))}</span
+							>
+							<ForecastIcon name={icon(hour)} iconSet={iconType} class="size-6 shrink-0" />
+							<span class="text-right font-medium tabular-nums">{temperature(hour)}°</span>
+						</div>
+					{/each}
+				</div>
 			</div>
 		</Card.Content>
 	{:else if type !== 'simple'}

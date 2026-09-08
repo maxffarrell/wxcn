@@ -154,13 +154,16 @@
 					{#if summary}{@render summary(availableHeight)}
 					{:else}
 						<div
-							class={`grid h-full content-start gap-x-3 ${!daySummary && availableHeight < days.length * 28 ? 'grid-cols-2' : 'grid-cols-1'}`}
+							class={`grid h-full content-start gap-x-3 overflow-y-auto ${!daySummary && availableHeight < days.length * 28 ? 'grid-cols-2' : 'grid-cols-1'}`}
 						>
 							{#each days as day}
 								<button
 									type="button"
 									data-forecast-day={day.key}
-									style:height={`${Math.min(28, availableHeight / (!daySummary && availableHeight < days.length * 28 ? Math.ceil(days.length / 2) : days.length))}px`}
+									style:height={`${daySummary ? Math.max(32, availableHeight / days.length) : Math.min(28, availableHeight / (!daySummary && availableHeight < days.length * 28 ? Math.ceil(days.length / 2) : days.length))}px`}
+									style:font-size={daySummary
+										? `clamp(12px, min(4.5cqw, ${availableHeight / days.length / 3}px), 20px)`
+										: undefined}
 									class="flex min-h-0 min-w-0 items-center justify-between gap-2 border-b text-left text-[11px] hover:bg-muted/50 focus-visible:outline-2 focus-visible:outline-ring"
 									aria-label={`View details for ${day.label}`}
 									onclick={(event) => open('day', event.currentTarget, day.key)}

@@ -4,7 +4,7 @@
 	import { getSkyState } from '@wxcn/core/sky.js';
 	import WeatherGradientBackground from './WeatherGradientBackground.svelte';
 	import ForecastScreens from './ForecastScreens.svelte';
-	import { forecastDays, type ForecastDay } from '@wxcn/core/forecast-days.js';
+	import { forecastDays, forecastDayNoon, type ForecastDay } from '@wxcn/core/forecast-days.js';
 	import ForecastIcon from '../../icons/forecast-icons.svelte';
 	import WeatherShaderBackground, {
 		type WeatherShaderMode
@@ -171,18 +171,25 @@
 	{@const displayedPeriods = day ? dayPeriods(day) : periods}
 	{@const sky =
 		day && view
-			? getSkyState(location.latitude, location.longitude, Date.parse(view.startTime))
+			? getSkyState(
+					location.latitude,
+					location.longitude,
+					forecastDayNoon(day.key, displayTimeZone)
+				)
 			: currentSky}
+	{@const skyMode = view
+		? condition(day && sky ? { ...view, isDaytime: sky.isDaytime } : view)
+		: 'clear'}
 	<div
 		class={`${day ? 'contents' : 'relative isolate overflow-hidden'} ${background !== 'none' && view ? 'text-white' : 'text-card-foreground'}`}
 	>
 		{#if background !== 'none' && view}
 			<div class="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
 				{#if background === 'gradient'}
-					<WeatherGradientBackground mode={condition(view)} {sky} />
+					<WeatherGradientBackground mode={skyMode} {sky} />
 				{:else}
 					<WeatherShaderBackground
-						mode={condition(view)}
+						mode={skyMode}
 						{sky}
 						paused={!overviewVisible}
 						dithered={background === 'dithered'}

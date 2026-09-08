@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { forecastDays } from '../packages/core/src/forecast-days.ts';
+import { forecastDays, forecastDayNoon } from '../packages/core/src/forecast-days.ts';
 const entry = (time) => ({
 	time: Date.parse(time),
 	label: 'Period',
@@ -32,4 +32,15 @@ test('DST fall-back hours remain in the same local calendar day', () => {
 		).length,
 		1
 	);
+});
+
+test('selected forecast dates resolve to local noon across DST and fractional time zones', () => {
+	for (const [date, zone, expected] of [
+		['2026-09-11', 'America/Chicago', '2026-09-11T17:00:00.000Z'],
+		['2026-03-08', 'America/Chicago', '2026-03-08T17:00:00.000Z'],
+		['2026-11-01', 'America/Chicago', '2026-11-01T18:00:00.000Z'],
+		['2026-09-11', 'Asia/Kathmandu', '2026-09-11T06:15:00.000Z'],
+		['2026-09-11', 'Pacific/Kiritimati', '2026-09-10T22:00:00.000Z']
+	])
+		assert.equal(new Date(forecastDayNoon(date, zone)).toISOString(), expected);
 });

@@ -25,3 +25,36 @@ export function forecastDays(entries: ForecastEntry[], timeZone: string): Foreca
 	}
 	return [...days.values()].slice(0, 7);
 }
+
+/** Resolve noon on a forecast calendar date in the location's time zone, including DST. */
+export function forecastDayNoon(key: string, timeZone: string): number {
+	const noon = Date.parse(`${key}T12:00:00Z`);
+	const format = new Intl.DateTimeFormat('en-US', {
+		timeZone,
+		year: 'numeric',
+		month: '2-digit',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		hourCycle: 'h23'
+	});
+	let instant = noon;
+	for (let attempt = 0; attempt < 3; attempt++) {
+		const parts = Object.fromEntries(
+			format.formatToParts(instant).map(({ type, value }) => [type, value])
+		);
+		const wallTime = Date.UTC(
+			Number(parts.year),
+			Number(parts.month) - 1,
+			Number(parts.day),
+			Number(parts.hour),
+			Number(parts.minute),
+			Number(parts.second)
+		);
+		const correction = noon - wallTime;
+		instant += correction;
+		if (!correction) break;
+	}
+	return instant;
+}

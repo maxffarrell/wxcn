@@ -26,7 +26,10 @@
 >
 <div class="container grid gap-10 py-10 lg:grid-cols-[180px_minmax(0,1fr)]">
 	<aside class="hidden lg:block">
-		<nav aria-label="Documentation" class="sticky top-8 grid gap-1 text-sm">
+		<nav
+			aria-label="Documentation"
+			class="fixed top-26 bottom-6 grid w-[180px] content-start gap-1 overflow-y-auto overscroll-contain text-sm"
+		>
 			<p class="mb-3 font-medium">Documentation</p>
 			{#each [{ href: '/docs/components', label: 'Components' }, { href: '/docs/endpoints', label: 'Data sources' }] as link}<a
 					href={link.href}

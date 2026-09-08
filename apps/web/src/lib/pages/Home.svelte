@@ -630,8 +630,6 @@
 						bind:value={background}
 						options={[
 							{ value: 'realistic', label: 'Realistic' },
-							{ value: 'dithered', label: 'Dithered' },
-							{ value: 'gradient', label: 'Gradient' },
 							{ value: 'none', label: 'None' }
 						]}
 					/>

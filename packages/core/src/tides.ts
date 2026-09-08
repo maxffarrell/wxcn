@@ -21,7 +21,7 @@ export async function fetchTidePredictions(location: LocationInput, date = new D
 		product: 'predictions',
 		application: 'wxcn',
 		begin_date: begin,
-		range: '48',
+		range: '168',
 		datum: 'MLLW',
 		station: location.station,
 		time_zone: 'gmt',
@@ -47,7 +47,19 @@ export const sampleTides: TidePrediction[] = [
 	{ time: '2026-09-06T02:12:00-05:00', height: '1.8', type: 'H' },
 	{ time: '2026-09-06T08:28:00-05:00', height: '0.4', type: 'L' },
 	{ time: '2026-09-06T14:49:00-05:00', height: '1.5', type: 'H' },
-	{ time: '2026-09-06T21:07:00-05:00', height: '0.3', type: 'L' }
+	{ time: '2026-09-06T21:07:00-05:00', height: '0.3', type: 'L' },
+	{ time: '2026-09-07T02:49:00-05:00', height: '1.8', type: 'H' },
+	{ time: '2026-09-07T09:05:00-05:00', height: '0.4', type: 'L' },
+	{ time: '2026-09-07T15:26:00-05:00', height: '1.5', type: 'H' },
+	{ time: '2026-09-07T21:44:00-05:00', height: '0.3', type: 'L' },
+	{ time: '2026-09-08T03:26:00-05:00', height: '1.8', type: 'H' },
+	{ time: '2026-09-08T09:42:00-05:00', height: '0.4', type: 'L' },
+	{ time: '2026-09-08T16:03:00-05:00', height: '1.5', type: 'H' },
+	{ time: '2026-09-08T22:21:00-05:00', height: '0.3', type: 'L' },
+	{ time: '2026-09-09T04:03:00-05:00', height: '1.8', type: 'H' },
+	{ time: '2026-09-09T10:19:00-05:00', height: '0.4', type: 'L' },
+	{ time: '2026-09-09T16:40:00-05:00', height: '1.5', type: 'H' },
+	{ time: '2026-09-09T22:58:00-05:00', height: '0.3', type: 'L' }
 ];
 
 export const sampleTideTime = Date.parse('2026-09-06T16:30:00Z');

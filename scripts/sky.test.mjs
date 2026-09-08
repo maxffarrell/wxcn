@@ -1,4 +1,4 @@
-import { getMoonForecast } from '../packages/core/src/moon.ts';
+import { getMoonForecast, getUpcomingMoonPhases } from '../packages/core/src/moon.ts';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { getSkyState, getSkyPreviewTime } from '../packages/core/src/sky.ts';
@@ -73,4 +73,19 @@ test('the moon card and weather sky agree on lunar phase and illumination', () =
 	assert.equal(forecast.illumination, Math.round(state.moon.illumination * 100));
 	assert.ok(Date.parse(forecast.nextFullMoon) > date.getTime());
 	assert.ok(Date.parse(forecast.nextNewMoon) > date.getTime());
+});
+
+test('upcoming moon phases are seven distinct chronological phase events', () => {
+	const start = new Date('2026-09-06T17:00:00Z');
+	const phases = getUpcomingMoonPhases(start);
+	assert.equal(phases.length, 7);
+	assert.equal(new Set(phases.map((phase) => phase.phaseName)).size, 7);
+	for (const [index, phase] of phases.entries()) {
+		assert.ok(Date.parse(phase.date) > (index ? Date.parse(phases[index - 1].date) : +start));
+		assert.ok(
+			Math.abs(getMoonForecast(new Date(phase.date)).phase - phase.phase) < 0.0001 ||
+				phase.phase === 0
+		);
+	}
+	assert.ok(Date.parse(phases[6].date) - +start > 20 * 86400000);
 });

@@ -12,6 +12,7 @@
 		summary,
 		daySummary,
 		actionLabel = 'View week',
+		summaryTitle = 'Upcoming tides',
 		showWeek = true,
 		iconType,
 		flush = false,
@@ -26,6 +27,7 @@
 		summary?: Snippet<[number]>;
 		daySummary?: Snippet<[ForecastDay]>;
 		actionLabel?: string;
+		summaryTitle?: string;
 		showWeek?: boolean;
 		iconType?: IconSet;
 		flush?: boolean;
@@ -134,7 +136,9 @@
 		role="group"
 		aria-label={screen === 'day'
 			? `${selected?.label} ${title.toLowerCase()} forecast`
-			: `${title} • Week`}
+			: summary
+				? summaryTitle
+				: `${title} • Week`}
 		data-slot="forecast-screen"
 		class={`absolute inset-0 z-10 flex min-h-0 flex-col overflow-hidden rounded-[inherit] bg-card text-card-foreground outline-none ${screen === 'day' && flush ? 'gap-0' : screen === 'week' ? 'gap-2 py-3' : 'gap-(--card-spacing) py-(--card-spacing)'}`}
 	>
@@ -142,7 +146,7 @@
 			{@render detail(selected, backAction)}
 		{:else}
 			<Card.Header class="shrink-0">
-				<Card.Title class="truncate">{summary ? 'Upcoming tides' : `${title} • Week`}</Card.Title>
+				<Card.Title class="truncate">{summary ? summaryTitle : `${title} • Week`}</Card.Title>
 				{@render backAction(false)}
 			</Card.Header>
 			<Card.Content class="min-h-0 min-w-0 flex-1">

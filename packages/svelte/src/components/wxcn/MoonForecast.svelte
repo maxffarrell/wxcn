@@ -10,7 +10,7 @@
 		LocationInput,
 		MoonForecast as MoonData
 	} from '@wxcn/core/types.js';
-	import { sampleMoon, getMoonForecast } from '@wxcn/core/moon.js';
+	import { sampleMoon, getMoonForecast, getUpcomingMoonPhases } from '@wxcn/core/moon.js';
 	let {
 		interactive = false,
 		timeZone,
@@ -45,20 +45,15 @@
 			day: 'numeric',
 			timeZone: displayTimeZone
 		}).format(new Date(v));
+	const phases = $derived(getUpcomingMoonPhases(new Date(forecast.date)));
 	const days = $derived(
 		forecastDays(
-			Array.from({ length: 7 }, (_, index) => {
-				const value =
-					index === 0
-						? forecast
-						: getMoonForecast(new Date(Date.parse(forecast.date) + index * 86400000));
-				return {
-					time: Date.parse(value.date),
-					label: value.phaseName,
-					summary: `${value.illumination}% illuminated`,
-					details: `Moon age: ${value.age} days. Next full moon: ${date(value.nextFullMoon)}. Next new moon: ${date(value.nextNewMoon)}.`
-				};
-			}),
+			phases.map((value) => ({
+				time: Date.parse(value.date),
+				label: value.phaseName,
+				summary: `${value.illumination}% illuminated`,
+				details: ''
+			})),
 			displayTimeZone
 		)
 	);
@@ -126,7 +121,37 @@
 	data-card-size={size}
 	class={`relative isolate min-w-0 overflow-hidden ${className}`}
 >
-	<ForecastScreens {interactive} {days} title="Moon" {density} {sourceLabel} {iconType}>
+	<ForecastScreens
+		{interactive}
+		{days}
+		title="Moon"
+		{density}
+		{sourceLabel}
+		{iconType}
+		actionLabel="Next 7 phases"
+		summaryTitle="Next 7 phases"
+	>
+		{#snippet summary(availableHeight)}
+			<div
+				class="grid h-full auto-rows-[minmax(32px,1fr)] overflow-y-auto"
+				data-slot="upcoming-moon-phases"
+			>
+				{#each phases as phase}
+					<div class="flex min-h-0 items-center gap-3 border-b text-xs last:border-0">
+						<div
+							class="shrink-0"
+							style={`width: ${Math.max(16, Math.min(32, availableHeight / 7 - 4))}px`}
+						>
+							<MoonDisc phase={phase.phase} label={phase.phaseName} class="size-full" />
+						</div>
+						<span class="min-w-0 flex-1 font-medium">{phase.phaseName}</span>
+						<time datetime={phase.date} class="shrink-0 text-muted-foreground"
+							>{date(phase.date)}</time
+						>
+					</div>
+				{/each}
+			</div>
+		{/snippet}
 		{#snippet children(openDay, action, visible)}
 			{@render cardView(undefined, action)}
 		{/snippet}

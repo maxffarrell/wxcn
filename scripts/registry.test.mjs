@@ -71,7 +71,7 @@ test('weather registry includes its background and transforms all aliases', asyn
 		storm: 'storm',
 		fog: 'fog'
 	})) {
-		const embedded = texture.content.match(new RegExp(`${key}: 'data:image/webp;base64,([^']+)`));
+		const embedded = texture.content.match(new RegExp(`${key}:\\s*'data:image/webp;base64,([^']+)`));
 		assert.ok(embedded, `${key} cloud texture is bundled for installed consumers`);
 		assert.deepEqual(
 			Buffer.from(embedded[1], 'base64'),

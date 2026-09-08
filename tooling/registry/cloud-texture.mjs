@@ -6,7 +6,7 @@ const entries = await Promise.all(
 		const texture = await readFile(
 			new URL(`packages/svelte/src/assets/weather-${name}.webp`, root)
 		);
-		return `\t${key}: 'data:image/webp;base64,${texture.toString('base64')}'`;
+		return `\t${key}:\n\t\t'data:image/webp;base64,${texture.toString('base64')}'`;
 	})
 );
 await writeFile(

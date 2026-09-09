@@ -6,9 +6,6 @@ importers:
   .:
     configDependencies: {}
     packageManagerDependencies:
-      '@pnpm/exe':
-        specifier: 12.3.4
-        version: 12.3.4
       pnpm:
         specifier: 12.3.4
         version: 12.3.4
@@ -59,11 +56,6 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@pnpm/exe@12.3.4':
-    resolution: {integrity: sha512-Rq7JokWAyYF9IFfn8zofB/q2AgnZlmoMuH5fMHB2+Ta61I9aD7sNm+woZpx6iH+5vb38chdSoYRvOtSqlH72YQ==}
-    engines: {node: '>=18.*'}
-    hasBin: true
-
   pnpm@12.3.4:
     resolution: {integrity: sha512-lhqkH7B32joEpEHZ+OFevAyW2o73ELLrZ7+e58sGEOq9SPH9hfUc/+c4RnhfoPh8VqOocqHYk/hEZ0G1zORUVw==}
     engines: {node: '>=18.*'}
@@ -94,17 +86,6 @@ snapshots:
 
   '@pnpm/exe.win32-x64@12.3.4':
     optional: true
-
-  '@pnpm/exe@12.3.4':
-    optionalDependencies:
-      '@pnpm/exe.darwin-arm64': 12.3.4
-      '@pnpm/exe.darwin-x64': 12.3.4
-      '@pnpm/exe.linux-arm64': 12.3.4
-      '@pnpm/exe.linux-arm64-musl': 12.3.4
-      '@pnpm/exe.linux-x64': 12.3.4
-      '@pnpm/exe.linux-x64-musl': 12.3.4
-      '@pnpm/exe.win32-arm64': 12.3.4
-      '@pnpm/exe.win32-x64': 12.3.4
 
   pnpm@12.3.4:
     optionalDependencies:
@@ -323,8 +304,8 @@ importers:
         specifier: ^5.3.0
         version: 5.3.0
       '@hugeicons/core-free-icons':
-        specifier: 4.3.0
-        version: 4.3.0
+        specifier: 4.3.2
+        version: 4.3.2
       '@hugeicons/svelte':
         specifier: ^1.1.5
         version: 1.1.5(svelte@5.57.0)
@@ -548,8 +529,8 @@ importers:
   packages/svelte:
     dependencies:
       '@hugeicons/core-free-icons':
-        specifier: 4.3.0
-        version: 4.3.0
+        specifier: 4.3.2
+        version: 4.3.2
       '@hugeicons/svelte':
         specifier: ^1.1.5
         version: 1.1.5(svelte@5.57.0)
@@ -1570,6 +1551,9 @@ packages:
 
   '@hugeicons/core-free-icons@4.3.0':
     resolution: {integrity: sha512-5DC5gq2psNDKBQThOjpuFCtMco8nl2FkrBzZgG15cFGM0kSwUoych/pw0DmjBygF9qRDITdBPtmzJqLsOeImMg==}
+
+  '@hugeicons/core-free-icons@4.3.2':
+    resolution: {integrity: sha512-31uDdIq71YcVxeltjcS/tsmYFt4VjmgyNTZfG1bY6mbeFmsYL6Nwz9PdDZetGtGPZOAEVg0bHoQFOoPWDC51bg==}
 
   '@hugeicons/react@1.1.10':
     resolution: {integrity: sha512-9tAsd92yMVVGP+E+d8cM+wc0VnXuYZHNbWQi7TOe8k2neawmhiaFmVFbzyruejhOMa197/LbgvSED32ayUo3ZA==}
@@ -7303,6 +7287,8 @@ snapshots:
       hono: 4.13.7
 
   '@hugeicons/core-free-icons@4.3.0': {}
+
+  '@hugeicons/core-free-icons@4.3.2': {}
 
   '@hugeicons/react@1.1.10(react@19.2.8)':
     dependencies:

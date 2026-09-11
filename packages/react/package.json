@@ -20,7 +20,7 @@
 		"@wxcn/core": "workspace:*",
 		"class-variance-authority": "^0.7.1",
 		"cn": "^0.2.5",
-		"lucide-react": "^0.577.0",
+		"lucide-react": "^1.0.0",
 		"radix-ui": "^1.4.3",
 		"recharts": "^3.8.0"
 	},

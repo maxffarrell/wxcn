@@ -11,28 +11,28 @@
 		"check": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@hugeicons/core-free-icons": "^4.3.0",
+		"@hugeicons/core-free-icons": "^4.3.2",
 		"@hugeicons/react": "^1.1.10",
-		"@number-flow/react": "^0.5.8",
+		"@number-flow/react": "^0.6.2",
 		"@phosphor-icons/react": "^2.1.10",
 		"@remixicon/react": "^4.9.0",
 		"@tabler/icons-react": "^3.46.0",
 		"@wxcn/core": "workspace:*",
 		"class-variance-authority": "^0.7.1",
-		"cn": "^0.2.5",
-		"lucide-react": "^0.577.0",
-		"radix-ui": "^1.4.3",
-		"recharts": "^3.8.0"
+		"cn": "^0.2.6",
+		"lucide-react": "^1.44.0",
+		"radix-ui": "^1.6.7",
+		"recharts": "^3.10.1"
 	},
 	"peerDependencies": {
 		"react": "^19.2.0",
 		"react-dom": "^19.2.0"
 	},
 	"devDependencies": {
-		"@types/react": "^19.2.0",
-		"@types/react-dom": "^19.2.0",
-		"react": "^19.2.0",
-		"react-dom": "^19.2.0",
+		"@types/react": "^19.3.0",
+		"@types/react-dom": "^19.3.0",
+		"react": "^19.3.0",
+		"react-dom": "^19.3.0",
 		"typescript": "^7.0.2"
 	}
 }

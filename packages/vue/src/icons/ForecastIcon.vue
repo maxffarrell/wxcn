@@ -10,7 +10,7 @@ import {
 	Sun,
 	Waves,
 	Wind
-} from 'lucide-vue-next';
+} from '@lucide/vue';
 import {
 	IconArrowDown,
 	IconArrowUp,

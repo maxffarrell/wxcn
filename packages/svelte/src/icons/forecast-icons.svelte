@@ -3,12 +3,12 @@
 	import PhArrowUp from 'phosphor-svelte/lib/ArrowUp';
 	import IconArrowUp from '@tabler/icons-svelte/icons/arrow-up';
 	import RiArrowUp from 'remixicon-svelte/icons/arrow-up-line';
-	import HugeArrowUp from '@hugeicons/core-free-icons/ArrowUp02Icon';
+	import { ArrowUp02Icon as HugeArrowUp } from '@hugeicons/core-free-icons';
 	import ArrowDown from '@lucide/svelte/icons/arrow-down';
 	import PhArrowDown from 'phosphor-svelte/lib/ArrowDown';
 	import IconArrowDown from '@tabler/icons-svelte/icons/arrow-down';
 	import RiArrowDown from 'remixicon-svelte/icons/arrow-down-line';
-	import HugeArrowDown from '@hugeicons/core-free-icons/ArrowDown02Icon';
+	import { ArrowDown02Icon as HugeArrowDown } from '@hugeicons/core-free-icons';
 
 	import CloudSun from '@lucide/svelte/icons/cloud-sun';
 	import Moon from '@lucide/svelte/icons/moon';
@@ -41,13 +41,13 @@
 	import { HugeiconsIcon } from '@hugeicons/svelte';
 	import { getContext, type Component } from 'svelte';
 	import type { IconSvgElement } from '@hugeicons/svelte';
-	import CloudRainIcon from '@hugeicons/core-free-icons/CloudRainIcon';
-	import SnowIcon from '@hugeicons/core-free-icons/SnowIcon';
-	import Moon02Icon from '@hugeicons/core-free-icons/Moon02Icon';
-	import Sun03Icon from '@hugeicons/core-free-icons/Sun03Icon';
-	import SunCloud02Icon from '@hugeicons/core-free-icons/SunCloud02Icon';
-	import WaterfallUp01Icon from '@hugeicons/core-free-icons/WaterfallUp01Icon';
-	import WindPower02Icon from '@hugeicons/core-free-icons/WindPower02Icon';
+	import { CloudRainIcon } from '@hugeicons/core-free-icons';
+	import { SnowIcon } from '@hugeicons/core-free-icons';
+	import { Moon02Icon } from '@hugeicons/core-free-icons';
+	import { Sun03Icon } from '@hugeicons/core-free-icons';
+	import { SunCloud02Icon } from '@hugeicons/core-free-icons';
+	import { WaterfallUp01Icon } from '@hugeicons/core-free-icons';
+	import { WindPower02Icon } from '@hugeicons/core-free-icons';
 	import type { IconSet } from '@wxcn/core/types.js';
 
 	type IconName =

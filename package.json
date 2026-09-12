@@ -2,7 +2,7 @@
 	"name": "wxcn-workspace",
 	"private": true,
 	"type": "module",
-	"packageManager": "pnpm@12.3.4",
+	"packageManager": "pnpm@12.4.1",
 	"scripts": {
 		"dev": "pnpm docs:build && pnpm --filter @wxcn/web dev",
 		"build": "pnpm docs:build && pnpm --filter @wxcn/web build && node tooling/deploy/link-worker.mjs",
@@ -25,9 +25,9 @@
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.63.0",
-		"@types/node": "^26.5.0",
+		"@types/node": "^26.5.1",
 		"prettier": "^3.9.6",
-		"prettier-plugin-astro": "^0.14.1",
+		"prettier-plugin-astro": "^1.0.0",
 		"prettier-plugin-svelte": "^4.1.1",
 		"prettier-plugin-tailwindcss": "^0.8.1",
 		"shadcn": "^4.21.0",
@@ -35,6 +35,6 @@
 		"svelte": "^5.57.0",
 		"tsx": "^4.23.13",
 		"typescript": "^7.0.2",
-		"wrangler": "^4.129.1"
+		"wrangler": "^4.131.0"
 	}
 }

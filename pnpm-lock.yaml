@@ -501,7 +501,7 @@ importers:
         version: 5.57.0
       svelte-check-native:
         specifier: ^1.5.2
-        version: 1.5.2(typescript@6.0.3)
+        version: 1.8.0(typescript@6.0.3)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -639,7 +639,7 @@ importers:
         version: 5.57.0
       svelte-check-native:
         specifier: ^1.5.2
-        version: 1.5.2(typescript@7.0.2)
+        version: 1.8.0(typescript@7.0.2)
       typescript:
         specifier: ^7.0.2
         version: 7.0.2
@@ -5793,38 +5793,38 @@ packages:
     resolution: {integrity: sha512-SS+jx45GF1QjgEXQx4NJZV9ImqmO2NPz5FNsIHrsDjh2YsHnawpan7SNQ1o8NuhrbHZy9AZhIoCUiCeaW/C80g==}
     engines: {node: '>=18'}
 
-  svelte-check-native-darwin-arm64@1.5.2:
-    resolution: {integrity: sha512-Hj83OlJ9fuk5OLZh6owGpeSgojtjgU28P1YLqHoKgZ2B6VA3C0vAJtAJSRbRDEqz1e/X4Z3XjrWywxUKYb72VQ==}
+  svelte-check-native-darwin-arm64@1.8.0:
+    resolution: {integrity: sha512-K/t7ZIiWo7a2dkcd85M1wgIbSOxz0X7lTwMmqQvP2FwgGcni+eQt5j4G8iiKcn0C9TjfGx8VhfQ7eU9A2HUDLg==}
     engines: {node: '>=18'}
     cpu: [arm64]
     os: [darwin]
 
-  svelte-check-native-darwin-x64@1.5.2:
-    resolution: {integrity: sha512-a82IPnOr6k0yULgZjLGhgA7cR9ETOzUm0/OmONv3Zuc3aeX+KbpY0EosXdMMU3w3XwMCEiPtlg4yCO3DEadKoQ==}
+  svelte-check-native-darwin-x64@1.8.0:
+    resolution: {integrity: sha512-C4rzykcb0oQ7SQCXUot9FvGhXM6Y+nzL8TYko6Bw1WXH/60eLvkT/hOeIKN8nKfQdEZ95dofkhoeDyCKa+UilQ==}
     engines: {node: '>=18'}
     cpu: [x64]
     os: [darwin]
 
-  svelte-check-native-linux-arm64@1.5.2:
-    resolution: {integrity: sha512-gYCvQna9kwmy8UOt/vzEBIMsUs1xWFvp2iDspPnfoVbZQXSoMm6V1bBZotBHH0qzIzLJL3Kz6yGOsITveaqOYg==}
+  svelte-check-native-linux-arm64@1.8.0:
+    resolution: {integrity: sha512-v7Em7iyzGnK+EfoF0491XoxQmvGrT4TydpYEyRP3qBQuLIPViX/SV/llmXt7UPnaVPRQJWpWS+E+06isQTzQIg==}
     engines: {node: '>=18'}
     cpu: [arm64]
-    os: [linux]
+    os: [linux, android]
 
-  svelte-check-native-linux-x64@1.5.2:
-    resolution: {integrity: sha512-xIpW82f+x3umEEMm71V3V4qZtWOjSK4euWgsQh8Vp7Yf9q/vO2FbI3nEntOprT/gmPy+8s56l7RtvfreNVC7Jg==}
+  svelte-check-native-linux-x64@1.8.0:
+    resolution: {integrity: sha512-bloNIocAF/vwh9iyuglDm5R4dgeoNu7AgKnAA1E0LoRK6kb+aaF7pPUghHhEGPHwSjEQoE10z+F+YA/euzcEfA==}
     engines: {node: '>=18'}
     cpu: [x64]
     os: [linux]
 
-  svelte-check-native-win32-x64@1.5.2:
-    resolution: {integrity: sha512-IaSEdEOAs7PepV5i9E/n8rMsYNVg+BO0kiFT9ed+DpJMnTVlB3BUra1Z/YF5RqV2wmNBlEGz2B6IZEi69E3qIQ==}
+  svelte-check-native-win32-x64@1.8.0:
+    resolution: {integrity: sha512-EM3zXZGrw3ZPbmH7Ja/sip6dWuI7kkQWTUvT08ySDEYRsm5UH9xRiBaNo6hcBNeIMuw8j84DIOnve1DHrfet3g==}
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
 
-  svelte-check-native@1.5.2:
-    resolution: {integrity: sha512-4BKbRrpkQbcmlv53Lb8H1HSBK+Bs0PeA16DIMEe52iqEZ8GZtOsH+QL0o3bB37GgbVnWbpR+o9tCPnq57KNtqA==}
+  svelte-check-native@1.8.0:
+    resolution: {integrity: sha512-lD517MiTSgPjQxUsbPbMwKIRyv2vuRgxgkvE2NjVQRVcrJmR/xt4qNay4RaMl8OAqgQC/R64hNlMsrBFcK4+dg==}
     engines: {node: '>=18'}
     hasBin: true
     peerDependencies:
@@ -11966,37 +11966,37 @@ snapshots:
 
   supports-color@10.2.2: {}
 
-  svelte-check-native-darwin-arm64@1.5.2:
+  svelte-check-native-darwin-arm64@1.8.0:
     optional: true
 
-  svelte-check-native-darwin-x64@1.5.2:
+  svelte-check-native-darwin-x64@1.8.0:
     optional: true
 
-  svelte-check-native-linux-arm64@1.5.2:
+  svelte-check-native-linux-arm64@1.8.0:
     optional: true
 
-  svelte-check-native-linux-x64@1.5.2:
+  svelte-check-native-linux-x64@1.8.0:
     optional: true
 
-  svelte-check-native-win32-x64@1.5.2:
+  svelte-check-native-win32-x64@1.8.0:
     optional: true
 
-  svelte-check-native@1.5.2(typescript@6.0.3):
+  svelte-check-native@1.8.0(typescript@6.0.3):
     optionalDependencies:
-      svelte-check-native-darwin-arm64: 1.5.2
-      svelte-check-native-darwin-x64: 1.5.2
-      svelte-check-native-linux-arm64: 1.5.2
-      svelte-check-native-linux-x64: 1.5.2
-      svelte-check-native-win32-x64: 1.5.2
+      svelte-check-native-darwin-arm64: 1.8.0
+      svelte-check-native-darwin-x64: 1.8.0
+      svelte-check-native-linux-arm64: 1.8.0
+      svelte-check-native-linux-x64: 1.8.0
+      svelte-check-native-win32-x64: 1.8.0
       typescript: 6.0.3
 
-  svelte-check-native@1.5.2(typescript@7.0.2):
+  svelte-check-native@1.8.0(typescript@7.0.2):
     optionalDependencies:
-      svelte-check-native-darwin-arm64: 1.5.2
-      svelte-check-native-darwin-x64: 1.5.2
-      svelte-check-native-linux-arm64: 1.5.2
-      svelte-check-native-linux-x64: 1.5.2
-      svelte-check-native-win32-x64: 1.5.2
+      svelte-check-native-darwin-arm64: 1.8.0
+      svelte-check-native-darwin-x64: 1.8.0
+      svelte-check-native-linux-arm64: 1.8.0
+      svelte-check-native-linux-x64: 1.8.0
+      svelte-check-native-win32-x64: 1.8.0
       typescript: 7.0.2
 
   svelte-toolbelt@0.10.6(@sveltejs/kit@2.70.3(@sveltejs/vite-plugin-svelte@7.3.0(svelte@5.57.0)(vite@8.2.2(@types/node@26.5.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)))(svelte@5.57.0)(typescript@7.0.2)(vite@8.2.2(@types/node@26.5.1)(esbuild@0.28.2)(jiti@2.7.0)(tsx@4.23.13)(yaml@2.9.0)))(svelte@5.57.0):

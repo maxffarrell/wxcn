@@ -532,7 +532,7 @@ importers:
     dependencies:
       '@hugeicons/core-free-icons':
         specifier: ^4.3.2
-        version: 4.3.2
+        version: 4.3.5
       '@hugeicons/react':
         specifier: ^1.1.10
         version: 1.1.10(react@19.3.0)
@@ -648,7 +648,7 @@ importers:
     dependencies:
       '@hugeicons/core-free-icons':
         specifier: ^4.3.2
-        version: 4.3.2
+        version: 4.3.5
       '@hugeicons/vue':
         specifier: ^1.0.8
         version: 1.0.8(vue@3.5.42(typescript@6.0.3))
@@ -1608,6 +1608,9 @@ packages:
 
   '@hugeicons/core-free-icons@4.3.2':
     resolution: {integrity: sha512-31uDdIq71YcVxeltjcS/tsmYFt4VjmgyNTZfG1bY6mbeFmsYL6Nwz9PdDZetGtGPZOAEVg0bHoQFOoPWDC51bg==}
+
+  '@hugeicons/core-free-icons@4.3.5':
+    resolution: {integrity: sha512-Sv+NjHRPnQk+yZsGCMcGznCHdTfJR9PMMOEKcJYAQU4gy90dmlc9PwdtvYOImBZIjiheMsTLL5eMn2DmHxUiUg==}
 
   '@hugeicons/react@1.1.10':
     resolution: {integrity: sha512-9tAsd92yMVVGP+E+d8cM+wc0VnXuYZHNbWQi7TOe8k2neawmhiaFmVFbzyruejhOMa197/LbgvSED32ayUo3ZA==}
@@ -7399,6 +7402,8 @@ snapshots:
       hono: 4.13.7
 
   '@hugeicons/core-free-icons@4.3.2': {}
+
+  '@hugeicons/core-free-icons@4.3.5': {}
 
   '@hugeicons/react@1.1.10(react@19.3.0)':
     dependencies:

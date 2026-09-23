@@ -2,7 +2,7 @@
 	"name": "wxcn-workspace",
 	"private": true,
 	"type": "module",
-	"packageManager": "pnpm@12.4.1",
+	"packageManager": "pnpm@12.6.0",
 	"scripts": {
 		"dev": "pnpm docs:build && pnpm --filter @wxcn/web dev",
 		"build": "pnpm docs:build && pnpm --filter @wxcn/web build && node tooling/deploy/link-worker.mjs",

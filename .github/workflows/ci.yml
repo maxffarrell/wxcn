@@ -9,7 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  svelte:
+  shared:
+    name: Core and formatting
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
@@ -19,15 +20,48 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm check
-      - run: pnpm test
-      - run: pnpm test:react
-      - run: pnpm test:vue
-      - run: pnpm build:vue
-      - run: pnpm test:consumer:vue
-      - run: pnpm build:react
-      - run: pnpm test:consumer:react
+      - run: pnpm docs:build
+      - run: pnpm --filter @wxcn/core check
       - run: pnpm lint
-      - run: pnpm build
-      - run: npx --no-install wrangler versions upload --dry-run
-      - run: pnpm test:consumer
+
+  framework:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Svelte
+            framework: svelte
+            test: test
+            build: build
+            consumer: test:consumer
+          - name: React
+            framework: react
+            test: test:react
+            build: build:react
+            consumer: test:consumer:react
+          - name: Vue
+            framework: vue
+            test: test:vue
+            build: build:vue
+            consumer: test:consumer:vue
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: pnpm/action-setup@v6.1.0
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Check types
+        run: pnpm check:${{ matrix.framework }}
+      - name: Test component and SSR contracts
+        run: pnpm ${{ matrix.test }}
+      - name: Build production preview
+        run: pnpm ${{ matrix.build }}
+      - name: Validate Worker bundle
+        if: matrix.framework == 'svelte'
+        run: pnpm exec wrangler versions upload --dry-run
+      - name: Install, check, and build a clean consumer
+        run: pnpm ${{ matrix.consumer }}

@@ -50,26 +50,28 @@ async function file(path, content) {
 }
 
 try {
+	const workspace = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));
+	const preview = JSON.parse(
+		await readFile(new URL('apps/preview-vue/package.json', root), 'utf8')
+	);
+	const vue = JSON.parse(await readFile(new URL('packages/vue/package.json', root), 'utf8'));
+	const web = JSON.parse(await readFile(new URL('apps/web/package.json', root), 'utf8'));
 	await file('package.json', {
 		name: 'wxcn-vue-consumer',
 		private: true,
 		type: 'module',
+		packageManager: workspace.packageManager,
 		scripts: { check: 'vue-tsc --noEmit', build: 'vite build' },
 		dependencies: {
-			'class-variance-authority': '^0.7.1',
-			clsx: '^2.1.1',
-			'tailwind-merge': '^3.6.0',
-			'tw-animate-css': '^1.4.0',
-			vue: '^3.5.42'
+			'class-variance-authority': vue.dependencies['class-variance-authority'],
+			clsx: vue.dependencies.clsx,
+			'tailwind-merge': vue.dependencies['tailwind-merge'],
+			'tw-animate-css': web.devDependencies['tw-animate-css'],
+			vue: preview.dependencies.vue
 		},
 		devDependencies: {
-			'@tailwindcss/vite': '^4.3.3',
-			'@types/node': '^26.5.0',
-			'@vitejs/plugin-vue': '^6.0.2',
-			tailwindcss: '^4.3.3',
-			typescript: '^6.0.3',
-			vite: '^8.2.2',
-			'vue-tsc': '^3.2.5'
+			...preview.devDependencies,
+			'@types/node': web.devDependencies['@types/node']
 		}
 	});
 	await file('pnpm-workspace.yaml', 'allowBuilds:\n  esbuild: true\n  vue-demi: true\n');

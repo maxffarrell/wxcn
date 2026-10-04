@@ -17,7 +17,7 @@ wxcn distributes editable source through each framework's native shadcn registry
 
 Install with `pnpm install`, then run `pnpm dev` from the repository root. Use Node.js 24 or later and the pnpm version declared in `package.json`.
 
-Run `pnpm check`, `pnpm test`, `pnpm test:react`, `pnpm test:vue`, `pnpm lint`, `pnpm build`, `pnpm build:react`, `pnpm build:vue`, `pnpm test:consumer:react`, and `pnpm test:consumer:vue` before submitting changes. Registry JSON is generated: update source and run `pnpm registry:build` rather than editing generated files.
+Run `pnpm check`, `pnpm test`, `pnpm test:react`, `pnpm test:vue`, `pnpm lint`, `pnpm build`, `pnpm build:react`, `pnpm build:vue`, `pnpm test:consumer`, `pnpm test:consumer:react`, and `pnpm test:consumer:vue` before submitting changes. Use `pnpm check:svelte`, `pnpm check:react`, or `pnpm check:vue` for a single framework. Registry JSON is generated: update source and run `pnpm registry:build` rather than editing generated files.
 
 Project type checks use TypeScript 7 and `svelte-check-native`. Astro’s checker and `vue-tsc` still require the TypeScript 6 JavaScript API, so their compatibility dependencies are isolated in the website and Vue tooling; the native checker uses the root TypeScript 7 compiler for all Svelte sources and consumer checks. `tooling/check-svelte.mjs` preserves pnpm workspace dependency resolution in the native checker’s generated overlays.
 
@@ -49,6 +49,10 @@ The root workspace is private, and framework/core packages are private while the
 ### GitHub checks
 
 GitHub Actions runs validation only. Deployment credentials, GitHub deployment environments, PR preview Workers, and preview cleanup are intentionally not configured here; those concerns belong to the linked Cloudflare Workers Builds project.
+
+CI exposes separate Svelte, React, and Vue jobs. Each installs the frozen lockfile, checks component and preview types, runs tests, builds its production preview, and installs the registry in a clean consumer before checking and building it. Svelte also builds the Astro website and validates the Worker bundle with a dry run. A separate Core and formatting job checks shared TypeScript and repository formatting. Framework jobs run independently, so a failure in one does not cancel the others.
+
+Clean consumers use the workspace's pnpm version and dependency ranges, so dependency upgrades also exercise the installable components. Keep TypeScript 6 in Astro and Vue tooling until their checkers support TypeScript 7; the root, React, and native Svelte checks use TypeScript 7.
 
 ### Website framework integrations
 

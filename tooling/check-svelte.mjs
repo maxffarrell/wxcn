@@ -1,4 +1,4 @@
-import { mkdir, symlink, lstat } from 'node:fs/promises';
+import { mkdir, symlink, lstat, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
@@ -33,6 +33,9 @@ let result = check();
 // package resolution and run the full check again; its diagnostics are authoritative.
 if (!(await lstat(`${overlay}/${workspaces[0]}/node_modules`).catch(() => null))) {
 	await linkDependencies();
+	// Version 1.8 also caches diagnostics from that first pass. The dependency
+	// links are outside its fingerprint, so discard the replay after restoring them.
+	await rm(`${root}node_modules/.cache/svelte-check-native/replay.json`, { force: true });
 	result = check();
 }
 process.stdout.write(result.stdout);

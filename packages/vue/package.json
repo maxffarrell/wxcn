@@ -11,19 +11,19 @@
 		"check": "vue-tsc --noEmit"
 	},
 	"dependencies": {
-		"@hugeicons/core-free-icons": "^4.3.2",
+		"@hugeicons/core-free-icons": "^4.3.5",
 		"@hugeicons/vue": "^1.0.8",
-		"@lucide/vue": "^1.44.0",
+		"@lucide/vue": "^1.51.0",
 		"@number-flow/vue": "^0.5.2",
 		"@phosphor-icons/vue": "^2.2.1",
 		"@remixicon/vue": "^4.9.0",
-		"@tabler/icons-vue": "^3.46.0",
+		"@tabler/icons-vue": "^3.48.0",
 		"@wxcn/core": "workspace:*",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"d3-shape": "^3.2.0",
-		"reka-ui": "^2.10.4",
-		"tailwind-merge": "^3.6.0"
+		"reka-ui": "^2.10.5",
+		"tailwind-merge": "^3.7.0"
 	},
 	"peerDependencies": {
 		"vue": "^3.5.0"
@@ -31,7 +31,7 @@
 	"devDependencies": {
 		"@types/d3-shape": "^3.2.0",
 		"typescript": "6.0.3",
-		"vue": "^3.5.42",
-		"vue-tsc": "^3.3.11"
+		"vue": "^3.5.43",
+		"vue-tsc": "^3.3.12"
 	}
 }

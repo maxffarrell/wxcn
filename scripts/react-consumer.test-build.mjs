@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { mkdtemp, mkdir, readFile, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -50,14 +49,17 @@ try {
 	const preview = JSON.parse(
 		await readFile(new URL('apps/preview-react/package.json', root), 'utf8')
 	);
+	const workspace = JSON.parse(await readFile(new URL('package.json', root), 'utf8'));
+	const react = JSON.parse(await readFile(new URL('packages/react/package.json', root), 'utf8'));
 	await file('package.json', {
 		name: 'wxcn-react-consumer',
 		private: true,
 		type: 'module',
+		packageManager: workspace.packageManager,
 		scripts: { check: 'tsc --noEmit', build: 'vite build' },
 		dependencies: {
-			'class-variance-authority': '^0.7.1',
-			cn: '^0.2.5',
+			'class-variance-authority': react.dependencies['class-variance-authority'],
+			cn: react.dependencies.cn,
 			react: preview.dependencies.react,
 			...Object.fromEntries(
 				{
@@ -66,11 +68,7 @@ try {
 					phosphor: ['@phosphor-icons/react'],
 					hugeicons: ['@hugeicons/react', '@hugeicons/core-free-icons'],
 					remixicon: ['@remixicon/react']
-				}[process.env.WXCN_ICON_LIBRARY ?? 'lucide'].map((name) => [
-					name,
-					JSON.parse(readFileSync(new URL('packages/react/package.json', root), 'utf8'))
-						.dependencies[name]
-				])
+				}[process.env.WXCN_ICON_LIBRARY ?? 'lucide'].map((name) => [name, react.dependencies[name]])
 			),
 			'react-dom': preview.dependencies['react-dom']
 		},

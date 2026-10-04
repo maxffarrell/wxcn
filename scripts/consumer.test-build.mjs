@@ -51,6 +51,7 @@ try {
 		name: 'wxcn-clean-consumer',
 		private: true,
 		type: 'module',
+		packageManager: workspace.packageManager,
 		scripts: { check: 'svelte-check-native --tsconfig ./tsconfig.json', build: 'vite build' },
 		devDependencies: Object.fromEntries(
 			[

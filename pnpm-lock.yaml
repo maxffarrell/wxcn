@@ -404,7 +404,7 @@ importers:
         version: 1.1.0(svelte@5.57.1)
       package-manager-detector:
         specifier: ^1.8.0
-        version: 1.8.0
+        version: 1.9.0
       paneforge:
         specifier: ^1.0.2
         version: 1.0.2(svelte@5.57.1)
@@ -5168,6 +5168,9 @@ packages:
 
   package-manager-detector@1.8.0:
     resolution: {integrity: sha512-yQA4H19AmPEoMUeavPMDIe1higySl/gH/yaQrkT/s07Qp+7pp2hYz30N3z2l5BkjVkF9Ow6o0wjJamm2y7Sn0A==}
+
+  package-manager-detector@1.9.0:
+    resolution: {integrity: sha512-zAMfbta9nPA8AKkA4WdmNAT8R8s6Dk0/xwPsqNnRidMFcLo1YkLuPDTgs2f64XdzS8vbLNnoJ+uUIkgbz7oRHA==}
 
   paneforge@1.0.2:
     resolution: {integrity: sha512-KzmIXQH1wCfwZ4RsMohD/IUtEjVhteR+c+ulb/CHYJHX8SuDXoJmChtsc/Xs5Wl8NHS4L5Q7cxL8MG40gSU1bA==}
@@ -11090,6 +11093,8 @@ snapshots:
   p-try@2.2.0: {}
 
   package-manager-detector@1.8.0: {}
+
+  package-manager-detector@1.9.0: {}
 
   paneforge@1.0.2(svelte@5.57.1):
     dependencies:

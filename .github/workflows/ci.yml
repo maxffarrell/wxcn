@@ -35,17 +35,17 @@ jobs:
             framework: svelte
             test: test
             build: build
-            consumer: test:consumer
+            consumer_script: consumer.test-build.mjs
           - name: React
             framework: react
             test: test:react
             build: build:react
-            consumer: test:consumer:react
+            consumer_script: react-consumer.test-build.mjs
           - name: Vue
             framework: vue
             test: test:vue
             build: build:vue
-            consumer: test:consumer:vue
+            consumer_script: vue-consumer.test-build.mjs
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: pnpm/action-setup@v6.1.0
@@ -54,14 +54,22 @@ jobs:
           node-version: 24
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Check types
-        run: pnpm check:${{ matrix.framework }}
+      # Contract tests finish registry generation before concurrent readers start.
       - name: Test component and SSR contracts
         run: pnpm ${{ matrix.test }}
+      - name: Generate consumer registry
+        run: pnpm registry:build
+      - name: Check types
+        id: types
+        background: true
+        run: pnpm check:${{ matrix.framework }}
+      # These scripts use isolated temporary projects; bypass the registry-writing wrapper.
+      - name: Install, check, and build a clean consumer
+        run: node scripts/${{ matrix.consumer_script }}
+      - name: Wait for type checks
+        wait: types
       - name: Build production preview
         run: pnpm ${{ matrix.build }}
       - name: Validate Worker bundle
         if: matrix.framework == 'svelte'
         run: pnpm exec wrangler versions upload --dry-run
-      - name: Install, check, and build a clean consumer
-        run: pnpm ${{ matrix.consumer }}

@@ -368,7 +368,7 @@ importers:
         version: 1.1.5(svelte@5.57.1)
       '@lucide/svelte':
         specifier: ^1.51.0
-        version: 1.51.0(svelte@5.57.1)
+        version: 1.55.0(svelte@5.57.1)
       '@tabler/icons-svelte':
         specifier: ^3.48.0
         version: 3.48.0(svelte@5.57.1)
@@ -559,7 +559,7 @@ importers:
         version: 0.4.0
       lucide-react:
         specifier: ^1.51.0
-        version: 1.51.0(@types/react@19.3.0)(react@19.3.0)
+        version: 1.55.0(@types/react@19.3.0)(react@19.3.0)
       radix-ui:
         specifier: ^1.6.7
         version: 1.6.7(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -593,7 +593,7 @@ importers:
         version: 1.1.5(svelte@5.57.1)
       '@lucide/svelte':
         specifier: ^1.51.0
-        version: 1.51.0(svelte@5.57.1)
+        version: 1.55.0(svelte@5.57.1)
       '@number-flow/svelte':
         specifier: ^0.4.2
         version: 0.4.2(patch_hash=560e63467f41ded8157239fc7e510ecd47d745e98a198a1b102763b6ba93c6b5)(svelte@5.57.1)
@@ -654,7 +654,7 @@ importers:
         version: 1.0.8(vue@3.5.43(typescript@6.0.3))
       '@lucide/vue':
         specifier: ^1.51.0
-        version: 1.51.0(vue@3.5.43(typescript@6.0.3))
+        version: 1.55.0(vue@3.5.43(typescript@6.0.3))
       '@number-flow/vue':
         specifier: ^0.5.2
         version: 0.5.2(vue@3.5.43(typescript@6.0.3))
@@ -2027,13 +2027,13 @@ packages:
   '@layerstack/utils@2.0.0-next.19':
     resolution: {integrity: sha512-HyXCEz9pge4rFWklrSgFr3YIwdE1gP8WM6GPetmnKPDfYLF1/oetRFKI9FqiE+dw4brnULGPKJsVhjM3vQfD4A==}
 
-  '@lucide/svelte@1.51.0':
-    resolution: {integrity: sha512-FNoBtfrnQS1LV7yRm8T8pF6OH72BzCyPOWrOmVcpqGGLFmQZndRB4h0qhzUKqPq2JNkSfF7f4tUaiCwdY4WFfg==}
+  '@lucide/svelte@1.55.0':
+    resolution: {integrity: sha512-CTxJ3qbkDK2oCW1VJYKhqAUfOongRJqc9YWmJZn8E06QpCU7i5yAnUny4h/zMNy/iYpMtGiJDRSb6AVIornuXg==}
     peerDependencies:
       svelte: ^5
 
-  '@lucide/vue@1.51.0':
-    resolution: {integrity: sha512-zMkTAMP8OsPESz/GDedsZfr3VUF2IiHlj25mBZG6Pc8A8J8BdygkE8k1HhRFXEUNzytp5DqxiBQNm3RG/U2bVg==}
+  '@lucide/vue@1.55.0':
+    resolution: {integrity: sha512-3lpuTiVGIMbG7vEVhcDnHvIu+ZkjXka7eOp9tIA9iDPu6GHpfqwykVyAb+LM1uYYVgSI9Myo4HGzTvVnTS2CyA==}
     peerDependencies:
       vue: '>=3.0.1'
 
@@ -4807,8 +4807,8 @@ packages:
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
 
-  lucide-react@1.51.0:
-    resolution: {integrity: sha512-9929jimol5y7VbXUlVKcgURMSeIxFJB7dtWCkRAaNnF7KiCRkSkhmqWPUmAmUFYPezNawFk6qvz3Mu0gEnfI4g==}
+  lucide-react@1.55.0:
+    resolution: {integrity: sha512-bSozQHiI3/8q7JvgoqVRGOYUi7fYT3siAZwmZsljjsOH2Husp/2ODdFf/leD+ZC/2yKfn7r8oh6yeoR3ITR5vA==}
     peerDependencies:
       '@types/react': '*'
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -7731,11 +7731,11 @@ snapshots:
       d3-time: 3.1.0
       d3-time-format: 4.1.0
 
-  '@lucide/svelte@1.51.0(svelte@5.57.1)':
+  '@lucide/svelte@1.55.0(svelte@5.57.1)':
     dependencies:
       svelte: 5.57.1
 
-  '@lucide/vue@1.51.0(vue@3.5.43(typescript@6.0.3))':
+  '@lucide/vue@1.55.0(vue@3.5.43(typescript@6.0.3))':
     dependencies:
       vue: 3.5.43(typescript@6.0.3)
 
@@ -10541,7 +10541,7 @@ snapshots:
     dependencies:
       yallist: 3.1.1
 
-  lucide-react@1.51.0(@types/react@19.3.0)(react@19.3.0):
+  lucide-react@1.55.0(@types/react@19.3.0)(react@19.3.0):
     dependencies:
       react: 19.3.0
     optionalDependencies:

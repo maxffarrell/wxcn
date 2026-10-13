@@ -371,7 +371,7 @@ importers:
         version: 1.51.0(svelte@5.57.1)
       '@tabler/icons-svelte':
         specifier: ^3.48.0
-        version: 3.48.0(svelte@5.57.1)
+        version: 3.49.0(svelte@5.57.1)
       '@vue/server-renderer':
         specifier: ^3.5.43
         version: 3.5.43
@@ -599,7 +599,7 @@ importers:
         version: 0.4.2(patch_hash=560e63467f41ded8157239fc7e510ecd47d745e98a198a1b102763b6ba93c6b5)(svelte@5.57.1)
       '@tabler/icons-svelte':
         specifier: ^3.48.0
-        version: 3.48.0(svelte@5.57.1)
+        version: 3.49.0(svelte@5.57.1)
       '@wxcn/core':
         specifier: workspace:*
         version: link:../core
@@ -3021,8 +3021,8 @@ packages:
     peerDependencies:
       react: '>= 16'
 
-  '@tabler/icons-svelte@3.48.0':
-    resolution: {integrity: sha512-LsucFDMtGbBqcnkiMpMRWvwDcvjuMEYc3S8Agr1RwJT4Rqq8HaY13/sZrgdpfP9v0irLLPhehfQeH4ObmSGLOQ==}
+  '@tabler/icons-svelte@3.49.0':
+    resolution: {integrity: sha512-+omJWDCEHHfloOoMELXkdlrIpoQCN2XBx2xnb2NxqDjxsAGGTii0UQF05UoKiUO97skqe1eEIbeGjRZ9xUye0w==}
     peerDependencies:
       svelte: '>=3 <6 || >=5.0.0-next.0'
 
@@ -3033,6 +3033,9 @@ packages:
 
   '@tabler/icons@3.48.0':
     resolution: {integrity: sha512-lQk06gVHNVBnJp0UOgtth54mcZBJM7rdYKsAxKOProj1bbSAx+/xiuOWfHlyvgdL3M+Y+I0HINrjHa3ygp8eXQ==}
+
+  '@tabler/icons@3.49.0':
+    resolution: {integrity: sha512-l+GnSkFETx0U26icxv1VUFnxxiTqXfCcVRiRAnyMwibupM2S2L/hSaZ9gmSgz01rkrsH/93NvLsxykqdanc6lw==}
 
   '@tailwindcss/node@4.3.3':
     resolution: {integrity: sha512-/T8IKEsf9VTU6tLjgC7+sv2mOPtQxzE2jMw7u4Tt40Tx+QSZxpzh95/H6cMKoja9XuW7iMdLJYBB0o9G1CaAgg==}
@@ -8775,9 +8778,9 @@ snapshots:
       '@tabler/icons': 3.48.0
       react: 19.3.0
 
-  '@tabler/icons-svelte@3.48.0(svelte@5.57.1)':
+  '@tabler/icons-svelte@3.49.0(svelte@5.57.1)':
     dependencies:
-      '@tabler/icons': 3.48.0
+      '@tabler/icons': 3.49.0
       svelte: 5.57.1
 
   '@tabler/icons-vue@3.48.0(vue@3.5.43(typescript@6.0.3))':
@@ -8786,6 +8789,8 @@ snapshots:
       vue: 3.5.43(typescript@6.0.3)
 
   '@tabler/icons@3.48.0': {}
+
+  '@tabler/icons@3.49.0': {}
 
   '@tailwindcss/node@4.3.3':
     dependencies:

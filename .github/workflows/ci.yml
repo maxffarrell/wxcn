@@ -17,7 +17,7 @@ jobs:
       - uses: pnpm/action-setup@v6.1.0
       - uses: actions/setup-node@v7.0.0
         with:
-          node-version: 24
+          node-version: '26.12.1'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm docs:build
@@ -51,7 +51,7 @@ jobs:
       - uses: pnpm/action-setup@v6.1.0
       - uses: actions/setup-node@v7.0.0
         with:
-          node-version: 24
+          node-version: '26.12.1'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # Contract tests finish registry generation before concurrent readers start.

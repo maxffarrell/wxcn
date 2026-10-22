@@ -19,3 +19,6 @@ minimumReleaseAgeExclude:
   - wrangler@4.129.1
 patchedDependencies:
   '@number-flow/svelte@0.4.2': patches/@number-flow__svelte@0.4.2.patch
+
+# CVE-2026-111497: require patched Node runtimes.
+engineStrict: true

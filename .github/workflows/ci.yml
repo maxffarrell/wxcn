@@ -17,7 +17,7 @@ jobs:
       - uses: pnpm/action-setup@v6.1.0
       - uses: actions/setup-node@v7.0.0
         with:
-          node-version: 24
+          node-version: '26.12.1'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm docs:build
@@ -51,7 +51,7 @@ jobs:
       - uses: pnpm/action-setup@v6.1.0
       - uses: actions/setup-node@v7.0.0
         with:
-          node-version: 24
+          node-version: '26.12.1'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       # Contract tests finish registry generation before concurrent readers start.
@@ -64,7 +64,12 @@ jobs:
         background: true
         run: pnpm check:${{ matrix.framework }}
       # These scripts use isolated temporary projects; bypass the registry-writing wrapper.
+      - name: Install Corepack for the Vue consumer CLI
+        if: matrix.framework == 'vue'
+        run: npm install --global corepack@0.36.0
       - name: Install, check, and build a clean consumer
+        # shadcn-vue invokes Corepack, which Node 26 no longer bundles.
+        # Install it explicitly while keeping the consumer test unchanged.
         run: node scripts/${{ matrix.consumer_script }}
       - name: Wait for type checks
         wait: types

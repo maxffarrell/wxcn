@@ -15,7 +15,7 @@ wxcn distributes editable source through each framework's native shadcn registry
 | `tooling/registry`   | Registry build orchestration and framework-specific transforms            |
 | `tooling/contracts`  | Component availability and shared behavior requirements                   |
 
-Install with `pnpm install`, then run `pnpm dev` from the repository root. Use Node.js 24 or later and the pnpm version declared in `package.json`.
+Install with `pnpm install`, then run `pnpm dev` from the repository root. Use Node.js 26.12.1 or later on the 26.x line and the pnpm version declared in `package.json`.
 
 Run `pnpm check`, `pnpm test`, `pnpm test:react`, `pnpm test:vue`, `pnpm lint`, `pnpm build`, `pnpm build:react`, `pnpm build:vue`, `pnpm test:consumer`, `pnpm test:consumer:react`, and `pnpm test:consumer:vue` before submitting changes. Use `pnpm check:svelte`, `pnpm check:react`, or `pnpm check:vue` for a single framework. Registry JSON is generated: update source and run `pnpm registry:build` rather than editing generated files.
 

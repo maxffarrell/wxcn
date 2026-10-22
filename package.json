@@ -24,7 +24,8 @@
 		"test:vue": "pnpm --filter @wxcn/preview-vue test:ssr",
 		"check:svelte": "pnpm docs:build && pnpm --filter @wxcn/svelte check && pnpm --filter @wxcn/web check",
 		"check:react": "pnpm --filter @wxcn/react check && pnpm --filter @wxcn/preview-react check",
-		"check:vue": "pnpm --filter @wxcn/vue check && pnpm --filter @wxcn/preview-vue check"
+		"check:vue": "pnpm --filter @wxcn/vue check && pnpm --filter @wxcn/preview-vue check",
+		"preinstall": "node scripts/check-node.mjs"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.63.0",
@@ -39,5 +40,8 @@
 		"tsx": "^4.23.15",
 		"typescript": "^7.0.2",
 		"wrangler": "^4.147.0"
+	},
+	"engines": {
+		"node": "^26.12.1"
 	}
 }

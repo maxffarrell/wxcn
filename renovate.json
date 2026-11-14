@@ -11,17 +11,27 @@
 		{
 			"matchUpdateTypes": ["minor", "patch", "pin", "digest"],
 			"automerge": true,
-			"automergeType": "branch"
+			"automergeType": "pr"
 		},
 		{
 			"matchDepTypes": ["devDependencies"],
 			"automerge": true,
-			"automergeType": "branch"
+			"automergeType": "pr"
 		},
 		{
 			"matchUpdateTypes": ["minor", "patch"],
 			"groupName": "weekly-minor-patch-updates"
+		},
+		{
+			"description": "Keep TypeScript 6 for Astro and Vue checkers until they support the TypeScript 7 API",
+			"matchPackageNames": ["typescript"],
+			"matchFileNames": [
+				"apps/web/package.json",
+				"packages/vue/package.json",
+				"apps/preview-vue/package.json"
+			],
+			"allowedVersions": "<7"
 		}
 	],
-	"platformAutomerge": true
+	"platformAutomerge": false
 }

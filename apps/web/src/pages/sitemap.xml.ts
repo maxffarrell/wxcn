@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { publicRoutes, siteUrl } from '../lib/site-routes.mjs';
+import { publicRoutes, siteUrl } from '../lib/site-routes.ts';
 
 const escapeXml = (value: string) =>
 	value

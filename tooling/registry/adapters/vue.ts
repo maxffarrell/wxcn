@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { icons } from './svelte-icons.mjs';
+import { icons } from './svelte-icons.ts';
 
 const root = new URL('../../../', import.meta.url);
 const componentImport = '@/registry/wxcn/components/wxcn/';

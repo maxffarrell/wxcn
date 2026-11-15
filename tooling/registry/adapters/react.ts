@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 const root = new URL('../../../', import.meta.url);
-import { icons } from './svelte-icons.mjs';
+import { icons } from './svelte-icons.ts';
 const iconSource = `import { IconPlaceholder } from '@/components/icon-placeholder';
 export type IconName = ${Object.keys(icons)
 	.map((n) => `'${n}'`)

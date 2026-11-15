@@ -14,7 +14,7 @@ for (const framework of ['svelte', 'react', 'vue']) {
 	await writeFile(
 		new URL(`packages/${framework}/src/components/wxcn/cloud-texture.ts`, root),
 		await format(
-			'// Generated from src/assets/weather-*.webp by tooling/registry/cloud-texture.mjs.\n' +
+			'// Generated from src/assets/weather-*.webp by tooling/registry/cloud-texture.ts.\n' +
 				'// Embedded so installed registry components never request a third-party image.\n' +
 				`export const weatherCloudTextures = {\n${entries.join(',\n')}\n};\n`,
 			{

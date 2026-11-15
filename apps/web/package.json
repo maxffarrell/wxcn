@@ -8,7 +8,7 @@
 		"dev": "astro dev",
 		"build": "astro build",
 		"preview": "astro preview",
-		"check": "astro check && node ../../tooling/check-svelte.mjs"
+		"check": "astro check && node ../../tooling/check-svelte.ts"
 	},
 	"dependencies": {
 		"@astrojs/react": "^7.1.9",

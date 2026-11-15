@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { publicRoutes, siteUrl } from '../apps/web/src/lib/site-routes.mjs';
+import { publicRoutes, siteUrl } from '../apps/web/src/lib/site-routes.ts';
 
 const root = new URL('../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');

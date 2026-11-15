@@ -491,7 +491,7 @@ importers:
         specifier: ^6.0.0
         version: 6.0.0
       remark-gfm:
-        specifier: ^4.0.1
+        specifier: 4.0.1
         version: 4.0.1(supports-color@10.2.2)
       shadcn-svelte:
         specifier: ^1.8.1

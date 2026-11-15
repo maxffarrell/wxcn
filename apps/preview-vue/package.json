@@ -6,7 +6,7 @@
 		"dev": "vite",
 		"check": "vue-tsc --noEmit",
 		"build": "vue-tsc --noEmit && vite build",
-		"test:ssr": "node scripts/ssr.test.mjs"
+		"test:ssr": "node scripts/ssr.test.ts"
 	},
 	"dependencies": {
 		"@wxcn/vue": "workspace:*",

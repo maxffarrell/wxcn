@@ -1,14 +1,14 @@
 // Registry icon placeholders are expanded by shadcn during CLI installation.
 // Manual documentation uses the same explicit Lucide attributes as the registry.
 /** @param {string} source */
-export function reactManualIcons(source) {
+export function reactManualIcons(source: string) {
 	if (!source.includes('IconPlaceholder')) return source;
 	const imports = new Set();
 	let content = source.replace(
 		/import\s*\{\s*IconPlaceholder\s*\}\s*from\s*['"][^'"]+['"];?\s*/,
 		''
 	);
-	content = content.replace(/<IconPlaceholder\s+([^>]+)\/>/g, (_match, attributes) => {
+	content = content.replace(/<IconPlaceholder\s+([^>]+)\/>/g, (_match: string, attributes: string) => {
 		const name = attributes.match(/\blucide="([A-Za-z_$][\w$]*)"/)?.[1];
 		if (!name) throw new Error('React manual icons require an explicit Lucide icon attribute.');
 		imports.add(name);

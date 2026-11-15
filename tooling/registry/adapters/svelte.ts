@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { icons } from './svelte-icons.mjs';
+import { icons } from './svelte-icons.ts';
 const read = (path) => readFile(new URL(`../../../${path}`, import.meta.url), 'utf8');
 const iconSource = `<script lang="ts">
  import IconPlaceholder from '$lib/components/icon-placeholder.svelte';

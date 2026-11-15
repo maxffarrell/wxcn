@@ -35,17 +35,17 @@ jobs:
             framework: svelte
             test: test
             build: build
-            consumer_script: consumer.test-build.mjs
+            consumer_script: consumer.test-build.ts
           - name: React
             framework: react
             test: test:react
             build: build:react
-            consumer_script: react-consumer.test-build.mjs
+            consumer_script: react-consumer.test-build.ts
           - name: Vue
             framework: vue
             test: test:vue
             build: build:vue
-            consumer_script: vue-consumer.test-build.mjs
+            consumer_script: vue-consumer.test-build.ts
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: pnpm/action-setup@v6.1.0

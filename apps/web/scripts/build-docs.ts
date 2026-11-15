@@ -3,7 +3,7 @@ import registry from '../registry.json' with { type: 'json' };
 import reactRegistry from '../../../packages/react/registry.json' with { type: 'json' };
 import vueRegistry from '../../../packages/vue/registry.json' with { type: 'json' };
 import { codeToHtml } from 'shiki';
-import { reactManualIcons } from './react-docs-icons.mjs';
+import { reactManualIcons } from './react-docs-icons.ts';
 import { transformImports } from 'shadcn-svelte/transformers/imports';
 import { transformIcons } from 'shadcn-svelte/transformers/icons';
 const overviewExample = readFileSync(

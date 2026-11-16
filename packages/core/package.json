@@ -11,7 +11,7 @@
 		"check": "tsc --noEmit"
 	},
 	"devDependencies": {
-		"typescript": "6.0.3"
+		"typescript": "7.0.2"
 	},
 	"dependencies": {
 		"astronomy-engine": "2.1.19"

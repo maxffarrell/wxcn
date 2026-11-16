@@ -8,15 +8,18 @@ export function reactManualIcons(source: string) {
 		/import\s*\{\s*IconPlaceholder\s*\}\s*from\s*['"][^'"]+['"];?\s*/,
 		''
 	);
-	content = content.replace(/<IconPlaceholder\s+([^>]+)\/>/g, (_match: string, attributes: string) => {
-		const name = attributes.match(/\blucide="([A-Za-z_$][\w$]*)"/)?.[1];
-		if (!name) throw new Error('React manual icons require an explicit Lucide icon attribute.');
-		imports.add(name);
-		const props = attributes
-			.replace(/\b(?:lucide|tabler|phosphor|hugeicons|remixicon)="[^"]*"\s*/g, '')
-			.trim();
-		return `<${name} ${props} />`;
-	});
+	content = content.replace(
+		/<IconPlaceholder\s+([^>]+)\/>/g,
+		(_match: string, attributes: string) => {
+			const name = attributes.match(/\blucide="([A-Za-z_$][\w$]*)"/)?.[1];
+			if (!name) throw new Error('React manual icons require an explicit Lucide icon attribute.');
+			imports.add(name);
+			const props = attributes
+				.replace(/\b(?:lucide|tabler|phosphor|hugeicons|remixicon)="[^"]*"\s*/g, '')
+				.trim();
+			return `<${name} ${props} />`;
+		}
+	);
 	if (!imports.size || content.includes('IconPlaceholder')) {
 		throw new Error('Unsupported React icon placeholder in manual documentation.');
 	}

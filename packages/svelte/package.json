@@ -36,6 +36,6 @@
 		"@types/d3-shape": "3.2.0",
 		"svelte": "5.57.3",
 		"svelte-check-native": "1.11.1",
-		"typescript": "7.0.2"
+		"typescript": "6.0.3"
 	}
 }

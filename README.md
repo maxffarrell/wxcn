@@ -10,6 +10,7 @@
     <a href="LICENSE">MIT license</a>
   </p>
   <p><strong>Svelte 5</strong> &nbsp; / &nbsp; <strong>React 19</strong> &nbsp; / &nbsp; <strong>Vue 3</strong> &nbsp; / &nbsp; <strong>Tailwind CSS 4</strong> &nbsp; / &nbsp; <strong>LayerChart 2</strong></p>
+  <p><a href="https://deploy.workers.cloudflare.com/?url=https://github.com/maxffarrell/wxcn"><img src="https://deploy.workers.cloudflare.com/button" alt="Deploy to Cloudflare" /></a></p>
 </div>
 
 <picture>

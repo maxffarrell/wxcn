@@ -36,7 +36,7 @@
 		"prettier-plugin-tailwindcss": "0.8.1",
 		"shadcn": "4.23.0",
 		"shadcn-svelte": "1.8.1",
-		"svelte": "5.57.3",
+		"svelte": "5.58.0",
 		"tsx": "4.23.15",
 		"typescript": "6.0.3",
 		"wrangler": "4.164.0"

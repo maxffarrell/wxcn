@@ -39,7 +39,7 @@
 		"svelte": "5.59.1",
 		"tsx": "4.23.15",
 		"typescript": "6.0.3",
-		"wrangler": "4.166.0"
+		"wrangler": "4.167.0"
 	},
 	"engines": {
 		"node": "^26.12.1"
